@@ -1,0 +1,1115 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://nus-ee4218.github.io/labs/Lab_1/2_Impl_Flow/">
+      
+      
+        <link rel="prev" href="../1_Intro/">
+      
+      
+        <link rel="next" href="../../Lab_2/1_HW_Platform/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.46">
+    
+    
+      
+        <title>Hardware Implementation Flow - EE4218 Labs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.6f8fc17f.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#hardware-implementation-flow" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="EE4218 Labs" class="md-header__button md-logo" aria-label="EE4218 Labs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            EE4218 Labs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Hardware Implementation Flow
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="EE4218 Labs" class="md-nav__button md-logo" aria-label="EE4218 Labs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    EE4218 Labs
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    EE4218 Lab Manuals
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    General
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            General
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../General/InstallingVitis/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Installing Vitis 2023.2
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Lab 1
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Lab 1
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1_Intro/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Introduction to Hardware Design
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Hardware Implementation Flow
+  </span>
+  
+
+      </a>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Lab 2
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Lab 2
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Lab_2/1_HW_Platform/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Creating the Hardware Platform
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Lab_2/2_Serial_Console/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Serial Console - RealTerm
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Lab_2/3_Using_Vitis_Classic/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Software development using Vitis Classic
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Lab 3
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Lab 3
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Lab_3/1_IntegratingCoPro/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Integrating the Coprocessor
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Lab_3/2_FIFO/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Coprocessor Integration using AXI Stream FIFO
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Lab_3/3_DMA/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Coprocessor Integration using AXI DMA
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Lab_3/4_ModifyCoPro/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Modifying the Coprocessor
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Lab_3/5_PackagingIP/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Packaging Coprocessor as an IP
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Lab 4
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Lab 4
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Lab_4/1_HLSIntro/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    High Level Synthesis, Measuring Performance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Lab_4/2_HLSFLow/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    HLS Flow
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Lab_4/3_MultipleCoPro/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Connecting Multiple Coprocessors (Optional)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Project
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Project
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Project/1_ProjDesc/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project Description
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Project/2_EvalCrit/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project Evaluation Criteria, Deliverables
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Project/3_EvalSched/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Evaluation Schedule
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+<h1 id="hardware-implementation-flow">Hardware Implementation Flow</h1>
+<p>This manual contains step-by-step instructions for the creation of HDL files, simulation, and FPGA implementation. Those who are already familiar with Vivado and FPGA implementation can skip this step and go straight to the <a href="https://canvas.nus.edu.sg/display/ee4218/Lab+1+%3A+Introduction+to+Hardware+Design">assignment problem</a>.</p>
+<p>The screenshots were taken on an old version of Vivado. There could be slighter differences for newer versions, though the basic flow remains the same. Also, screenshots are for VHDL. Corresponding Verilog modifications are also provided where applicable.</p>
+<ol>
+<li><strong>Xilinx Vivado: Creating a New HDL Project</strong></li>
+</ol>
+<p>You can run the Xilinx Vivado 201x.x either by clicking the icon on Desktop or going to Start Menu &gt; All Programs &gt; Xilinx Design Tools &gt; Vivado 201x.x &gt; Vivado 201x.x</p>
+<p>After launching the <strong><em>Vivado</em></strong>, click on <strong>Create New Project</strong>. The <em><strong>Create New Project</strong> </em>window will appear.</p>
+<p>Click <strong>Next</strong> then enter the <strong>Project Name</strong> and <strong>Project Location</strong></p>
+<p>Click <strong>Next</strong> again and make sure the <strong>RTL Project</strong> is selected and the <strong>Do not specify sources at this time</strong> box is checked. Then <strong>Next.</strong></p>
+<p>Now we need to select the FPGA device that we are working on. The board we use is <strong>Kria KV260 Vision AI Starter Kit SOM</strong></p>
+<p><strong><img alt="image.png" src="../Impl_Flow/image-1.png" /></strong></p>
+<p>Click <strong>Next</strong> to go to <strong>New Project Summary</strong> and <strong>Finish</strong> to create the project.</p>
+<p>This is the main workspace of the project that we have just created.</p>
+<p>The left pane, <strong>Flow Navigator</strong>, lists all the tools we need to implement the system from making design files to simulating the system, generating the bitstream, and finally, downloading it to the device.</p>
+<p>The <strong>Sources</strong> window shows all the files used in the project.</p>
+<p><strong>2. Xilinx HDL Editor: Adding Sources -- Programming -- Syntax Checking</strong></p>
+<p>Click on <strong>Add Sources</strong> under <strong>Project Manager</strong> in the <strong>Flow Navigator</strong> pane to add the design sources. Make sure that the <strong>Add or Create DesignSources</strong> is selected.</p>
+<p><img alt="image.png" src="../Impl_Flow/image-2.png" /></p>
+<p>Click <strong>Next</strong> then <strong>Create File.</strong> Select <strong>VHDL</strong>/<strong>Verilog</strong> as appropriate in the drop-down list. Specify the desired file name, for example, <strong>adder</strong> Click <strong>OK</strong> then <strong>Finish</strong></p>
+<p><strong><img alt="image.png" src="../Impl_Flow/image-3.png" /></strong></p>
+<p>After that, we define the module as in the picture on the left.</p>
+<p>Since this is the simple half adder, the input and output ports are only one bit. Click <strong>OK</strong> to generate the HDL file.</p>
+<p><img alt="image.png" src="../Impl_Flow/image-4.png" /></p>
+<p>New the newly created file is added to the project under <strong>Design Sources.</strong> Double click the file to open it and add the following lines to the architecture / module and save the file.</p>
+<p><strong>VDHL</strong></p>
+<p><strong>Verilog</strong></p>
+<p>SUM &lt;= A xor B;</p>
+<p>CARRY &lt;= A and B;</p>
+<p>assign SUM = A ^ B;</p>
+<p>assign CARRY = A &amp; B;</p>
+<p><img alt="image.png" src="../Impl_Flow/image-5.png" /></p>
+<p><img alt="image.png" src="../Impl_Flow/image-6.png" /></p>
+<p>Basically, Vivado checks the syntax of HDL code whenever you save the file.</p>
+<p>If you want further analysis of the design files without going through the lengthy complete synthesis process, you can click <strong>Open Elaborated Design</strong> under <strong>RTL Analysis</strong> in the <strong>Flow Navigator</strong>. It will also show the schematic of the design if there is no problem with it.</p>
+<p><img alt="image.png" src="https://canvas.nus.edu.sg/courses/53567/files/3547819/preview" /></p>
+<p><strong>3A. Behavioural Simulation: Using Test Bench for Combinational Circuits</strong></p>
+<p>Click <strong>Add Sources</strong> and select <strong>Add or Create Simulation Sources.</strong></p>
+<p>Click <strong>Next</strong> then <strong>Create File</strong> to create the new HDL file.</p>
+<p>Choose the <strong>VHDL</strong> / <strong>Verilog</strong> file type and specify the name of the testbench, <strong>test_adder_vhdl</strong> / <strong>test_adder_v.</strong> Click <strong>OK</strong> then <strong>Finish</strong>.</p>
+<p><img alt="image.png" src="https://canvas.nus.edu.sg/courses/53567/files/3547820/preview" /></p>
+<p>The <strong>Define Module</strong> will appear but we do not need to define the I/O ports because this is the testbench. Click <strong>OK</strong> then <strong>Yes</strong> to create the file.</p>
+<p><img alt="image.png" src="https://canvas.nus.edu.sg/courses/53567/files/3547823/preview" /></p>
+<p>Then you see that there is a Syntax Error in the just created file. Try to open the <strong>Messages</strong> tab and locate the error.</p>
+<p><img alt="image.png" src="https://canvas.nus.edu.sg/courses/53567/files/3547826/preview" /></p>
+<p>Make the testbench for the <strong>half_adder</strong> module we've just created.</p>
+<p><img alt="image.png" src="https://canvas.nus.edu.sg/courses/53567/files/3547828/preview" /></p>
+<p>You can make a testbench by yourself or use any other tool to make a template for you base on the I/O interfaces of your design. Add the following stimuli to the HDL test bench code:</p>
+<p>|</p>
+<p><strong>VHDL</strong></p>
+<p>|</p>
+<p><strong>Verilog</strong></p>
+<p><img alt="image.png" src="https://canvas.nus.edu.sg/courses/53567/files/3547831/preview" /></p>
+<p>Remember to do a component declaration after the begin of the architecture and before the signal declarations as shown in the code above.</p>
+<p>| <img alt="image.png" src="https://canvas.nus.edu.sg/courses/53567/files/3547832/preview" /> |</p>
+<p>Now, we can simulate our design. Ensure that the top-level module is set to test_adder in the simulation settings. In newer versions of Vivado, right-clicking on SIMULATION will bring up simulation settings.</p>
+<p>Click <strong>Run Simulation</strong> under <strong>Simulation</strong> then</p>
+<p><strong>Run Behavioral Simulation.</strong></p>
+<p><strong><img alt="image.png" src="https://canvas.nus.edu.sg/courses/53567/files/3547834/preview" /></strong></p>
+<p>The waveform tab will be opened.</p>
+<p>Try to play with the tools on the left to navigate around the waveform. Initially, you may not see the waveform as on the figure because the time resolution is too high, <strong>ps</strong> in this case.</p>
+<p>You need to switch to full view. Select <strong>View</strong> <strong>Zoom Fit</strong> or the <strong>Zoom Fit</strong> icon (fifth from top on the panel to the left).</p>
+<p><img alt="image.png" src="https://canvas.nus.edu.sg/courses/53567/files/3547836/preview" /></p>
+<p>You can click on any place inside the waveform to move the yellow vertical line along the timeline, the corresponding values of input and output are shown in the <strong>Value</strong> column. <strong><em>a</em><em> </em>and </strong><em>b</em><em> </em>are the stimuli value, in other words, the input. <strong><em>sum</em><em> </em>and </strong><em>carry</em><em> </em>are the results of the stimuli, in other words, the output. To exit the Simulation, click the <strong>cross</strong> icon as shown in red circle.</p>
+<p><img alt="image.png" src="https://canvas.nus.edu.sg/courses/53567/files/3547838/preview" /></p>
+<p><strong>3B. Test Bench for Clocked Circuits</strong></p>
+<p>Similar to steps 1 to 3 of <strong>Section 2</strong>,create the HDL code for a D-flip-flop, as shown in the figure.</p>
+<p><img alt="image.png" src="https://canvas.nus.edu.sg/courses/53567/files/3547840/preview" /></p>
+<p><img alt="image.png" src="https://canvas.nus.edu.sg/courses/53567/files/3547843/preview" /></p>
+<p>After the syntax has been determined to be correct, create a Test Bench for this <strong><em>d_flip_flop</em></strong>. The steps are similar to 1 to 3 of <strong>Section 3A</strong>.</p>
+<p>In this case, we need to make a <strong>clk_process</strong> to generate the clock to the design. Please use the clock period of <strong>100 ns</strong>. If you are using Verilog, make sure the first line in your code is `timescale 1ns / 1ps</p>
+<p><img alt="image.png" src="https://canvas.nus.edu.sg/courses/53567/files/3547849/preview" /></p>
+<p>Insert the stimuli as shown in the figure.</p>
+<p>Note that the <strong>wait for 25 ns</strong> / <strong>#25</strong> should preferably be <strong>wait for 75 ns</strong> / <strong>#75</strong> if negative edge-triggered circuits are used. If there is more than one input, these inputs can be changed simultaneously in between the stimuli. In this example, D is the only input that is being changed in between stimuli.</p>
+<p><img alt="image.png" src="https://canvas.nus.edu.sg/courses/53567/files/3547850/preview" /></p>
+<p><img alt="image.png" src="https://canvas.nus.edu.sg/courses/53567/files/3547851/preview" /></p>
+<p>Do the Behavioral Simulation similar to <strong>Step 5</strong> onwards of <strong>Section 3A</strong> to simulate the design.</p>
+<p>In this figure, the D-flip-flop is triggered at every positive clock edge.</p>
+<p><img alt="image.png" src="https://canvas.nus.edu.sg/courses/53567/files/3547853/preview" /></p>
+<p><strong>4. FPGA Implementation: Half-Adder (Not required unless we interface with physical pins, and not applicable for Kria board. NOT required for Lab 1 - please read through nevertheless)</strong></p>
+<p>First, make sure that the <strong>half_adder</strong> entity is selected as <strong>Top.</strong></p>
+<p>Check whether the icon is shown next to the design file. If not, right-click at choose <strong>Set as Top</strong>.</p>
+<p><img alt="image.png" src="https://canvas.nus.edu.sg/courses/53567/files/3547856/preview" /></p>
+<p>Then click <strong>Project Settings</strong> in the Flow Navigator to to verify that the correct device is selected.</p>
+<p>This is very important because the configuration file generated by Vivado is unique for each device.</p>
+<p><img alt="image.png" src="https://canvas.nus.edu.sg/courses/53567/files/3547859/preview" /></p>
+<p>We need to add a constraint file to tell Vivado where we want to map the input/output ports of our design to the actual physical I/O of the FPGA chip.</p>
+<p>Click <strong>Add Sources</strong> and select <strong>Add or Create Constraints</strong>.</p>
+<p><img alt="image.png" src="https://canvas.nus.edu.sg/courses/53567/files/3547860/preview" /></p>
+<p>Specify the configurations as the picture on the left. And click <strong>Finish</strong> to generate the file.</p>
+<p><img alt="image.png" src="https://canvas.nus.edu.sg/courses/53567/files/3547861/preview" /></p>
+<p>Now we can see the new file <strong>lab1_half_adder.xdc</strong> under the <strong>Constraints.</strong></p>
+<p>Double click to open it, add the constraints below and save it.</p>
+<p><em># Mapping A to SW&lt;0&gt;</em></p>
+<p><em>set_property LOC F22 [get_ports A]</em></p>
+<p><em>set_property IOSTANDARD LVCMOS18 [get_ports A]</em></p>
+<p><em># Mapping B to SW&lt;1&gt;</em></p>
+<p><em>set_property LOC G22 [get_ports B]</em></p>
+<p><em>set_property IOSTANDARD LVCMOS18 [get_ports B]</em></p>
+<p><em># Mapping SUM to LED&lt;0&gt;</em></p>
+<p><em>set_property LOC T22 [get_ports SUM]</em></p>
+<p><em>set_property IOSTANDARD LVCMOS33 [get_ports SUM]</em></p>
+<p><em># Mapping SUM to LED&lt;1&gt;</em></p>
+<p><em>set_property LOC T21 [get_ports CARRY]</em></p>
+<p><em>set_property IOSTANDARD LVCMOS33 [get_ports CARRY]</em></p>
+<p>A better practice is to uncomment the required lines in the <strong>master .xdc</strong> file for the board, and change the input/output port names appropriately in the .xdc file.</p>
+<p><img alt="image.png" src="https://canvas.nus.edu.sg/courses/53567/files/3547863/preview" /></p>
+<p>Now click the <strong>Run Implementation</strong> tool to generate the bitstream for FPGA.</p>
+<p>There may be a dialog asking you to also launch the Synthesis and other processes before generating bitstream. Choose <strong>Yes</strong>.</p>
+<p>It takes a while to generate bitstream.</p>
+<p><img alt="image.png" src="https://canvas.nus.edu.sg/courses/53567/files/3547864/preview" /></p>
+<p><img alt="image.png" src="https://canvas.nus.edu.sg/courses/53567/files/3547866/preview" /></p>
+<p>After finishing, Vivado asks you to <strong>Open Implemented Design</strong> to view the layout on FPGA or only view the <strong>Reports</strong>. Choose <strong>Open Implemented Design</strong> then <strong>OK.</strong></p>
+<p><strong><img alt="image.png" src="https://canvas.nus.edu.sg/courses/53567/files/3547867/preview" /></strong></p>
+<p>The layout of the implemented design (<strong>half_adder</strong>) on FPGA will be shown.</p>
+<p>Since this is a very small design, it's hard to see from the full view. You can click on the instance listed in the red box, it will zoom in to its location on FPGA.</p>
+<p><img alt="image.png" src="https://canvas.nus.edu.sg/courses/53567/files/3547869/preview" /></p>
+<p>Click on <strong>Project Summary</strong> tab to view the utilization of the design. In this design, we only need 1 LUT (Lookup Table) and 4 IO pins.</p>
+<p>Can you explain why?</p>
+<p><img alt="image.png" src="https://canvas.nus.edu.sg/courses/53567/files/3547871/preview" /></p>
+<p>The next steps are to download the bitstream to FPGA.</p>
+<p>Before going further, make sure you have connected the <strong>Programming Port</strong> on the board to your computer and it is powered on. If you use the lab PC, all the drivers should be pre- installed.</p>
+<p>In addition, verify the position of the jumpers as the picture.</p>
+<p><img alt="image.png" src="https://canvas.nus.edu.sg/courses/53567/files/3547875/preview" /></p>
+<p>After that, in the <strong>Flow Navigator,</strong> click <strong>Open Target</strong> &gt; <strong>Open New Target</strong>.</p>
+<p>The <strong>Open New Hardware Target</strong> wizard will be shown. Click <strong>Next.</strong></p>
+<p>In the <strong>Hardware Server Settings,</strong> select <strong>Local server</strong> then <strong>Next</strong>.</p>
+<p>It takes a while for Vivado to detect the connected device.</p>
+<p><img alt="image.png" src="https://canvas.nus.edu.sg/courses/53567/files/3547877/preview" /></p>
+<p>If it can't detect the device, try to power cycle the board, wait till the drivers are loaded and take the steps again.</p>
+<p>If there is no problem, the wizard shows the list of devices connected. Here we have:</p>
+<ul>
+<li>the JTAG programming interface in the <strong>Hardware Targets (</strong>this JTAG interface is built on the board)</li>
+<li>and <strong>2 hardware devices (</strong>these devices are on Zynq FPGA chip).</li>
+</ul>
+<p>Click the dropdown box of <strong>JTAG Clock Frequency</strong> then select <strong>30000000 Hz.</strong></p>
+<p>Select the <strong>xc7z020_1</strong> device. Click <strong>Next</strong> and <strong>Finish</strong> to save the settings.</p>
+<p><img alt="image.png" src="https://canvas.nus.edu.sg/courses/53567/files/3547878/preview" /></p>
+<p>Now, we are ready to download the bitstream to FPGA. Click <strong>Program Device</strong> then <strong>xc7z020_1</strong>.</p>
+<p><img alt="image.png" src="https://canvas.nus.edu.sg/courses/53567/files/3547898/preview" /></p>
+<p>Click <strong>Program</strong> to download the bitstream. The process should take less than 30 seconds.</p>
+<p><img alt="image.png" src="https://canvas.nus.edu.sg/courses/53567/files/3547902/preview" /></p>
+<p>After that, try to adjust the switches on the board and see the changes of LEDs.</p>
+<p><img alt="image.png" src="https://canvas.nus.edu.sg/courses/53567/files/3547905/preview" /></p>
+<p><strong>5. Notes for Clocked Circuits</strong></p>
+<p>A <strong>create_clock constraint</strong> has to be inserted (uncomment line 8 of the master .xdc file) to tell the synthesis tool that our hardware works based on a 100MHz clock, an info the synthesis tool needs to optimize the circuit appropriately.</p>
+<p><em>create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports GCLK]</em></p>
+<p>The clock given by the board is 100MHz. There are 3 ways to accomplish operations at a lower rate (which may be required for displaying on LEDs or for components which can only work at a slower rate.</p>
+<p><strong>Clock Enable</strong></p>
+<p>Use the idea illustrate about to implement a <strong>clock enable</strong> to slow down the speed of the target counter (count in the example below) / sequential element. This is required if</p>
+<div class="language-v highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">always</span><span class="w"> </span><span class="p">@(</span><span class="k">posedge</span><span class="w"> </span><span class="n">clk</span><span class="p">)</span><span class="se">\</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">begin</span><span class="se">\</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">count_fast</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">count_fast</span><span class="o">+</span><span class="mh">1</span><span class="p">;</span><span class="se">\</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="k">if</span><span class="p">(</span><span class="n">count_fast</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mh">26&#39;h3FFFFFF</span><span class="p">)</span><span class="se">\</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="n">count_slow_enable</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mh">1</span><span class="mb">&#39;b1</span><span class="p">;</span><span class="se">\</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="k">else</span><span class="se">\</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="n">count_slow_enable</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mh">1</span><span class="mb">&#39;b0</span><span class="p">;</span><span class="w"> </span><span class="c1">// **1&#39;b1 for simulation***;\</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="c1">end</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="k">always</span><span class="w"> </span><span class="p">@(</span><span class="k">posedge</span><span class="w"> </span><span class="n">clk</span><span class="p">)</span><span class="se">\</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="k">begin</span><span class="se">\</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="k">if</span><span class="p">(</span><span class="n">count_slow_enable</span><span class="p">)</span><span class="se">\</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="n">count</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">count</span><span class="o">+</span><span class="mh">1</span><span class="p">;</span><span class="se">\</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="k">end</span>
+</span></code></pre></div>
+<div class="language-vhdl highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">process</span><span class="p">(</span><span class="n">clk</span><span class="p">)</span><span class="se">\</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="k">variable</span><span class="w"> </span><span class="n">count_fast</span><span class="w"> </span><span class="o">:</span><span class="kt">std_logic_vector</span><span class="p">(</span><span class="mi">25</span><span class="w"> </span><span class="k">downto</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="o">:=</span><span class="p">(</span><span class="k">others</span><span class="o">=&gt;</span><span class="sc">&#39;0&#39;</span><span class="p">);</span><span class="se">\</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="k">begin</span><span class="se">\</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="k">if</span><span class="w"> </span><span class="n">clk</span><span class="na">&#39;event</span><span class="w"> </span><span class="k">and</span><span class="w"> </span><span class="n">clk</span><span class="o">=</span><span class="sc">&#39;1&#39;</span><span class="w"> </span><span class="k">then</span><span class="se">\</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="n">count_fast</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="n">count_fast</span><span class="o">+</span><span class="mi">1</span><span class="p">;</span><span class="se">\</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="k">if</span><span class="w"> </span><span class="n">count_fast</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mh">x&quot;3FFFFFF&quot;</span><span class="w"> </span><span class="k">then</span><span class="se">\</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="n">count_slow_enable</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="sc">&#39;1&#39;</span><span class="p">;</span><span class="se">\</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="k">else</span><span class="se">\</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="n">count_slow_enable</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="sc">&#39;0&#39;</span><span class="p">;</span><span class="w"> </span><span class="c1">-- **&#39;1&#39; for simulation***;\</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="k">end</span><span class="w"> </span><span class="k">if</span><span class="p">;</span><span class="se">\</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="k">end</span><span class="w"> </span><span class="k">if</span><span class="p">;</span><span class="se">\</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="k">end</span><span class="w"> </span><span class="k">process</span><span class="p">;</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="k">process</span><span class="p">(</span><span class="n">clk</span><span class="p">)</span><span class="se">\</span>
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="k">begin</span><span class="se">\</span>
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="k">if</span><span class="w"> </span><span class="n">clk</span><span class="na">&#39;event</span><span class="w"> </span><span class="k">and</span><span class="w"> </span><span class="n">clk</span><span class="o">=</span><span class="sc">&#39;1&#39;</span><span class="w"> </span><span class="k">then</span><span class="se">\</span>
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="k">if</span><span class="w"> </span><span class="n">count_slow_enable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sc">&#39;1&#39;</span><span class="w"> </span><span class="k">then</span><span class="se">\</span>
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="n">count</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">count</span><span class="o">+</span><span class="mi">1</span><span class="p">;</span><span class="se">\</span>
+</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="k">end</span><span class="w"> </span><span class="k">if</span><span class="p">;</span><span class="se">\</span>
+</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="k">end</span><span class="w"> </span><span class="k">if</span><span class="p">;</span><span class="se">\</span>
+</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="k">end</span><span class="w"> </span><span class="k">process</span><span class="p">;</span>
+</span></code></pre></div>
+<p><strong>Else, you might have to wait for </strong><strong>2^26 cycles</strong>*<em> (for a ~1Hz clock) before you can see the effect of 1 clock edge!</em></p>
+<p>Advantage:  Only one clock is used, which avoids using an additional clock tree. FPGAs have FDREs which can be used for the purpose.</p>
+<p>Disadvantage: The critical path is still bounded by 1/(original clock rate).</p>
+<p><strong>Clock Divider</strong></p>
+<p>The idea is to use a large counter (say, a 26-bit counter), and the MSB of the counter as a slow clock. You did this in EE2026.</p>
+<p>Advantage:  Simple to implement, allows the critical path to be very long.</p>
+<p>Disadvantage: Uses an additional clock tree.</p>
+<p><strong>Clocking Wizard</strong></p>
+<p>We need to select the Clocking Wizard IP in block design, and enter the input and output frequencies. This makes use of phase-locked loops (PLLs) to achieve frequency multiplication or division. You can also make use of a similar functionality available within the Processing System (PS) of Zynq.</p>
+<p>Advantage:  Can be used to multiply frequencies too. In the board, modules can go up to 400+ MHz from a 100 Mhz clock. Multiple frequencies which are in phase with each other can be generated. This can be useful in computer systems that have components requiring different clock frequencies which are all in sync.</p>
+<p>Disadvantage:  The lowest frequency achievable is about 5 MHz from a 100 MHz clock. This is not sufficient if a very slow apparent clock is required (to show on LEDs, for example).</p>
+<p>|</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.83f73b43.min.js"></script>
+      
+    
+  </body>
+</html>
