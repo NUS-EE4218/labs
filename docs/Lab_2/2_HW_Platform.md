@@ -18,7 +18,7 @@ Under IP Integrator, click Create Block Design.
 
 Accept the default name and options, and click OK.
 
-In the IP Integrator canvas that opens up, click the Add IP button ![](2_HW_Platform/image-720b68f3-683f-4172-8913-11078bf51624.png).
+In the IP Integrator canvas that opens up, click the Add IP button ![](2_HW_Platform/image-720b68f3-683f-4172-8913-11078bf51624.png){: style="height:150px;width:150px"}.
 
 Search for and add Zynq UltraScale+ MPSoC
 
