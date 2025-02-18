@@ -4,7 +4,7 @@
 
 The following manual is for Vitis (Visual Studio Code based) unified IDE. The spirit of the instructions is quite similar for Vitis HLS (eclipse-based, which is being deprecated), if you wish to use that.
 
-You will need the template files [myip_v1_0_HLS.cpp](https://canvas.nus.edu.sg/courses/53567/files/3638351?wrap=1 "myip_v1_0_HLS-1.cpp") (CPP source for HLS) and [test_myip_v1_0_HLS.cpp](https://canvas.nus.edu.sg/courses/53567/files/3638353?wrap=1 "test_myip_v1_0_HLS-1.cpp") (Testbench). As with the Lab 1 HDL template, the sample program receives 4 numbers, computes the sum, and sends back 4 numbers which are sum, sum+1, sum+2, and sum+3. Read through these files and understand the implementation. You will notice that test_myip_v1_0_HLS.cpp is very similar to the other test programs that we have used. Have a good look at the similarities and differences.
+You will need the template files myip_v1_0_HLS.cpp (CPP source for HLS) and test_myip_v1_0_HLS.cpp (Testbench). As with the Lab 1 HDL template, the sample program receives 4 numbers, computes the sum, and sends back 4 numbers which are sum, sum+1, sum+2, and sum+3. Read through these files and understand the implementation. You will notice that test_myip_v1_0_HLS.cpp is very similar to the other test programs that we have used. Have a good look at the similarities and differences.
 
 test_myip_v1_0_HLS.cpp is a testbench used for simulation only. It is not executed on the ARM Cortex A53 processor on the board. We will be doing 2 types of simulation.
 
