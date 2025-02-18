@@ -1,11 +1,12 @@
 # Coprocessor Integration using AXI DMA
+
 In this manual, you will learn to integrate the AXIS coprocessor using AXI Direct Memory Access (DMA) instead of AXI FIFO. We will use the simple AXIS coprocessor designed in Lab 1 (and packaged in Lab 3) or the one created and packaged using HLS in Lab 4. In any case, it is a good idea to have the functionality tested using AXI Stream FIFO first.
 
 When using AXI DMA, the processor only supplies (via AXI Lite, not AXI Stream) the starting address and the size/amount of data to be transferred from the memory to the coprocessor (or vice versa), and it is the DMA controller that reads memory directly and passes it to the coprocessor via AXI Stream (or vice versa). The processor is not involved in the transfer of data directly, i.e., it does not do repeated load-store (LDR-STR in ARM terminology) to do bulk data transfer.
 
 We will be using the Xilinx AXI DMA IP as the module that connects the coprocessor to the rest of the system. You can find the specification of AXI DMA here: <http://www.xilinx.com/support/documentation/ip_documentation/axi_dma/v7_1/pg021_axi_dma.pdf>
 
-You can start with a new project, or from the existing project. Since most of you would be reaching this step from the existing project which would have the coprocessor connected using AXI Stream FIFO. In the future, if you are starting a new project and plan to use AXI DMA, you need not have AXI Stream FIFO in your design at all. It is also fine to delete AXI Stream FIFO from the project (instructions later), which can save some hardware and synthesis time. On this page, however, we keep the AXI Stream FIFO and connect it in loopback mode, rendering it vestigial. 
+You can start with a new project, or from the existing project. Since most of you would be reaching this step from the existing project which would have the coprocessor connected using AXI Stream FIFO. In the future, if you are starting a new project and plan to use AXI DMA, you need not have AXI Stream FIFO in your design at all. It is also fine to delete AXI Stream FIFO from the project (instructions later), which can save some hardware and synthesis time. On this page, however, we keep the AXI Stream FIFO and connect it in loopback mode, rendering it vestigial.
 
 The following instructions also assume that the coprocessor is already added/available in the IP Integrator canvas. If not, add it from the IP Catalog.
 
@@ -42,9 +43,9 @@ The DDR memory controller is implemented in the PS, which requires a slave AXI i
 
 ![image.png](DMA/DMA_MPSoCPSPL.png)
 
-We now need to connect M_AXI_S2MM and M_AXI_MM2S to S_AXI_LPD. This will have to be done using an AXI Interconnect* or AXI SmartConnect*. This can be done through connection automation twice. When you run the connection automation once, it will make only one connection - M_AXI_MM2S→ S_AXI_LPD (if M_AXI_MM2S is selected in Options > Master Interface in the connection automation dialog), and the corresponding m_axi_mm2s_aclk. The connection automation banner will still be there. Run connection automation again. This time, it will add an interconnect and make the M_AXI_S2MM→ S_AXI_LPD, as well as the m_axi_s2mm_aclk connection.
+We now need to connect M_AXI_S2MM and M_AXI_MM2S to S_AXI_LPD. This will have to be done using an AXI Interconnect*or AXI SmartConnect*. This can be done through connection automation twice. When you run the connection automation once, it will make only one connection - M_AXI_MM2S→ S_AXI_LPD (if M_AXI_MM2S is selected in Options > Master Interface in the connection automation dialog), and the corresponding m_axi_mm2s_aclk. The connection automation banner will still be there. Run connection automation again. This time, it will add an interconnect and make the M_AXI_S2MM→ S_AXI_LPD, as well as the m_axi_s2mm_aclk connection.
 
-*Note: AXI Interconnect and AXI SmartConnect are functionally similar. The latter is newer and more optimized, though the connection automation does not always include it. 
+*Note: AXI Interconnect and AXI SmartConnect are functionally similar. The latter is newer and more optimized, though the connection automation does not always include it.
 
 Overall, the connections should be as shown below, at least those relevant to AXI DMA. There could be differences in the overall block design and connections depending on the exact peripherals you have in the design.
 
@@ -56,7 +57,7 @@ In particular, ensure that in which zynq_ultra_ps_e_0 is the master, all S_AXIs 
 
 ![image.png](DMA/DMA_Address.png)
 
-We are done with the block design. 
+We are done with the block design.
 
 The rest of it is pretty standard and you should know the drill by now.
 
@@ -64,7 +65,7 @@ Export hardware including bitstream.
 
 Open Vitis Classic > create a new workspace (using the previous one is also ok) > create a new platform project using the new .xsa file (upgrading the previous one is ok too), > create an application project.
 
-The application project (say, Hello World) main file contents should be replaced by test_dma_myip_v1_0.c to test the coprocessor for adding numbers. Note the close parallel it has with tb_myip_v1_0.v/vhd and test_fifo_myip_v1_0.c. You can make appropriate changes to this file to deal with different input and output sizes if your coprocessor functionality is different. 
+The application project (say, Hello World) main file contents should be replaced by test_dma_myip_v1_0.c to test the coprocessor for adding numbers. Note the close parallel it has with tb_myip_v1_0.v/vhd and test_fifo_myip_v1_0.c. You can make appropriate changes to this file to deal with different input and output sizes if your coprocessor functionality is different.
 
 Now, create a run configuration, open the serial console program (e.g., RealTerm), and run.
 
@@ -74,11 +75,11 @@ The built-in (BSP) example (simple poll) works too with appropriate modification
 
 Debugging tip: DMA in a system with cache enabled gives several headaches. Throw interrupts into the mix, and you could run into some hard-to-debug issues. One simple starting point in debugging DMA-related issues is to uncomment Xil_DCacheDisable(). If things work, the issues are cache-related. Of course, you wouldn't want to leave the cache disabled in a real-world system for performance reasons, but it would be a good first step in debugging DMA-related issues.
 
-### AXI DMA vs AXI Stream FIFO
+## AXI DMA vs AXI Stream FIFO
 
 AXI DMA implemented this way, while still likely faster than AXI Stream FIFO, won't be making full use of  DMA's potential. In our case, the CPU is doing nothing while waiting for the DMA transfer to finish. In a more real-life scenario, the CPU will execute something else (another thread) in the meantime using the data present in the cache, or through some form of intermittent memory access - read [here](https://en.wikipedia.org/wiki/Direct_memory_access#Modes_of_operation). The thread that is waiting for the DMA transfer to complete will be woken up only when the DMA controller raises an interrupt to signal to the CPU that the transfer is complete.
 
 Another couple of questions to ponder:
 
--   AXI DMA does not need a buffer (and certainly not a big internal buffer), unlike AXI Stream FIFO. Why?
--   AXI DMA has an AXI LITE interface, whereas AXI Stream FIFO should have a full AXI interface for performance reasons. Why?
+- AXI DMA does not need a buffer (and certainly not a big internal buffer), unlike AXI Stream FIFO. Why?
+- AXI DMA has an AXI LITE interface, whereas AXI Stream FIFO should have a full AXI interface for performance reasons. Why?
