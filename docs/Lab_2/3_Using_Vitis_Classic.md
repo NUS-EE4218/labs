@@ -66,11 +66,13 @@ If you are getting errors such as "Could not find ARM device...", the board is l
 
 If you get this error - "Error while launching program: Memory write error at 0x0. Cortex-A53 #0: EDITR not ready", run the following commands in the XSCT Console (bottom right in Debug perspective\*) in Vitis Classic. This will set the boot mode to JTAG, which is what we want. This may need to be done once everytime the board is powered on.
 
-![](3_Using_Vitis_Classic/)
+![](3_Using_Vitis_Classic/image.png)
 
+``` text
 targets -set -nocase -filter {name =~ "\*PSU\*"}  
 mwr 0xff5e0200 0x0100  
 rst -system
+```
 
 References:
 
