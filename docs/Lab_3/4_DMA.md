@@ -9,9 +9,7 @@ You can start with a new project, or from the existing project. Since most of yo
 
 The following instructions also assume that the coprocessor is already added/available in the IP Integrator canvas. If not, add it from the IP Catalog.
 
-![image.png](https://canvas.nus.edu.sg/courses/53567/files/3597439/preview)
-
-![image.png](https://canvas.nus.edu.sg/courses/53567/files/3597427/preview)
+![image.png](DMA/DMA_SystemFIFO.png)
 
 Now, make/modify the following connections of AXI Stream FIFO.
 
@@ -21,7 +19,7 @@ Delete myip_0/S_AXIS <-> axi_fifo_mm_s_0/AXI_STR_TXD connection.
 
 Make a connection from axi_fifo_mm_s_0/AXI_STR_TXD <-> axi_fifo_mm_s_0/AXI_STR_RXD. This will make the AXI Stream FIFO in loopback mode and hence useless.
 
-Alternative: Delete the AXI Stream FIFO peripheral altogether. This can be done by simply selecting the block via single-click and pressing delete (or from the right-click menu). If you do so, you need to double-click the AXI Interconnect and reduce the number of Master interfaces by 1; e.g., if it was originally 3, we need to make it 2; if it was originally 2, we need to make it 1. This is because the AXI Stream FIFO peripheral has two AXI slave interfaces (S_AXI and S_AXI_FULL, as we enabled AXI as well in addition to the original AXI Lite interface), whereas AXI DMA requires only one AXI slave interface (S_AXI_LITE).![image.png](https://canvas.nus.edu.sg/courses/53567/files/3601766/preview)
+Alternative: Delete the AXI Stream FIFO peripheral altogether. This can be done by simply selecting the block via single-click and pressing delete (or from the right-click menu). If you do so, you need to double-click the AXI Interconnect and reduce the number of Master interfaces by 1; e.g., if it was originally 3, we need to make it 2; if it was originally 2, we need to make it 1. This is because the AXI Stream FIFO peripheral has two AXI slave interfaces (S_AXI and S_AXI_FULL, as we enabled AXI as well in addition to the original AXI Lite interface), whereas AXI DMA requires only one AXI slave interface (S_AXI_LITE).![image.png](DMA/DMA_AXI_Interconnect.png)
 
 This can cause some existing AXI slave connections to be broken (e.g., M0x_AXI of the AXI Interconnect to S_AXI of the peripheral), which can be easily fixed by obliging to the connection automation prompt.
 
@@ -30,7 +28,7 @@ Connecting the Coprocessor using DMA
 
 From the IP catalog, add the peripheral titled AXI Direct Memory Access. Double-click it, uncheck Enable Scatter Gather Engine, and click OK. It will look like the figure below.
 
-![image.png](https://canvas.nus.edu.sg/courses/53567/files/3601511/preview)
+![image.png](DMA/DMA_AXI_DMA.png)
 
 The S_AXI_LITE is the AXI-Lite slave interface that receives the commands (how much data is to be transferred from/to which address etc) from the ARM core in PS. Running connection automation will connect it, as well as the s_axi_lite_aclk and axi_resetn.
 
@@ -42,7 +40,7 @@ First, make the M_AXIS_MM2S <->S_AXIS and M_AXIS <-> S_AXIS_S2MM connections to 
 
 The DDR memory controller is implemented in the PS, which requires a slave AXI interface in PS to receive the address and read/write commands from the AXI DMA master interfaces, i.e., M_AXI_S2MM and M_AXI_MM2S. For this, we need to enable one of the Slave Interface > AXI HP (let's say, AXI LPD) in the PS-PL configuration of the Zynq Ultrascale+ MPSoC IP/zynq_ultra_ps_e_0. Double click the Zynq PS IP > PS-PL Configuration> Slave Interface > AXI HP > AXI LPD and then OK. A new interface called S_AXI_LPD will appear on the Zynq Ultrascale+ MPSoC IP block diagram in the IP Integrator canvas.
 
-![image.png](https://canvas.nus.edu.sg/courses/53567/files/3601785/preview)
+![image.png](DMA/DMA_MPSoCPSPL.png)
 
 We now need to connect M_AXI_S2MM and M_AXI_MM2S to S_AXI_LPD. This will have to be done using an AXI Interconnect* or AXI SmartConnect*. This can be done through connection automation twice. When you run the connection automation once, it will make only one connection - M_AXI_MM2S→ S_AXI_LPD (if M_AXI_MM2S is selected in Options > Master Interface in the connection automation dialog), and the corresponding m_axi_mm2s_aclk. The connection automation banner will still be there. Run connection automation again. This time, it will add an interconnect and make the M_AXI_S2MM→ S_AXI_LPD, as well as the m_axi_s2mm_aclk connection.
 
@@ -50,13 +48,13 @@ We now need to connect M_AXI_S2MM and M_AXI_MM2S to S_AXI_LPD. This will have to
 
 Overall, the connections should be as shown below, at least those relevant to AXI DMA. There could be differences in the overall block design and connections depending on the exact peripherals you have in the design.
 
-![image.png](https://canvas.nus.edu.sg/courses/53567/files/3601910/preview)
+![image.png](DMA/DMA_FullBlock.png)
 
 Have a look at the Address Editor tab too. It should generally be fine as long the AXI (not AXIS - AXIS connections were done manually anyway and have no concept of addresses/memory map) connections are done via connection automation. If there were any manual modifications you made to AXI connections, appropriate manual modifications may be needed here.
 
 In particular, ensure that in which zynq_ultra_ps_e_0 is the master, all S_AXIs are given proper, non-conflicting addresses. Also, ensure that in the network where axi_dma_0 is the master, S_AXI_LPD with the slave segment LPD_DDR_LOW is included (i.e., not excluded) for both axi_dma_0/Data_MM2S as well as axi_dma_0/Data_S2MM. This is to ensure that the AXI DMA peripheral can read as well as write (respectively) the DDR memory.
 
-![image.png](https://canvas.nus.edu.sg/courses/53567/files/3601925/preview)
+![image.png](DMA/DMA_Address.png)
 
 We are done with the block design. 
 
@@ -66,11 +64,11 @@ Export hardware including bitstream.
 
 Open Vitis Classic > create a new workspace (using the previous one is also ok) > create a new platform project using the new .xsa file (upgrading the previous one is ok too), > create an application project.
 
-The application project (say, Hello World) main file contents should be replaced by [test_dma_myip_v1_0.c](https://canvas.nus.edu.sg/courses/53567/files/3600191?wrap=1 "test_dma_myip_v1_0.c") to test the coprocessor for adding numbers. Note the close parallel it has with tb_myip_v1_0.v/vhd and [test_fifo_myip_v1_0.c](https://canvas.nus.edu.sg/courses/53567/files/3597455?wrap=1 "test_fifo_myip_v1_0.c"). You can make appropriate changes to this file to deal with different input and output sizes if your coprocessor functionality is different. 
+The application project (say, Hello World) main file contents should be replaced by test_dma_myip_v1_0.c to test the coprocessor for adding numbers. Note the close parallel it has with tb_myip_v1_0.v/vhd and test_fifo_myip_v1_0.c. You can make appropriate changes to this file to deal with different input and output sizes if your coprocessor functionality is different. 
 
 Now, create a run configuration, open the serial console program (e.g., RealTerm), and run.
 
-If you wish to use interrupts, you need to make sure that there is a connection from the interrupt of s2mm_introut or mm2s_introut to pl_ps_irq0 of zynq_ultra_ps_e_0. There is a built-in example program for axi_fifo_mm_s using interrupts, which can be combined appropriately with [test_dma_myip_v1_0.c](https://canvas.nus.edu.sg/courses/53567/files/3600191?wrap=1 "test_dma_myip_v1_0.c") to have interrupt-based communication. However, note that interrupts are useful only if the processor is doing some other meaningful work while the coprocessor is doing computations. If you want to use both s2mm_introut and mm2s_introut or have more than one peripheral with interrupts, you will need to enable more PL-PS interrupts in the Zynq Ultrascale+ MPSoC IP/zynq_ultra_ps_e_0 block configuration, under PS-PL settings.
+If you wish to use interrupts, you need to make sure that there is a connection from the interrupt of s2mm_introut or mm2s_introut to pl_ps_irq0 of zynq_ultra_ps_e_0. There is a built-in example program for axi_fifo_mm_s using interrupts, which can be combined appropriately with test_dma_myip_v1_0.c to have interrupt-based communication. However, note that interrupts are useful only if the processor is doing some other meaningful work while the coprocessor is doing computations. If you want to use both s2mm_introut and mm2s_introut or have more than one peripheral with interrupts, you will need to enable more PL-PS interrupts in the Zynq Ultrascale+ MPSoC IP/zynq_ultra_ps_e_0 block configuration, under PS-PL settings.
 
 The built-in (BSP) example (simple poll) works too with appropriate modifications, but it uses hard-coded addresses and uses memory locations without allocating memory in the code. Cache-related stuff becomes quite messy if the invalidation has side effects, that is, other variables in the same cache block getting affected. So keeping it away from the range of memory used by the rest of the program is a reasonably good choice, though this kind of memory allocation will make a memory safety advocate cringe (but ok considering that user-level programs typically do not do DMA directly - it is typically an OS function).
 

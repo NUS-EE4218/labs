@@ -9,9 +9,9 @@ Let us assume you are starting with your Lab 2 Vivado project as shown below, wi
 
 The following instructions also assume that the coprocessor is already added/available in the IP Integrator canvas. If not, add it from the IP Catalog.
 
-![image.png](https://canvas.nus.edu.sg/courses/53567/files/3597214/preview)
+![image.png](FIFO/FIFO_System.png)
 
-![image.png](https://canvas.nus.edu.sg/courses/53567/files/3597427/preview)
+![image.png](FIFO/FIFO_IP.png)
 
 Now, make/modify the following connections.
 
@@ -29,7 +29,7 @@ myip_0/ARESETN <-> rst_ps8_0_99M/peripheral_aresetn
 
 You can click regenerate layout to tidy up.
 
- ![image.png](https://canvas.nus.edu.sg/courses/53567/files/3597439/preview)
+ ![image.png](FIFO/FIFO_Connected.png)
 
 You can now save the block design (Ctrl+S) and generate bitstream.
 
@@ -39,8 +39,8 @@ You need to export hardware including bitstream.
 
 Open Vitis Classic > create a new workspace (using the previous one is also ok) > create a new platform project using the new .xsa file (upgrading the previous one is ok too), > create an application project.
 
-The application project (say, Hello World) main file contents should be replaced by [test_fifo_myip_v1_0.c](https://canvas.nus.edu.sg/courses/53567/files/3597455?wrap=1 "test_fifo_myip_v1_0.c") to test the coprocessor for adding numbers. Note the close parallel it has with tb_myip_v1_0.v/vhd. You can make appropriate changes to this file to deal with different input and output sizes if your coprocessor functionality is different. 
+The application project (say, Hello World) main file contents should be replaced by test_fifo_myip_v1_0.c to test the coprocessor for adding numbers. Note the close parallel it has with tb_myip_v1_0.v/vhd. You can make appropriate changes to this file to deal with different input and output sizes if your coprocessor functionality is different. 
 
 Now, create a run configuration, open the serial console program (e.g., RealTerm), and run.
 
-If you wish to use interrupts, you need to make sure that there is a connection from the interrupt of axi_fifo_mm_s_0 to pl_ps_irq0 of zynq_ultra_ps_e_0. There is a built-in example program for axi_fifo_mm_s using interrupts, which can be combined appropriately with [test_fifo_myip_v1_0.c](https://canvas.nus.edu.sg/courses/53567/files/3597455?wrap=1 "test_fifo_myip_v1_0.c") to have interrupt-based communication. However, note that interrupts are useful only if the processor is doing some other meaningful work while the coprocessor is doing computations.
+If you wish to use interrupts, you need to make sure that there is a connection from the interrupt of axi_fifo_mm_s_0 to pl_ps_irq0 of zynq_ultra_ps_e_0. There is a built-in example program for axi_fifo_mm_s using interrupts, which can be combined appropriately with test_fifo_myip_v1_0.c to have interrupt-based communication. However, note that interrupts are useful only if the processor is doing some other meaningful work while the coprocessor is doing computations.
