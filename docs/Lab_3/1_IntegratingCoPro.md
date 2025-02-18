@@ -40,7 +40,7 @@ Upload an archive containing only the files you have created/modified such as
 
 exactly as used for the demo to the Canvas by 11:59 PM, **7th March 2024**.
 
-It should be as a .zip archive, with the filename  <Wed/Thu>_<group_no>_3.zip.
+It should be as a .zip archive, with the filename Wed/Fri_GroupNum_Lab3.zip.
 
 Please **DO NOT** upload the whole project - include only the files mentioned above!
 
