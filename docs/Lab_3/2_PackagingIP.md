@@ -8,7 +8,7 @@ We can continue from the hardware platform project from Lab 2 as shown below. Yo
 
 The exact block diagram will vary for you depending on whether or not you included other peripherals for Lab 2 (e.g., AXI Stream FIFO, AXI Timer), but does not fundamentally change how you package the coprocessor as an IP - the exact peripherals and connections can be changed later. 
 
- ![image.png](https://canvas.nus.edu.sg/courses/53567/files/3597214/preview)
+ ![image.png](PackagingIP/PackagingIP_System.png)
 
 Select **Tool** (Vivado top menu) **→ Create and Package IP**. The Create and Package IP dialog will appear. Click **Next.**
 
@@ -24,7 +24,7 @@ We need to modify our custom IP. Right-click on the block, and select **Edit in
 
 Remove **myip_v1_0_S00_AXI.v/vhd** (Right-click and 'Remove File from the Project'). Copy-paste the content of **myip_v1_0.v/vhd** from the original Lab 1 template to overwrite the Vivado-created myip_v1_0.v/vhd contents.
 
-![image.png](https://canvas.nus.edu.sg/courses/53567/files/3597350/preview)
+![image.png](PackagingIP/PackagingIP_Wizard.png)
 
 Now, right-click Design Sources > Add Sources > Add or create design sources > Next > Add Files > Browse to and select matrix_multiply.v/vhd and memory_RAM.v/vhd, from the original Lab 1 templates. Check the option 'Copy sources into IP directory' and uncheck 'Scan and add RTL include files into project' (this will keep the files in the IP directory, which is a good idea) > OK > Finish.
 
@@ -34,7 +34,7 @@ Make sure that **myip_v1_0** is the top module, if it is not picked up automatic
 
 We now have to reconfigure the IP configurations to allow the original Vivado project to recognize the new IP interfaces correctly. You can notice that some of the green check marks that were originally there are now gone from the **Package IP - myip** tab (if you closed the tab, it can be reopened from Design Sources > IP-XACT > component.xml), under **Packaging Steps**. Here, select File Groups, and click Merge changes from File Groups Wizard.
 
-![image.png](https://canvas.nus.edu.sg/courses/53567/files/3597298/preview)
+![image.png](PackagingIP/PackagingIP_Wizard_FileGroups.png)
 
 Now click Customization Parameters, and click 'Merge changes ...'.. Right-click and remove C_S00_AXI_BASEADDR and C_S00_AXI_HIGHADDR  (this is a vestige of our original selection of a AXI memory-mapped slave as the IP).
 
@@ -42,7 +42,7 @@ Now click Ports and Interfaces, and click 'Merge changes ...'.
 
 Select the 4 signals starting with S_AXIS (via Ctrl+click or Shift+Click). Right-click and select Auto Infer Interface. In the dialog that opens up, select AXI > axis_rtl and click OK.
 
-![Auto Infer Interface Chooser_002.png](https://canvas.nus.edu.sg/courses/53567/files/3597381/preview)
+![Auto Infer Interface Chooser_002.png](PackagingIP/PackagingIP_Wizard_Interface.png)
 
 In the next dialog, the name S_AXIS will be autodetected (you can change the name if you wish), and verify that the Mode is salve. Click OK.
 
@@ -60,26 +60,26 @@ You can now close the temporary project and go back to the original project with
 
 Rerun the IP Status Report.
 
-![image.png](https://canvas.nus.edu.sg/courses/53567/files/3597416/preview)
+![image.png](PackagingIP/PackagingIP_IP_Status.png)
 
 Refresh IP Catalog.
 
-![image.png](https://canvas.nus.edu.sg/courses/53567/files/3597417/preview)
+![image.png](PackagingIP/PackagingIP_IP_Refresh.png)
 
 Click **Upgrade Selected**.
 
-![image.png](https://canvas.nus.edu.sg/courses/53567/files/3597420/preview)
+![image.png](PackagingIP/PackagingIP_IP_Upgrade.png)
 
 Generate Output Products will pop up. Select Generate.
 
 At this point, you will get some errors and critical warnings, but that is ok. Click Rerun for IP Status Report.
 
-![image.png](https://canvas.nus.edu.sg/courses/53567/files/3597424/preview)
+![image.png](PackagingIP/PackagingIP_IP_Rerun.png)
 
 Now, if you discard old warnings and errors, you will see that there are no more critical warnings and errors. The block interfaces for our custom IP would have changed to 
 
-![image.png](https://canvas.nus.edu.sg/courses/53567/files/3597427/preview)
+![image.png](PackagingIP/PackagingIP_IP_Block.png)
 
-AXI Stream is just a simplex (data flows only in one direction for a link), master-slave, synchronous, point-to-point link with no addressing. The AXI bus, on the other hand, is a bi-directional addressable ([memory-mapped](https://wiki.nus.edu.sg/display/EE2028/Topic+8+%3A+Interfacing+Concepts#Topic8:InterfacingConcepts-PeripheralRegisters)) interface with the main processor as the master. We need a bridge between AXI and AXIS to allow the main processor to send and receive data from the coprocessor. There are 2 options for us - *AXI Stream FIFO* and *AXI DMA*. The former is simpler, and perhaps good enough for smaller data sets. However, for larger data, the latter is more efficient, though more complicated from a hardware as well as software perspective. It is a good idea to try AXI Stream FIFO first, before trying out AXI DMA (optional, but strongly recommended for performance and experience).
+AXI Stream is just a simplex (data flows only in one direction for a link), master-slave, synchronous, point-to-point link with no addressing. The AXI bus, on the other hand, is a bi-directional addressable memory-mapped interface with the main processor as the master. We need a bridge between AXI and AXIS to allow the main processor to send and receive data from the coprocessor. There are 2 options for us - *AXI Stream FIFO* and *AXI DMA*. The former is simpler, and perhaps good enough for smaller data sets. However, for larger data, the latter is more efficient, though more complicated from a hardware as well as software perspective. It is a good idea to try AXI Stream FIFO first, before trying out AXI DMA (optional, but strongly recommended for performance and experience).
 
 AXI Stream FIFO and AXI DMA both perform MM2S and S2MM operations. MM2S stands for Memory-Mapped to Stream, where 'memory-mapped' refers to the connection using the AXI interface, where every peripheral is identified using a unique address range (memory-mapped input-output). S2MM, as you can guess easily, is Stream to Memory-Mapped.
