@@ -1,6 +1,6 @@
 # Integrating the Coprocessor
 
-Try out [Coprocessor Packaging](https://canvas.nus.edu.sg/courses/53567/pages/lab-3-packaging-coprocessor-as-an-ip "Lab 3: Packaging Coprocessor as an IP") and [Integration using AXI Stream FIFO](https://canvas.nus.edu.sg/courses/53567/pages/lab-3-coprocessor-integration-using-axi-stream-fifo "Lab 3: Coprocessor Integration using AXI Stream FIFO") using the original template coprocessor provided in Lab 1 first, before using your version of the Lab 1 coprocessor.
+Try out [Coprocessor Packaging](2_PackagingIP.md) and [Integration using AXI Stream FIFO](3_FIFO.md) using the original template coprocessor provided in Lab 1 first, before using your version of the Lab 1 coprocessor.
 
 Once you have gotten it to work, please attempt the assignment below.
 
@@ -9,11 +9,13 @@ Assignment 3
 
 The assignment essentially involves combining Lab 1 and Lab 2, such that the data can be streamed from RealTerm to the C code running on ARM Cortex A53, the processing is done in hardware using the coprocessor, and the results are sent back to RealTerm. You can optionally do the processing in software (C) and compare the results, but the results have to be sent back to the console.
 
+All the required files are [here](https://github.com/NUS-EE4218/labs/tree/main/Lab_3)
+
 Please follow the following procedure.
 
 -   Change your Lab 1 HDL code to accommodate the bigger matrix sizes for A, B, and RES (64x8, 8x1, and 64x1 respectively).
 -   Test it thoroughly (behavioral simulation as well as *post-synthesis functional simulation*) using a well-designed testbench. You will have to modify the .mem files and the testbench to deal with the bigger matrix. Some other cases were not tested by the Lab 1 testbench, such as the non-continuous assertion of S_AXIS_TVALID and M_AXIS_TREADY. Hopefully, these should be fine in your design. AXI FIFO is unlikely to do a non-continuous assertion of these signals, whereas some other peripherals such as AXI DMA are likely to.
--   Now, integrate this coprocessor using the same procedure you had followed for the original Lab 1 template coprocessor.  You might want to have a look at the Modifying the Coprocessor page to see how to re-package your modified coprocessor. You will have to modify [test_fifo_myip_v1_0.c](https://canvas.nus.edu.sg/courses/53567/files/3597455?wrap=1 "test_fifo_myip_v1_0.c") file as appropriate. You will need to have either the Transmit FIFO Depth of AXI Stream FIFO set to 1024 (in Vivado), or send it over two transmit operations in C code to send more than 512 words. The first approach will take more hardware but takes less time to send the full data over.
+-   Now, integrate this coprocessor using the same procedure you had followed for the original Lab 1 template coprocessor.  You might want to have a look at the Modifying the Coprocessor page to see how to re-package your modified coprocessor. You will have to modify test_fifo_myip_v1_0.cfile as appropriate. You will need to have either the Transmit FIFO Depth of AXI Stream FIFO set to 1024 (in Vivado), or send it over two transmit operations in C code to send more than 512 words. The first approach will take more hardware but takes less time to send the full data over.
     -   Initially, hard code the test cases.
     -   Later, you should modify it to deal with the data streamed from RealTerm, just as you did for Lab 2.
 -   An even better way to wait until the coprocessor responds would be to use interrupts. This requires the AXI FIFO interrupt output to be connected appropriately, with appropriate changes to the program.
