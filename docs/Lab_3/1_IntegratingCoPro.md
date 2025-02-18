@@ -34,11 +34,11 @@ Upload an archive containing only the files you have created/modified such as
 
 -   .xsa file
 -   .c/.h
--   .v/.vhd RTL and testbench
+-   .v/.vhd scaled up RTL and testbench
 -   .xdc file (only if you manually inserted/modified any constraints)
 -   input/output test files - the .mem files as well as the files sent/received from/by RealTerm (if you modified them)
 
-exactly as used for the demo to the Canvas by 11:59 PM, **7th March 2024**.
+exactly as used for the demo to Canvas within 1 hour of your demo.
 
 It should be as a .zip archive, with the filename Wed/Fri_GroupNum_Lab3.zip.
 
