@@ -14,6 +14,8 @@ We will need to implement prediction (predicting the label of a new input data) 
 
 ### Procedure
 
+All the required files are [here](https://github.com/NUS-EE4218/labs/tree/main/Project).
+
 You will send the data from the PC via the serial console (RealTerm, through the option to send a file). It is fine to hardcode the size of the data in your program; however, the data itself should be sent via the serial console.
 
 The C program running on the ARM Cortex A53 processor should receive the dataset, get the prediction done through SOFT or HARD_HDL or HARD_HLS, and send the predictions back to the console. This can be captured in a file, which can then be compared against the actual labels to compute the prediction accuracy (using, say, Excel).
