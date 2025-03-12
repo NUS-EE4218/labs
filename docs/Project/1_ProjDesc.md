@@ -46,7 +46,7 @@ There is 1 hidden layer having 2 neurons, with the neurons having 1 (decimal) as
 
 where $w_{0}$ is the bias and $x_{0}$ is considered 255 or 256. Why is 256 ok when it doesn't fit into 8 bits? Because 256 (representing 1.0), can be implicitly used by doing << 8 (which can be done by appropriate bit wiring) instead of multiplication. Alternatively, you can simply do $w_{0} + \frac{\sum_{1}^{7} \left ( w_{i}\times x_{i} \right )}{256}$. Please keep in mind the representation format, and things will be clearer.
 
-The neurons in the hidden layer have a sigmoid activation function as given below.  The exact formula used is y = 256\cdot\frac{1}{1+e^-\left({\frac{6x}{256}-3}\right)}, where $x$ is an integer in the interval  [0, 255], i.e., in the 0.8 format. This uses only the middle part of the curve, so the amount of non-linearity isn't very high.
+The neurons in the hidden layer have a sigmoid activation function, as given below.  The exact formula used is $y = 256\cdot\frac{1}{1+e^-\left({\frac{6x}{256}-3}\right)}$, where $x$ is an integer in the interval  [0, 255], i.e., in the 0.8 format. This uses only the middle part of the curve, so the amount of non-linearity isn't very high.
 
 ![image2020-6-6_5-23-35.png](ProjDesc/Activation_Fn.png)
 
