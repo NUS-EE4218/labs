@@ -5,6 +5,8 @@ theme:
   features:
     - content.tooltips
 markdown_extensions:
+  - pymdownx.arithmatex:
+      generic: true
   - pymdownx.highlight:
       anchor_linenums: true
       line_spans: __span
@@ -15,3 +17,6 @@ markdown_extensions:
   - abbr
   - attr_list
   - pymdownx.snippets
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
