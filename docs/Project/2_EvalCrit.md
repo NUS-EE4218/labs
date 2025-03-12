@@ -37,5 +37,5 @@ The marks below are out of 100, which will be scaled down to 20 marks for eventu
   - .xsa file(s).
   - If the files are different for different designs, give a proper suffix to file names - e.g. design_1_wrapper_HARD_HDL.xsa, test_fifo_myip_v1_0_HARD_HLS.c.
   - DO NOT upload the whole project folder(s).
-  - Use the following naming convention for the zip file. 01_<group_no>_Project.zip.
+  - Use the following naming convention for the zip file. Wed/Fri_GroupNum_Project.zip.
   - **The deadline for uploading the zip file is the day of your demo.**
