@@ -32,7 +32,7 @@ Lab Venue : Digital Electronics Lab (E4 level 3)  - Outreach Room
 | 9 | 19 Mar, 21 Mar | **Lab 4 Demo**, Project Consultation |  |
 | 10 | 26 Mar, 28 Mar (wellness day, alternate arrangements will be done) | **Project Progress Evaluation** and Consultation |  |
 | 11 | 2 Apr, 4 Apr | Project Consultation |  |
-| 12 | 9 Apr, 11 Apr | **Project Demo** |  **Project Progress Evaluation** and Consultation  |
+| 12 | 9 Apr, 11 Apr | **Project Demo** |  |
 
 ### Kria Board
 
