@@ -22,22 +22,35 @@
 #include "xil_cache.h"
 #include "xstatus.h"
 
+/***************** Transmit and receive buffers *********************/
+#ifndef DDR_BASE_ADDR
+#warning CHECK FOR THE VALID DDR ADDRESS IN XPARAMETERS.H, \
+DEFAULT SET TO 0x01000000
+#define MEM_BASE_ADDR		0x01000000
+#else
+#define MEM_BASE_ADDR		(DDR_BASE_ADDR + 0x1000000)
+#endif
+
+// transmit and receive buffer allocated sufficiently away from the start of DDR, hopefully not overlapping with the program's other memory segments.
+// It is better to hard code trasnmit and receive buffers to avoid it being in the same cache line as other variables, and for better alignment.
+#define TX_BUFFER_BASE		(MEM_BASE_ADDR + 0x00100000) 
+#define RX_BUFFER_BASE		(MEM_BASE_ADDR + 0x00300000)
+#define RX_BUFFER_HIGH		(MEM_BASE_ADDR + 0x004FFFFF)
 
 /***************** Macros *********************/
 #define NUMBER_OF_INPUT_WORDS 4  // length of an input vector
 #define NUMBER_OF_OUTPUT_WORDS 4  // length of an input vector
 #define NUMBER_OF_TEST_VECTORS 2  // number of such test vectors (cases)
 
-#define DMA_DEV_ID        XPAR_AXIDMA_0_DEVICE_ID
+#define DMA_DEV_ID        XPAR_XAXIDMA_0_BASEADDR
 
 /************************** Variable Definitions *****************************/
-u16 DeviceId = DMA_DEV_ID;
 XAxiDma AxiDma;	// Device instance
 XAxiDma *InstancePtr = &AxiDma; // Device pointer
 
-int test_input_memory [NUMBER_OF_TEST_VECTORS*NUMBER_OF_INPUT_WORDS] = {0x01, 0x02, 0x03, 0x04, 0x02, 0x03, 0x04, 0x05}; // 4 inputs * 2
+//int test_input_memory [NUMBER_OF_TEST_VECTORS*NUMBER_OF_INPUT_WORDS] = {0x01, 0x02, 0x03, 0x04, 0x02, 0x03, 0x04, 0x05}; // 4 inputs * 2
+//int result_memory [NUMBER_OF_TEST_VECTORS*NUMBER_OF_OUTPUT_WORDS]; // same size as test_result_expected_memory
 int test_result_expected_memory [NUMBER_OF_TEST_VECTORS*NUMBER_OF_OUTPUT_WORDS];// 4 outputs *2
-int result_memory [NUMBER_OF_TEST_VECTORS*NUMBER_OF_OUTPUT_WORDS]; // same size as test_result_expected_memory
 
 /*****************************************************************************
 * Main function
@@ -49,15 +62,22 @@ int main()
 	int success;
 	Status = XST_SUCCESS;
 
+	int* test_input_memory = (int*)TX_BUFFER_BASE;
+	int* result_memory = (int*)RX_BUFFER_BASE;
+	for (test_case_cnt=0 ; test_case_cnt < NUMBER_OF_TEST_VECTORS ; test_case_cnt++){
+		for (word_cnt=0 ; word_cnt < NUMBER_OF_INPUT_WORDS ; word_cnt++){
+			test_input_memory[word_cnt+test_case_cnt*NUMBER_OF_INPUT_WORDS] = word_cnt+test_case_cnt*NUMBER_OF_INPUT_WORDS+1;
+		}
+	}
 
 	/************************** Initializations *****************************/
 
 	 XAxiDma_Config *CfgPtr;
 
 	/* Initialize the XAxiDma device.*/
-	CfgPtr = XAxiDma_LookupConfig(DeviceId);
+	CfgPtr = XAxiDma_LookupConfig(DMA_DEV_ID);
 	if (!CfgPtr) {
-	  xil_printf("No config found for %d\r\n", DeviceId);
+	  xil_printf("No config found for %d\r\n", DMA_DEV_ID);
 	  return XST_FAILURE;
 	}
 
