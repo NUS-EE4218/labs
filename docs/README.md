@@ -97,4 +97,4 @@ Though there will be intra-team differentiation in marks according to the contri
 
 ## License
 
- [NUS EE4218 Lab Manuals](https://github.com/nus-EE4218/lab-manuals) © 2024 by [NUS EE4218 Team](https://github.com/nus-EE4218) is licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/?ref=chooser-v1)  
+ [NUS EE4218 Lab Manuals](https://github.com/nus-EE4218/labs) © 2024 by [NUS EE4218 Team](https://github.com/nus-EE4218) is licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/?ref=chooser-v1)  
