@@ -2,11 +2,11 @@
 
 ## Introduction
 
-This manual contains step-by-step instructions on how to create a hardware platform that utilizes the ARM Cortex A53 processor in the Kria board (there are two of them; we will be using only one through) and to execute simple C programs on it. The following 3 pages have the details you will need in the process.
+This manual contains step-by-step instructions on how to create a hardware platform that utilizes the ARM Cortex A53 processor in the Kria board (there are four of them; we will be using only one through) and to execute simple C programs on it. The following 3 pages have the details you will need in the process.
 
 [Creating the hardware platform](2_HW_Platform.md) - This page describes how to use Vivado to create a hardware platform using IP Integrator, and to synthesize the hardware into a bitstream. The bitstream is used to configure the FPGA to become the hardware platform that we have created. The bitstream and other hardware info are exported as a .xsa file.
 
-[Software development using Vitis Classic](3_Using_Vitis_Classic.md) - This page describes how to use VItis - Eclipse-based IDEs to create a C program to run on the Cortex A53 processor and interacting with the peripherals we have integrated in the step above.
+[Software development using Vitis Classic](3_Using_Vitis_Classic.md) - This page describes how to use Vitis - Eclipse-based IDEs to create a C program to run on the Cortex A53 processor and interacting with the peripherals we have integrated in the step above.
 
 [Serial Console - RealTerm](4_Serial_Console.md) - This page describes how to use RealTerm, the recommended console program (you are free to use other serial terminal programs or even have your own program for the purpose, e.g., a custom Python code using PySerial library) to send and receive information to the program running on the Cortex A53 processor through UART.
 
@@ -25,6 +25,7 @@ These two files should be sent from RealTerm (or another terminal program) to yo
 You can compare the RES.csv with Labels.csv on your PC using an Excel-like program (i.e., Labels.csv should not be sent to the board). Do you observe any pattern?
 
 You should do all computations in C on the board using integers. Do not use [floating-point](https://en.wikipedia.org/wiki/Floating-point_error_mitigation) (i.e., variables should not be declared as float).
+
 
 ## Submission Info
 

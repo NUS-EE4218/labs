@@ -60,7 +60,7 @@ Click the + button on the IP Integrator canvas to add an IP. Select AXI-Stream F
 
 While the IP Integrator shows the option for running connection automation, do not do this as yet. Instead, double-click on the AXI Stream FIFO that we added to customize it.
 
-Change the settings as follows, and click OK. Choosing AXI (full AXI) instead of AXI Lite (default) allows the data transfer to be potentially faster, as full AXI can do burst transfers (slave auto-increments addresses so that multiple data can be transferred with a single address). We can disable 'Enable Transmit Control' as we will be doing all the data transfer continuously. Make sure that the Data Width is 32. Increase the Transmit FIFO depth to 1024, as we will be sending more than 512 words later.
+Change the settings as follows, and click OK. Choosing AXI (full AXI) instead of AXI Lite (default) allows the data transfer to be potentially faster, as full AXI can do burst transfers (slave auto-increments addresses so that multiple data can be transferred with a single address). We can disable 'Enable Transmit Control' as we will be doing all the data transfer continuously. Make sure that the Data Width is 32. Increase the Transmit FIFO depth to 1024, as we will be sending more than 512 words later. Similarly, increase the Receive FIFO depth to 1024 as well - this is necessary only in loopback mode - in the next assignment, we will be connecting a coprocessor instead, which return as result less than 512 words.
 
 ![](2_HW_Platform/image-0eedde7a-d9bc-4c68-8686-509eaf919f54.png)
 
@@ -70,7 +70,7 @@ Select both the automations and click OK. 
 
 ![](2_HW_Platform/image-202fd728-8df7-444b-be4f-b245ac9e0b98.png)
 
-It will add two blocks - Processor System Reset (to reset peripherals as appropriate - more useful in designs using Microblaze, a soft processor), and an AXI Interconnect (since AXI Stream FIFO has 2 slave interfaces, both of which need to be connected to the same master interface of PS.
+It will add two blocks - Processor System Reset (to reset peripherals as appropriate - more useful in designs using Microblaze, a soft processor), and an AXI Interconnect - since AXI Stream FIFO has 2 slave interfaces, both of which need to be connected to the same master interface of PS.
 
 Finally, make a loopback connection - connect the AXI\_STR\_TXD to AXI\_STR\_RXD. Since we do not have a co-processor yet, this connection will have the effect of a coprocessor that simply echos (sends back) the data it receives.
 
