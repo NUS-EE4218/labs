@@ -8,7 +8,7 @@
 --		(ii) use it only for educational purposes;
 --		(iii) accept the responsibility to ensure that your implementation does not violate any intellectual property of any entity.
 --		(iv) accept that the program is provided "as is" without warranty of any kind or assurance regarding its suitability for any particular purpose;
---		(v) send an email to rajesh.panicker@ieee.org briefly mentioning its use (except when used for the course EE4218 at the National University of Singapore);
+--		(v) send an email to rajesh.panicker@ieee.org briefly mentioning its use (except when used for the course EE4218/CEG5203 at the National University of Singapore);
 --		(vi) retain this notice in this file or any files derived from this.
 ----------------------------------------------------------------------------------
 */
@@ -17,18 +17,11 @@
 #include "hls_stream.h"
 #include "ap_axi_sdata.h"
 
-/***************** AXIS with TLAST structure declaration *********************/
-/*
-struct AXIS_wLAST{
-	int data;
-	bool last;
-};
-*/
-typedef ap_axis<32,0,0,0> AXIS_wLAST;
+typedef ap_axis<32,0,0,0> AXIS;
 
 /***************** Coprocessor function declaration *********************/
 
-void myip_v1_0_HLS(hls::stream<AXIS_wLAST>& S_AXIS, hls::stream<AXIS_wLAST>& M_AXIS);
+void myip_v1_0_HLS(hls::stream<AXIS>& S_AXIS, hls::stream<AXIS>& M_AXIS);
 
 
 /***************** Macros *********************/
@@ -49,9 +42,9 @@ int main()
 {
 	int word_cnt, test_case_cnt = 0;
 	int success;
-	AXIS_wLAST read_output, write_input;
-	hls::stream<AXIS_wLAST> S_AXIS;
-	hls::stream<AXIS_wLAST> M_AXIS;
+	AXIS read_output, write_input;
+	hls::stream<AXIS> S_AXIS;
+	hls::stream<AXIS> M_AXIS;
 
 	/************** Run a software version of the hardware function to validate results ************/
 	// instead of hard-coding the results in test_result_expected_memory

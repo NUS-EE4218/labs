@@ -31,8 +31,8 @@ DEFAULT SET TO 0x01000000
 #define MEM_BASE_ADDR		(DDR_BASE_ADDR + 0x1000000)
 #endif
 
-// transmit and receive buffer allocated sufficiently away from the start of DDR, hopefully not overlapping with the program's other memory segments.
-// It is better to hard code trasnmit and receive buffers to avoid it being in the same cache line as other variables, and for better alignment.
+// Transmit and receive buffer allocated sufficiently away from the start of DDR, hopefully not overlapping with the program's other memory segments.
+// It is better to hard code transmit and receive buffers to avoid it being in the same cache line as other variables, and for better alignment.
 #define TX_BUFFER_BASE		(MEM_BASE_ADDR + 0x00100000) 
 #define RX_BUFFER_BASE		(MEM_BASE_ADDR + 0x00300000)
 #define RX_BUFFER_HIGH		(MEM_BASE_ADDR + 0x004FFFFF)
@@ -48,6 +48,7 @@ DEFAULT SET TO 0x01000000
 XAxiDma AxiDma;	// Device instance
 XAxiDma *InstancePtr = &AxiDma; // Device pointer
 
+// Commenting out the lines below as we are using hardcoded buffers, and not compiler/linker allocated.
 //int test_input_memory [NUMBER_OF_TEST_VECTORS*NUMBER_OF_INPUT_WORDS] = {0x01, 0x02, 0x03, 0x04, 0x02, 0x03, 0x04, 0x05}; // 4 inputs * 2
 //int result_memory [NUMBER_OF_TEST_VECTORS*NUMBER_OF_OUTPUT_WORDS]; // same size as test_result_expected_memory
 int test_result_expected_memory [NUMBER_OF_TEST_VECTORS*NUMBER_OF_OUTPUT_WORDS];// 4 outputs *2
