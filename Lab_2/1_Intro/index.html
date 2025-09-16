@@ -1,0 +1,1151 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://nus-ee4218.github.io/labs/Lab_2/1_Intro/">
+      
+      
+        <link rel="prev" href="../../Lab_1/1_Intro/">
+      
+      
+        <link rel="next" href="../2_HW_Platform/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.20">
+    
+    
+      
+        <title>Introduction to Hardware/Software Co-Design - EE4218 Labs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.e53b48f4.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#introduction-to-hardwaresoftware-co-design" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="EE4218 Labs" class="md-header__button md-logo" aria-label="EE4218 Labs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            EE4218 Labs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Introduction to Hardware/Software Co-Design
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="EE4218 Labs" class="md-nav__button md-logo" aria-label="EE4218 Labs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    EE4218 Labs
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    EE4218 Lab Manuals
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    General
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            General
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../General/Installing_Vitis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Installing Vitis
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Lab 1
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Lab 1
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Lab_1/1_Intro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Introduction to Hardware Design
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Lab 2
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Lab 2
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Introduction to Hardware/Software Co-Design
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Introduction to Hardware/Software Co-Design
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Introduction
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assignment-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Assignment 2
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#submission-info" class="md-nav__link">
+    <span class="md-ellipsis">
+      Submission Info
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dataset-description-optional-read" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dataset Description (Optional Read)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tips-and-suggestions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tips and Suggestions
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../2_HW_Platform/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Creating the Hardware Platform
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../3_Using_Vitis_Classic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Software development using Vitis Classic
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../4_Serial_Console/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Serial Console - RealTerm
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Lab 3
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Lab 3
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Lab_3/1_IntegratingCoPro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Integrating the Coprocessor
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Lab_3/2_PackagingIP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Packaging Coprocessor as an IP
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Lab_3/3_FIFO/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Coprocessor Integration using AXI Stream FIFO
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Lab_3/4_DMA/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Coprocessor Integration using AXI DMA
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Lab_3/5_ModifyCoPro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Modifying the Coprocessor
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Lab 4
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Lab 4
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Lab_4/1_HLSIntro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    High Level Synthesis, Measuring Performance
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Lab_4/2_HLSFLow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    HLS Flow
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Lab_4/3_MultipleCoPro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Connecting Multiple Coprocessors (Optional)
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Project
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Project
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Project/1_ProjDesc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Project Description
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Project/2_EvalCrit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Project Evaluation Criteria, Deliverables
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Introduction
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assignment-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Assignment 2
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#submission-info" class="md-nav__link">
+    <span class="md-ellipsis">
+      Submission Info
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dataset-description-optional-read" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dataset Description (Optional Read)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tips-and-suggestions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tips and Suggestions
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="introduction-to-hardwaresoftware-co-design">Introduction to Hardware/Software Co-Design</h1>
+<h2 id="introduction">Introduction</h2>
+<p>This manual contains step-by-step instructions on how to create a hardware platform that utilizes the ARM Cortex A53 processor in the Kria board (there are four of them; we will be using only one through) and to execute simple C programs on it. The following 3 pages have the details you will need in the process.</p>
+<p><a href="../2_HW_Platform/">Creating the hardware platform</a> - This page describes how to use Vivado to create a hardware platform using IP Integrator, and to synthesize the hardware into a bitstream. The bitstream is used to configure the FPGA to become the hardware platform that we have created. The bitstream and other hardware info are exported as a .xsa file.</p>
+<p><a href="../3_Using_Vitis_Classic/">Software development using Vitis Classic</a> - This page describes how to use Vitis - Eclipse-based IDEs to create a C program to run on the Cortex A53 processor and interacting with the peripherals we have integrated in the step above.</p>
+<p><a href="../4_Serial_Console/">Serial Console - RealTerm</a> - This page describes how to use RealTerm, the recommended console program (you are free to use other serial terminal programs or even have your own program for the purpose, e.g., a custom Python code using PySerial library) to send and receive information to the program running on the Cortex A53 processor through UART.</p>
+<h2 id="assignment-2">Assignment 2</h2>
+<p>Assignment #2 is a homework exercise and carries 10 marks.</p>
+<p>All the required files are <a href="https://github.com/NUS-EE4218/labs/tree/main/Lab_2">here</a></p>
+<p>The matrix <strong>A</strong> is a 64 x 8 matrix given in A.csv (CSV = comma-separated values). The elements of A are in the corresponding ASCII form in A.csv - this is essentially a text file and can be opened using a text editor*. You can also open it with Excel, which will show it as a table. </p>
+<p>The matrix <strong>B</strong> is an 8 x 1 matrix given in B.csv, encoded in a similar manner as A.csv. </p>
+<p>These two files should be sent from RealTerm (or another terminal program) to your C program running on board. Your C program should receive it and compute the result matrix, <strong>RES</strong> = <strong>A</strong>*<strong>B</strong>/<strong>256</strong>. This should be sent back from the board to the PC (RealTerm), where it should be captured into a file. The name of the file has to be “RES.csv”.  </p>
+<p>You can compare the RES.csv with Labels.csv on your PC using an Excel-like program (i.e., Labels.csv should not be sent to the board). Do you observe any pattern?</p>
+<p>You should do all computations in C on the board using integers. Do not use <a href="https://en.wikipedia.org/wiki/Floating-point_error_mitigation">floating-point</a> (i.e., variables should not be declared as float).</p>
+<h2 id="submission-info">Submission Info</h2>
+<p>Assignment 2 (7 marks)</p>
+<p>Demonstrate during <strong>Week 6</strong> lab session.</p>
+<p><strong>Upload</strong></p>
+<p>Upload the .xsa file, C/H, and input/output test files (i.e., only those files you have created/modified, not the entire project folder) <strong>used for the demo</strong> (not modified to fix issues that became apparent during the demo) to Canvas within 1 hour of your demo. It should be as a .zip archive, with the filename Wed/Fri_GroupNum_Lab2.zip.</p>
+<p>Please <strong>DO NOT</strong> upload the whole project!</p>
+<h2 id="dataset-description-optional-read">Dataset Description (Optional Read)</h2>
+<p>Here, we use a modified version of the Wine dataset from <a href="https://archive.ics.uci.edu/ml/datasets/wine">https://archive.ics.uci.edu/ml/datasets/wine</a>. You can read up the description and more if you are interested.</p>
+<ul>
+<li>The original 3-class problem is reduced to a 2-class problem by removing the cases with label 3.</li>
+<li>Some features are also removed, to reduce the feature dimensionality from 13 to 8.</li>
+<li>The original features are normalized to be between [0, 1), represented using the 0.8-bit fixed point representation we had used in Lab 1.</li>
+<li>You can visualize the data using some easy-to-use programming language such as Python or Matlab (<a href="https://octave-online.net/">https://octave-online.net/</a> is pretty cool), or even Excel.</li>
+<li>What we do in this lab is essentially the prediction/inference step in machine learning/classification. The classifier is trained using <a href="https://en.wikipedia.org/wiki/Linear_discriminant_analysis">Fisher's linear discriminant</a> method (matrix <strong>B</strong> in the description above is the weight vector), with some modifications to accommodate the 8-bit format.</li>
+</ul>
+<h2 id="tips-and-suggestions">Tips and Suggestions</h2>
+<p>You can do most of the testing of your C program logic without accessing the FPGA board. You can run it locally using a C/C++ IDE of your choice (such as  <a href="https://code.visualstudio.com/docs/languages/cpp">Visual Studio Code</a>) or using an online compiler like <a href="https://www.onlinegdb.com/online_c_compiler">https://www.onlinegdb.com/online_c_compiler</a>. Since the typical console (interface) you get cannot send files (such as A.csv and B.csv), you can copy-paste the file contents on the console, line by line, with the enter key pressed at the end of each line. If the console of the IDE you are using does not support copy-pasting, you will have to type it out. You can experiment with smaller matrices first to avoid wasting time doing too many copy-pastes.</p>
+<p>*An editor such as Notepad++ can show you all characters, including non-printable characters such as \r (CR-carriage return) and \n (LF-linefeed). You can view it by going to View&gt;Show Symbol&gt;Show All Characters. When sending using the 'Send ASCII' option in RealTerm, make sure you append \r or \n.</p>
+<p>Embedded system tools and boards have a relatively short lifespan - so you need to be able to pick up things on your own as and when required, often based on partial documentation and self-exploration. Lab 2 manuals have purposely left out detailed step-by-step instructions (esp. on the software part) - to let you explore the various options, think, search and find out things on your own. If you know precisely how to do it (that is, if we give you detailed steps), doing it shouldn’t take you much time and is not worth 10% of you grades :D. Some tips are given below.</p>
+<p>If your program is inhibiting unpredictable behavior when dealing with large data, it could be due to stack or heap size limitations. You can increase the heap or stack size by editing the linker script (.ld file) which you can find in the project sources.</p>
+<ul>
+<li>There are 2 programs with interact with each other – the RealTerm program which runs on the PC, and your C program running on the board.</li>
+<li>RealTerm is a serial terminal / console program* running on PC. It can send and receive characters, send and receive text files (text files are nothing but long strings) through the serial port (COM/tty) as well as network interfaces (TCP/IP sockets).</li>
+<li>The program running on the board (Cortex A53) receives the sequence of characters sent from the PC (you can use the send file option in RealTerm), does some computations, and sends it back to the PC (you can capture it into a file). Since this is running on the board which does not have direct access to the files on the PC, usual file related functions such as fopen() and fprintf() will not work!. You can only capture the stream of characters sent by the RealTerm, process it, and send back.</li>
+<li>Now the question on how to receive data sent from RealTerm in your C program - there are 2 approaches :</li>
+<li>The high-level way using stdin / stdout.<ul>
+<li>stdin and stdout are interfaces through which console-oriented functions such as printf(), scanf(), getchar(), gets(), putchar(), puts() send data to be displayed on the console and receive data from the console.</li>
+<li>Since we have directed stdin and stdout to the console (where did we do that? - I leave it as an exercise for you to find out), you can use these functions to send and receive data from the PC/RealTerm.</li>
+<li>If the underlying physical layer is UART, the functions mentioned above such as printf() and scanf() makes use of UART driver functions under the hood, in addition to formatting/parsing the ASCII characters sent/received via UART. For example, the bytes 0x31, 0x32, 0x33, 0x0d if received via UART, scanf with a format specifier of "%d" will convert it to an integer 123.</li>
+<li>All the functions block until a LF (linefeed - \n) or CR(carriage return - \r) is received. So you can't receive anything which is not properly terminated. When you send a file, make sure that it has a \r or \n character at the end of it. This is automatically inserted when you press 'enter' in a text file or console (Most Windows programs treat the press of 'enter' as \r\n, whereas in Linux, it is usually just \n. For most console programs, it is '\r' by default. These characters come from the typewriter era and mostly serve the same purpose on a computer).</li>
+</ul>
+</li>
+<li>The low-level way using UART driver functions<ul>
+<li>Gives you full control over what is sent and what is received to/from the console.</li>
+<li>You need to initialize the UART driver before you can use functions such as XUartPs_Send() and XUartPs_Recv() or the lower level XUartPs_SendByte() and XUartPs_RecvByte().</li>
+<li>These are non-blocking functions (so you need to check the return value to see how many characters you have received) which give you full control (no need for \r or \n).</li>
+<li>The basic procedure to deal with all hardware in the Xilinx toolchain is the same, as exemplified below through XUartPs. You can go to <span class="arithmatex">\(your\_Bsp\)</span>&gt;system.mss and see the driver documentation and examples.</li>
+<li>XUartPs Uart_Ps //Declare a driver instance (not a pointer to this instance) as a global variable. All UART-related functions use a pointer to this instance.</li>
+<li>XUartPs_LookupConfig(DeviceId); // Looks up hardware instance info such as base address etc. DeviceId is usually XPAR_XUARTPS_0_DEVICE_ID, defined in xparameters.h.</li>
+<li>XUartPs_CfgInitialize(&amp;Uart_Ps,...) // Initializes the hardware and driver instance</li>
+<li>XUartPs_SetBaudRate(&amp;Uart_Ps,...) // Additional hardware specific settings/initializations. Following this, you can use the Send and Recv functions.</li>
+<li>Instead of starting from scratch, start with the examples from system.mss entry for the hardware you are looking at. For UART, you can probably start with xuartps_hello_world_example and modify it to suit your needs.</li>
+</ul>
+</li>
+<li>Instead of just clicking 'Run' in the Vitis, you can click 'Debug' and do debugging just like how you do on any IDE. To change your perspective back to normal (after debugging), click Window&gt;Debug Perspective in Vitis. This will allow you to inspect what is happening in each line, send something from RealTerm and see what is received, etc.</li>
+<li>*RealTerm is a very feature-rich terminal/console program. Don't be afraid to try out the various options in the tabs 'Display', 'Capture', Send'. Most importantly, the settings on Port has to be correct for things to work. Generally, I uncheck 'Direct Capture' and check 'Half Duplex' and 'newLine mode' so that I can see everything that is sent and received on the console.</li>
+<li>If you see strange-looking characters on your console, your baud rate setting in RealTerm is likely wrong.</li>
+<li>As a general rule, DO NOT use spaces in the paths for any of your projects/workspaces. This is a good practice not only for Vitis/Vivado but for a number of hardware and software development tools.</li>
+<li>Sending data from RealTerm/Serial console everytime can be time-consuming during the debug process. It is a good idea to have the required data (CSV file contents) hard-coded as an array in your C program, and use it during debugging. You could make use of #ifdef to conditionally use the hardcoded value or the live data streamed in from the serial console so that you can switch between them easily.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../..", "features": ["content.tooltips"], "search": "../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.f55a23d4.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
