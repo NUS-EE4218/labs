@@ -45,7 +45,7 @@ Using a hardware timer is the approach we follow in this lab. It is left entirel
 
 1) The assignment mainly involves creating the same coprocessor (that you created in Lab 1 and scaled up/packaged in Lab 3) using HLS and integrating it into the system. You can just use your lab 3 block design and use the HLS-generated co-processor as a drop-in replacement for the HDL-based co-processor of lab 3. The exact same software C code should work, but the project has to be updated with the new .xsa file, as your hardware and hence bitstream is different. If you wish (not a requirement), you can *add* the HLS generated coprocessor into the system instead of *replacing* the lab 3 coprocessor.
 
-All the required files are [here](https://github.com/NUS-EE4218/labs/tree/main/Lab_4)
+All the required files are [here](https://github.com/NUS-EE4218/labs/tree/main/docs/Lab_4/Lab_4_Files)
 
 2) Further, you should integrate an AXI Timer into your block design, and modify your software C code to report the time taken by the
 

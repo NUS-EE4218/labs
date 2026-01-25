@@ -14,7 +14,7 @@ This manual contains step-by-step instructions on how to create a hardware platf
 
 Assignment #2 is a homework exercise and carries 7 marks.
 
-All the required files are [here](https://github.com/NUS-EE4218/labs/tree/main/Lab_2)
+All the required files are [here](https://github.com/NUS-EE4218/labs/tree/main/docs/Lab_2/Lab_2_Files)
 
 The matrix **A** is a 64 x 8 matrix given in A.csv (CSV = comma-separated values). The elements of A are in the corresponding ASCII form in A.csv - this is essentially a text file and can be opened using a text editor\*. You can also open it with Excel, which will show it as a table. 
 
