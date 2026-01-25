@@ -70,7 +70,7 @@ The system should be able to operate continuously. Soon after (doesn't necessari
 
 ### Files / Templates
 
-You can find all lab 1 files [here](https://github.com/NUS-EE4218/labs/tree/main/docs/Lab_1/Lab_1_Files)
+You can find all lab 1 files [here](https://github.com/NUS-EE4218/labs/tree/main/docs/Lab_1/Lab_1_Files).
 
 - myip_v1_0.v / myip_v1_0.vhd - top-level module implementing the AXIS coprocessor. Currently, it simply takes in 4 words over 4 cycles and returns their sum, sum+1, sum+2, and sum+3 over 4 cycles. You need to modify this appropriately to interact with RAMs and Matrix_Multiply unit. You should not modify the inputs/outputs of myip_v1_0.v / myip_v1_0.vhd, as they should follow the AXIS standard. Synthesizing this will yield 56 warnings (could change slightly depending on the version of the tool) which are expected since memory and matrix multiply units are not used in the template code.
 
@@ -96,5 +96,7 @@ Verilog and VHDL files can be freely mixed. For example, you can use memory_RAM
 
 Demonstrate during your designated slot in **Week 5**.
 Upload to Canvas within 1 hour of your demo the following.
+
 - A very short (<=2 pages) report explaining your system architecture, FSM, resource usage details such as the number of slices/LUTs, etc.
+
 - The relevant .v/.vhd (RTL and testbenches) and .txt/.mem files (i.e., only those files you have created/modified, not the entire project folder). The files should be the ones **used for the demo**, not modified to fix issues that became apparent during the demo. It should be as a .zip archive, with the filename Wed/Fri_GroupNum_Lab1.zip.
