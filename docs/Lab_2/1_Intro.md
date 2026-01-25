@@ -12,7 +12,7 @@ This manual contains step-by-step instructions on how to create a hardware platf
 
 ## Assignment 2
 
-Assignment #2 is a homework exercise and carries 10 marks.
+Assignment #2 is a homework exercise and carries 7 marks.
 
 All the required files are [here](https://github.com/NUS-EE4218/labs/tree/main/Lab_2)
 

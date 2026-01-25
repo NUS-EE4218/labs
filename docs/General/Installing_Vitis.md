@@ -1,4 +1,7 @@
-## Installing Vitis 2023.2
+# Installing Vitis 2023.2
+
+!!! warning "Follow the Spirit"
+    Work in Progress
 
 The complete development suite from AMD/Xilinx is also called Vitis, which includes Vivado - i.e., if you install Vitis, Vivado also gets installed. Vitis is used for the software part, Vivado is used for the hardware part.
 
@@ -12,7 +15,7 @@ Any version of Vivado is good enough for lab 1. For later labs, use the recommen
 
 Some features of Vitis HLS require installing a free license, which has to be generated on the Xilinx/AMD website. Instructions for that are in the last section of this page. This is not needed for the first 3 labs, so you can install the license later too.
 
-### Windows
+## Windows
 
 Below are the steps to be followed to install **Xilinx Vitis 2023.2**. The instructions are for web installer, which is recommended to avoid the hassle of downloading the full installer and uncompressing it.
 
@@ -42,7 +45,7 @@ Below are the steps to be followed to install **Xilinx Vitis 2023.2**. The inst
 
 * When the installation is completed, click Finish to close the wizard.
 
-### Linux
+## Linux
 
 Vitis/Vivado works very well in RHEL (best-supported)/Fedora/Ubuntu. The instructions below are for Ubuntu.
 

@@ -1,9 +1,15 @@
 site_name: EE4218 Labs
-site_url: https://nus-ee4218.github.io/labs
+site_url: https://nus-ceg5203.github.io/labs
 theme:
   name: material
   features:
     - content.tooltips
+  font:
+    text: Merriweather
+  palette:
+    scheme: nus
+extra_css:
+  - stylesheets/extra.css
 markdown_extensions:
   - pymdownx.arithmatex:
       generic: true
@@ -16,7 +22,13 @@ markdown_extensions:
   - pymdownx.superfences
   - abbr
   - attr_list
-  - pymdownx.snippets
+  - admonition
+  - footnotes
+  - pymdownx.details
+  - pymdownx.blocks.caption
+  - md_in_html
+  - pymdownx.tabbed:
+      alternate_style: true
 extra_javascript:
   - javascripts/mathjax.js
   - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
