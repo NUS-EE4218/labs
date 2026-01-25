@@ -19,6 +19,8 @@ markdown_extensions:
       pygments_lang_class: true
   - pymdownx.inlinehilite
   - pymdownx.snippets
+  - pymdownx.caret  # Enables superscript (e.g., x^2^)
+  - pymdownx.tilde # Also enables subscript (e.g., H~2~O)
   - pymdownx.superfences
   - abbr
   - attr_list
