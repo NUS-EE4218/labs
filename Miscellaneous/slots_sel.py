@@ -12,7 +12,7 @@ labels = np.array([
 ])
 
 # Read the CSV file using pandas
-df = pd.read_csv('Canvas_Responses.csv')  # Automatically handles headers and BOM
+df = pd.read_csv('Canvas_Responses.csv')
 table = df.values.astype(int)  # Convert to a numeric numpy array
 n, m = table.shape  # n = number of students, m = number of slots
 
@@ -31,7 +31,6 @@ for i in range(m):
         scores_j[index] = j
         
         # Count how many students responded to at least one of the two slots
-        # Vectorized: no inner loop over students needed
         scores[index] = np.sum(np.logical_or(table[:, i], table[:, j]))
         
         index += 1
@@ -42,7 +41,7 @@ sorted_scores = scores[sorted_indices]
 sorted_i = scores_i[sorted_indices].astype(int)
 sorted_j = scores_j[sorted_indices].astype(int)
 
-# Display results similar to MATLAB output
+# Display results
 for s, i_idx, j_idx in zip(sorted_scores, sorted_i, sorted_j):
     print(f"{s} | {labels[i_idx]} | {labels[j_idx]}")
 
