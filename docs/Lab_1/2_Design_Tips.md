@@ -1,10 +1,14 @@
 # Design Considerations and Tips
 
-Understand the given templates and testbenches very well. Run the testbench and see the example (addition) functionality. If you don't understand it and if you are trying to modify it, you are flying blind.
-
 Read Lecture notes thoroughly and make sure your code is synthesizable. Your design is ideally an interconnection of templates for the various digital building blocks, rather than a direct expression of your logic. The synthesis manual (UG901) provides a number of templates. In Vivado, Help>Design Hubs>Synthesis, as well as Tools>Language Templates>Verilog/VHDL>Synthesis Constructs could be useful too.
 
-It might take a bit of time, effort, and frustration before you can write good synthesizable code. Sometimes, you can't get a better teacher than experience, especially so when it comes to writing good HDL code. Just hang in there, and you will be ok soon. The best bet is to go through the notes and have the hardware in mind while writing the code.
+Understand the given templates and testbenches very well. Run the testbench and see the example (addition) functionality. If you don't understand it and if you are trying to modify it, you are flying blind.
+
+Implement your system in a modular, systematic manner. Do not write a C-like code. You should be able to justify all your design choices.
+
+You should be able to tell many cycles it takes for your hardware to complete the operation even before you start writing your code. This is a part of your design, and should be easy to calculate since you know the exact sequence of operations, i.e., what happens in each cycle. You look at the simulation results to *verify* your answer, not to find out the answer.
+
+It might take a bit of time, effort, and frustration before you can come up with good designs and write good synthesizable code. Sometimes, you can't get a better teacher than experience, especially so when it comes to hardware design and HDL coding. Just hang in there, and you will be ok soon. The best bet is to go through the notes and have the hardware in mind while writing the code.
 
 ## Design Considerations
 
@@ -12,7 +16,6 @@ It might take a bit of time, effort, and frustration before you can write good s
 
 - A well-designed **testbench is expected** (not only for this lab but for all hardware parts you implement for EE4218). For the most part, slight modifications to the provided testbench should do.
 - **You should do both behavioral simulation as well as post-synthesis functional simulation**. The former runs faster and aids you in debugging functional aspects. The latter simulates the synthesized design, which is slower and harder to debug but is a good indication of whether your design will work on actual hardware. The good news is that post-synthesis functional simulation can be done with no extra effort - the testbench used is the same.
-- Your design should be such that it is easy to change matrix dimensions (*m* and *n*) with minimal effort. Ideally, it should be parameterized, but at the least should be designed in a flexible enough manner. The second dimension for B can be fixed to 1 for simplicity.
 - Your design should be able to synthesize without any unavoidable warnings. You will need to inspect the resource usage details such as the number of slices/LUTs etc. Note that the estimates we get post-synthesis are preliminary estimates, the ones we get post-implementation are accurate figures. We need to do only synthesis for now.
 
 ### Arithmetic
@@ -36,8 +39,6 @@ It might take a bit of time, effort, and frustration before you can write good s
 
 ### State Machine
 
-- Implement your system in a modular, systematic manner. Do not write a C-like code. You should be able to justify all your design choices.
-- How many cycles does it take for your hardware to complete the operation? Note: You should be able to calculate this based on your design (since you know the exact sequence of operations, i.e., what happens in each cycle), without having to look at your simulation result (you look at the simulation results to *verify* it).
 - Think about the implications of having a single Read_Inputs state vs splitting it into two states (hint: as is with many things in hardware, it is not easy to tell, but the implications are likely not very big)!
 - Having a separate Matrix_Multiply unit is inefficient with respect to performance as well as hardware usage, in comparison with doing everything in the top-level module. That would have allowed you to start computations earlier, and send out the elements of RES as soon as they were computed. However, in practical designs, such inefficiencies are generally tolerated in favor of modularity. Modularity allows for different parts of the hardware to be independently designed, debugged, tested, and improved, possibly by different people or teams. It also allows for modules to be reused across designs, allowing for faster time to market.
 - For a coprocessor to be useful in practice, the overhead associated with sending the data from the main memory (system DDR RAM) to the coprocessor local RAM and receiving the results back should be more than compensated by the acceleration provided by the coprocessor. We will do a comparison when we do the project.
@@ -51,7 +52,9 @@ It might take a bit of time, effort, and frustration before you can write good s
 - Explore other reports too (such as utilization - number of LUTs used etc, timing).
 - Synthesize submodules separately to see if they are ok. The synthesis tool is more intelligent than the simulation tool, and the synthesis warnings usually give you very good clues regarding potential issues with your design such as possible wrong connections  (I generally look for synthesis warnings even before I simulate). You should also test the relevant submodules using testbenches if need be (though unnecessary in this particular case unless you modularize further).
 - Being familiar with debugging properly, such as running until a breakpoint, running for a specified time, stepping 1 clock at a time (running in 100 ns increments), inspecting the results as well as internal variable values at each instant (using 'Scope' and 'Objects' tabs), etc can save you A LOT of time. Don't try changing one or two lines here and there and try running over and over.
-- You might want to change the radix to hexadecimal or decimal as appropriate in the waveform window. You can save the .wcfg file by pressing Ctrl+S when the waveform window is highlighted. Add it to the project when it prompts you. This will allow the radix changes etc to be saved. You can also drag specific objects (variable values, from Scope > Objects, even for internal modules) to the waveform window to inspect them. You will have to press the *Restart* button (Ctrl+Shift+F5), and then *Run for a specified time* (Shift+F2) to see the waveform of the newly added object. There is no need to *Relaunch simulation*.
+- You can also drag specific objects (variable values, from Scope > Objects, even for internal modules) to the waveform window to inspect them. You will have to press the *Restart* button (Ctrl+Shift+F5), and then *Run for a specified time* (Shift+F2) to see the waveform of the newly added object. There is no need to *Relaunch simulation*.
+- You might want to change the radix to hexadecimal or decimal as appropriate in the waveform window. You can also change specific signal to colours other than green which can make it easier to identify.
+- You can save the .wcfg file by pressing Ctrl+S when the waveform window is highlighted. Add it to the project when it prompts you. This will allow the radix changes etc. to be saved. 
 - When simulating a system with a clock divider / enable, either bypass the clock divider or set the modulus (number of bits for the counter) to a very small value. Otherwise, you might have to wait for 2^26^ cycles (for a 1Hz clock) before you can see the effect of 1 clock edge! This is not applicable to this lab, as you don't have any reason to have a clock divider / enable.
 - Vivado (and most EDA tools) allow scripting and automation using Tcl. You can save the various commands from the Tcl Console as a .tcl file and run it! This may be useful for later labs.
 - Antivirus programs can mess with simulation as the simulation creates .exe files that Antivirus might view as suspicious.

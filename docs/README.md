@@ -3,7 +3,7 @@
 Welcome to the exciting world of embedded systems. We have prepared a series of labs for this course to give you hands-on experience in Hardware/Software Co-design. Each lab consists of two parts: 1) the first part consists of a tutorial with step-by-step guidance and 2) the second part is an assignment to allow students to use practical knowledge gained from the first part to solve a fairly simple design and implementation problem.
 
 !!! warning "Follow the Spirit"
-    Some screenshots may be taken on other versions of Vivado/Vitis or for other configurations. The instructions could also vary slightly depending on the exact design/configuration you follow. The spirit of the instructions remain the same. Understand the significance of each step rather than following it mechanically.
+    Some screenshots in the manuals may be taken on other versions of Vivado/Vitis or for other configurations. The instructions could also vary slightly depending on the exact design/configuration you follow. The spirit of the instructions remain the same. Understand the significance of each step rather than following it mechanically - **understand why you are doing what you are doing**.
 
 ## Lab Info
 
@@ -83,11 +83,15 @@ If you have any questions regarding the content of the labs, please follow these
 
 On that subject, please do join in and help each other out in the discussions as far as possible.
 
-### Plagiarism Warning
+### Fair Use of LLMs and Open Source Code
 
-It is ok to rely on LLMs or other online code in moderation. However, you should be able to explain your code, failing which heavy penalties will apply. Do not infringe anyone's copyright. Demarcate such code clearly, and give proper attribution to the source/LLM, along with the prompts used. Using AI-generated code without attribution is considered plagiarism.
+It is ok to rely on LLMs or other online code in moderation. However, you should
 
-Discussions are encouraged, but 'we had discussed' is not a valid excuse if your codes turn out to be uncomfortably similar to that of another group (except when you use online code with attribution).
+* Understand the code in detail and be able to explain it.
+* Not infringe anyone's copyright, i.e., it should be code released under an open-source/permissive license. 
+* Demarcate such code clearly, and give proper attribution to the source/LLM, along with the prompts used. Using AI-generated code without attribution is considered plagiarism.
+
+Discussions are encouraged, but 'we had discussed' is not a valid excuse if your codes turn out to be uncomfortably similar to that of another group (except when you use online code with attribution as mentioned above).
 
 Though there will be intra-team differentiation in marks according to the contribution levels, a team will be collectively responsible for plagiarized code. Your teammates might be better off with no contribution at all from you than to receive plagiarized code.
 

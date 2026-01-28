@@ -57,6 +57,8 @@ The elements of **RES** should be sent out of the coprocessor through M_AXIS_DAT
 
 The system should be able to operate continuously. Soon after (doesn't necessarily mean the very next clock cycle; within 2-4 clock cycles is ok), the coprocessor should be able to receive the next set of inputs, i.e., the next **A** and **B** without the need to assert an external reset.
 
+Your design should be such that it is easy to change matrix dimensions (*m* and *n*) with minimal effort. Ideally, it should be parameterized, but at the least should be designed in a flexible enough manner. The second dimension for B can be fixed to 1 for simplicity.
+
 ᶿIn fact, the most significant 25 bits are 0s since the number is between 0 and 127. However, let us just stick to the principle that we are dealing with an 8-bit unsigned number. Think of the values you send as representing the fractional part alone in unsigned fixed-point notation (0.8 - 0 bits for the integer part and 8 bits for the fractional part), i.e., using an implicit scale factor of 256. This requires us to adjust the position of the point by dividing by the scale factor after multiplication. This adjustment is unnecessary for addition and subtraction. Does this ring a bell? In EE/CG2028 Assignment #1, you used a scale factor to avoid dealing with fractions. Same story here; the scale factor is 256 instead of a power of 10.
 
 ### Coprocessor Logic
@@ -100,4 +102,8 @@ Upload to Canvas within 1 hour of your demo the following.
 
 - A very short (<=2 pages) report explaining your system architecture, FSM, resource usage details such as the number of slices/LUTs, etc.
 
-- The relevant .v/.vhd (RTL and testbenches) and .txt/.mem files (i.e., only those files you have created/modified, not the entire project folder). The files should be the ones **used for the demo**, not modified to fix issues that became apparent during the demo. It should be as a .zip archive, with the filename GroupNum_Lab1.zip.
+- The relevant files you have created/modified, not the entire project folder, including
+    * .v/.vhd (RTL and testbenches) and 
+    * .txt/.mem files (i.e., only those ). 
+
+    The files should be the ones **used for the demo**, not modified to fix issues that became apparent during the demo. It should be as a .zip archive, with the filename GroupNum_Lab1.zip.

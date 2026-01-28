@@ -1,7 +1,7 @@
 # Installing Vitis 2025.1
 
-!!! warning "Follow the Spirit"
-    Work in Progress
+!!! warning "Work in Progress"
+    The lab manual is still being updated. While it is mostly usable, there will be some changes.
 
 The complete development suite from AMD/Xilinx is also called Vitis, which includes Vivado - i.e., if you install Vitis, Vivado also gets installed. Vitis is used for the software part, Vivado is used for the hardware part.
 
