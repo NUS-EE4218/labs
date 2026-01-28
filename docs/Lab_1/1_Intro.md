@@ -1,10 +1,13 @@
 # Introduction to Hardware Design
 
+!!! warning "Work in progress"
+    Work in progress
+
 ## Introduction
 
 The purpose of Lab 1 is to introduce you to systematic hardware design. The lab has a refresher of the hardware design flow from EE2026. **Lab 1 can be done on any version of Vivado/Vitis without issues. Lab 1 does not require the FGPA board - it is pure simulation.**
 
-To learn further, you will be doing an assignment that involves creating a coprocessor for matrix multiplication. Testing on real hardware will require a complete computer system (hardware-software co-design framework), which will be introduced in Lab 2. The actual integration will be done in Lab 3. When integrated into the system, the main processor can just stream the data to be processed to the coprocessor, which will do the computations and stream the results back to the main processor.
+You will be doing an assignment that involves creating a coprocessor for matrix multiplication. Testing on real hardware will require a complete computer system (hardware-software co-design framework), which will be introduced in Lab 2. The actual integration will be done in Lab 3. When integrated into the system, the main processor can just stream the data to be processed to the coprocessor, which will do the computations and stream the results back to the main processor.
 
 ## Creating and Simulating HDL Sources and Programming FPGA
 
@@ -12,11 +15,9 @@ Those who are already familiar with Vivado and FPGA implementation can skip this
 
 ## Introduction to AXI Stream
 
-The accelerator IP that we create needs to be interfaced with the rest of the system for the processor to make it act as a coprocessor. The interface of an accelerator can be
+The coprocesor (accelerator IP) that we create needs to be interfaced with the rest of the system for the processor to make it act as a coprocessor. The interface of an accelerator can be
 
-- Register-based: The processor can read and write the registers within the coprocessor to write inputs/read outputs - each register has an address within the address space of the processor. The parameters and return values are mapped to these registers/addresses. 
-
-For example, the elements of an input vector/matrix A which has a depth (number of elements) of 512 and width (number of bytes/element) of 4 has address in the range peripheral_base + A_offset + 4\*element_index (remember memory-mapped I/O from EE2028?). 4*element index will in this case will be in the range 0x000 to 0x800. The base address of the coprocessor peripheral is assigned in Vivado under the address tab. The coprocessor typically has an Advanced eXtensible Interface (AXI4 - supports burst transfers - faster for bulk data transfer, but requires more hardware) or AXI Lite interface which can be connected to the AXI bus of the system as a slave.
+- Register-based: The processor can read and write the registers within the coprocessor to write inputs/read outputs - each register has an address within the address space of the processor. The parameters and return values are mapped to these registers/addresses. For example, the elements of an input vector/matrix A which has a depth (number of elements) of 512 and width (number of bytes/element) of 4 has address in the range peripheral_base + A_offset + 4\*element_index (remember memory-mapped I/O from EE2028?). 4*element index will in this case will be in the range 0x000 to 0x800. The base address of the coprocessor peripheral is assigned in Vivado under the address tab. The coprocessor typically has an Advanced eXtensible Interface (AXI4 - supports burst transfers - faster for bulk data transfer, but requires more hardware) or AXI Lite interface which can be connected to the AXI bus of the system as a slave.
 
 - Stream-based: There are separate input and output streams through which the data is streamed in/out. There is no concept of addresses, and the meaning of the data is derived from the order of the data (and possibly some 'tags'). For example, if we have two input vectors A and B of sizes 512 and 8 respectively, the first 512 words correspond to A, the next 64 correspond to B, and so on. Please read the Introduction to AXI Stream below.
 
@@ -99,4 +100,4 @@ Upload to Canvas within 1 hour of your demo the following.
 
 - A very short (<=2 pages) report explaining your system architecture, FSM, resource usage details such as the number of slices/LUTs, etc.
 
-- The relevant .v/.vhd (RTL and testbenches) and .txt/.mem files (i.e., only those files you have created/modified, not the entire project folder). The files should be the ones **used for the demo**, not modified to fix issues that became apparent during the demo. It should be as a .zip archive, with the filename Wed/Fri_GroupNum_Lab1.zip.
+- The relevant .v/.vhd (RTL and testbenches) and .txt/.mem files (i.e., only those files you have created/modified, not the entire project folder). The files should be the ones **used for the demo**, not modified to fix issues that became apparent during the demo. It should be as a .zip archive, with the filename GroupNum_Lab1.zip.

@@ -1,8 +1,5 @@
 # EE4218 Lab Manuals
 
-!!! danger "Work in progress"
-    Work in progress
-
 Welcome to the exciting world of embedded systems. We have prepared a series of labs for this course to give you hands-on experience in Hardware/Software Co-design. Each lab consists of two parts: 1) the first part consists of a tutorial with step-by-step guidance and 2) the second part is an assignment to allow students to use practical knowledge gained from the first part to solve a fairly simple design and implementation problem.
 
 !!! warning "Follow the Spirit"
