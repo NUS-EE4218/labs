@@ -1,7 +1,7 @@
 # Introduction to Hardware Design
 
-!!! warning "Work in progress"
-    Work in progress
+!!! success "Usable"
+    This lab description is complete. There could still be minor updates, which will be <span style="color: brown;">highlighted</span>. 
 
 ## Introduction
 
