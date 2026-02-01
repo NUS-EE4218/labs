@@ -82,28 +82,28 @@ module myip_v1_0
 	
 // wires (or regs) to connect to RAMs and matrix_multiply_0 for assignment 1
 // those which are assigned in an always block of myip_v1_0 shoud be changes to reg.
-	wire	A_write_en;								// myip_v1_0 -> A_RAM. To be assigned within myip_v1_0. Possibly reg.
-	wire	[A_depth_bits-1:0] A_write_address;		// myip_v1_0 -> A_RAM. To be assigned within myip_v1_0. Possibly reg. 
-	wire	[width-1:0] A_write_data_in;			// myip_v1_0 -> A_RAM. To be assigned within myip_v1_0. Possibly reg.
-	wire	A_read_en;								// matrix_multiply_0 -> A_RAM.
-	wire	[A_depth_bits-1:0] A_read_address;		// matrix_multiply_0 -> A_RAM.
+	reg    	A_write_en;								// myip_v1_0 -> A_RAM. To be assigned within myip_v1_0. Possibly reg.
+	reg    	[A_depth_bits-1:0] A_write_address;		// myip_v1_0 -> A_RAM. To be assigned within myip_v1_0. Possibly reg. 
+	reg    	[width-1:0] A_write_data_in;			// myip_v1_0 -> A_RAM. To be assigned within myip_v1_0. Possibly reg.
+	reg    	A_read_en;								// matrix_multiply_0 -> A_RAM.
+	reg    	[A_depth_bits-1:0] A_read_address;		// matrix_multiply_0 -> A_RAM.
 	wire	[width-1:0] A_read_data_out;			// A_RAM -> matrix_multiply_0.
-	wire	B_write_en;								// myip_v1_0 -> B_RAM. To be assigned within myip_v1_0. Possibly reg.
-	wire	[B_depth_bits-1:0] B_write_address;		// myip_v1_0 -> B_RAM. To be assigned within myip_v1_0. Possibly reg.
-	wire	[width-1:0] B_write_data_in;			// myip_v1_0 -> B_RAM. To be assigned within myip_v1_0. Possibly reg.
-	wire	B_read_en;								// matrix_multiply_0 -> B_RAM.
-	wire	[B_depth_bits-1:0] B_read_address;		// matrix_multiply_0 -> B_RAM.
+	reg    	B_write_en;								// myip_v1_0 -> B_RAM. To be assigned within myip_v1_0. Possibly reg.
+	reg	   [B_depth_bits-1:0] B_write_address;		// myip_v1_0 -> B_RAM. To be assigned within myip_v1_0. Possibly reg.
+	reg 	[width-1:0] B_write_data_in;			// myip_v1_0 -> B_RAM. To be assigned within myip_v1_0. Possibly reg.
+	reg 	B_read_en;								// matrix_multiply_0 -> B_RAM.
+	reg 	[B_depth_bits-1:0] B_read_address;		// matrix_multiply_0 -> B_RAM.
 	wire	[width-1:0] B_read_data_out;			// B_RAM -> matrix_multiply_0.
-	wire	RES_write_en;							// matrix_multiply_0 -> RES_RAM.
-	wire	[RES_depth_bits-1:0] RES_write_address;	// matrix_multiply_0 -> RES_RAM.
-	wire	[width-1:0] RES_write_data_in;			// matrix_multiply_0 -> RES_RAM.
-	wire	RES_read_en;  							// myip_v1_0 -> RES_RAM. To be assigned within myip_v1_0. Possibly reg.
-	wire	[RES_depth_bits-1:0] RES_read_address;	// myip_v1_0 -> RES_RAM. To be assigned within myip_v1_0. Possibly reg.
+	reg 	RES_write_en;							// matrix_multiply_0 -> RES_RAM.
+	reg 	[RES_depth_bits-1:0] RES_write_address;	// matrix_multiply_0 -> RES_RAM.
+	reg 	[width-1:0] RES_write_data_in;			// matrix_multiply_0 -> RES_RAM.
+	reg 	RES_read_en;  							// myip_v1_0 -> RES_RAM. To be assigned within myip_v1_0. Possibly reg.
+	reg    	[RES_depth_bits-1:0] RES_read_address;	// myip_v1_0 -> RES_RAM. To be assigned within myip_v1_0. Possibly reg.
 	wire	[width-1:0] RES_read_data_out;			// RES_RAM -> myip_v1_0
 	
 	// wires (or regs) to connect to matrix_multiply for assignment 1
-	wire	Start; 								// myip_v1_0 -> matrix_multiply_0. To be assigned within myip_v1_0. Possibly reg.
-	wire	Done;								// matrix_multiply_0 -> myip_v1_0. 
+	reg 	Start; 								// myip_v1_0 -> matrix_multiply_0. To be assigned within myip_v1_0. Possibly reg.
+	reg 	Done;								// matrix_multiply_0 -> myip_v1_0. 
 			
 				
 	// Total number of input data.
