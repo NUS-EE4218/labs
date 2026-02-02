@@ -80,6 +80,9 @@ module myip_v1_0
 	localparam RES_depth_bits = 1;	// 2 elements (RES is a 2x1 matrix)
 	localparam width = 8;			// all 8-bit data
 	
+	localparam A_elements = 2 ** A_depth_bits;
+	localparam B_elements = 2 ** B_depth_bits;
+	
 // wires (or regs) to connect to RAMs and matrix_multiply_0 for assignment 1
 // those which are assigned in an always block of myip_v1_0 shoud be changes to reg.
 	reg    	A_write_en;								// myip_v1_0 -> A_RAM. To be assigned within myip_v1_0. Possibly reg.
@@ -117,9 +120,12 @@ module myip_v1_0
 	localparam Read_Inputs = 4'b0100;
 	localparam Compute = 4'b0010;
 	localparam Write_Outputs  = 4'b0001;
+	
+	localparam Read_A = 0;
+	localparam Read_B = 1;
 
 	reg [3:0] state;
-
+    
 	// Accumulator to hold sum of inputs read at any point in time
 	reg [31:0] sum;
 
@@ -128,7 +134,9 @@ module myip_v1_0
 	// Left as separate for ease of debugging
 	reg [$clog2(NUMBER_OF_INPUT_WORDS) - 1:0] read_counter;
 	reg [$clog2(NUMBER_OF_OUTPUT_WORDS) - 1:0] write_counter;
-
+    
+    wire read_state;
+    assign read_state = (read_counter >= A_elements) ? Read_B : Read_A;
    // CAUTION:
    // The sequence in which data are read in and written out should be
    // consistent with the sequence they are written and read in the driver's hw_acc.c file
@@ -169,8 +177,19 @@ module myip_v1_0
 					S_AXIS_TREADY 	<= 1;
 					if (S_AXIS_TVALID == 1) 
 					begin
+					   if (read_state == Read_A)
+					   begin
+					       A_write_en  <= 1;
+					       A_write_address <= read_counter;
+					       A_write_data_in <= S_AXIS_TDATA;
+					   end
+					   else // read_state == Read_B
+					   begin					       
+					       B_write_en  <= 1;
+					       B_write_address <= read_counter;
+					       B_write_data_in <= S_AXIS_TDATA;
+					   end
 						// Coprocessor function (adding the numbers together) happens here (partly)
-						sum  	<=	sum + S_AXIS_TDATA;
 						// If we are expecting a variable number of words, we should make use of S_AXIS_TLAST.
 						// Since the number of words we are expecting is fixed, we simply count and receive 
 						// the expected number (NUMBER_OF_INPUT_WORDS) instead.
