@@ -197,6 +197,7 @@ module myip_v1_0
 						begin
 							state      		<= Compute;
 							S_AXIS_TREADY 	<= 0;
+							read_counter <= 0;
 						end
 						else
 						begin
