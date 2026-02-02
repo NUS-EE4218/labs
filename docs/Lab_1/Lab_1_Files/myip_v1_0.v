@@ -139,8 +139,7 @@ module myip_v1_0
 	reg [$clog2(NUMBER_OF_INPUT_WORDS) - 1:0] read_counter;
 	reg [$clog2(NUMBER_OF_OUTPUT_WORDS) - 1:0] write_counter;
     
-    wire read_state;
-    assign read_state = (read_counter >= A_elements) ? Read_B : Read_A;
+    reg read_state;
    // CAUTION:
    // The sequence in which data are read in and written out should be
    // consistent with the sequence they are written and read in the driver's hw_acc.c file
@@ -172,6 +171,7 @@ module myip_v1_0
 					begin
 						state       	<= Read_Inputs;
 						S_AXIS_TREADY 	<= 1; 
+						read_state      <= Read_A;
 						// start receiving data once you go into Read_Inputs
 					end
 				end
@@ -179,6 +179,7 @@ module myip_v1_0
 				Read_Inputs:
 				begin
 					S_AXIS_TREADY 	<= 1;
+					read_state <= (read_counter >= A_elements - 1) ? Read_B : Read_A;
 					if (S_AXIS_TVALID == 1) 
 					begin
 					   if (read_state == Read_A)
@@ -188,21 +189,20 @@ module myip_v1_0
 					       A_write_data_in <= S_AXIS_TDATA;
 					   end
 					   else // read_state == Read_B
-					   begin					       
+					   begin
+					       A_write_en <= 0;				       
 					       B_write_en  <= 1;
-					       B_write_address <= read_counter;
+					       B_write_address <= read_counter - A_elements;
 					       B_write_data_in <= S_AXIS_TDATA;
 					   end
 						// Coprocessor function (adding the numbers together) happens here (partly)
 						// If we are expecting a variable number of words, we should make use of S_AXIS_TLAST.
 						// Since the number of words we are expecting is fixed, we simply count and receive 
 						// the expected number (NUMBER_OF_INPUT_WORDS) instead.
-						if (read_counter == NUMBER_OF_INPUT_WORDS-1)
+						if (read_counter == NUMBER_OF_INPUT_WORDS - 1)
 						begin
 							state      		<= Compute;
 							Start           <= 1;
-							S_AXIS_TREADY 	<= 0;
-							read_counter    <= 0;
 						end
 						else
 						begin
@@ -213,6 +213,10 @@ module myip_v1_0
             
 				Compute:
 				begin
+				    S_AXIS_TREADY 	<= 0;
+                    read_counter    <= 0;
+                    A_write_en  <= 0;
+                    B_write_en  <= 0;
 					// Coprocessor function to be implemented (matrix multiply) should be here. Right now, nothing happens here.
 					state		<= Write_Outputs;
 					// Possible to save a cycle by asserting M_AXIS_TVALID and presenting M_AXIS_TDATA just before going into 
