@@ -2,11 +2,14 @@
 
 Welcome to the exciting world of embedded systems. We have prepared a series of labs for this course to give you hands-on experience in Hardware/Software Co-design. Each lab consists of two parts: 1) the first part consists of a tutorial with step-by-step guidance and 2) the second part is an assignment to allow students to use practical knowledge gained from the first part to solve a fairly simple design and implementation problem.
 
+!!! warning "Follow the Spirit"
+    Some screenshots in the manuals may be taken on other versions of Vivado/Vitis or for other configurations. The instructions could also vary slightly depending on the exact design/configuration you follow. The spirit of the instructions remain the same. Understand the significance of each step rather than following it mechanically - **understand why you are doing what you are doing**.
+
 ## Lab Info
 
 ### Lab Venue
 
-Lab Venue : Digital Electronics Lab (E4 level 3)  - Outreach Room
+Lab Venue : Digital Electronics Lab (E4 level 3) - Outreach Room
 
 ### Lab Description
 
@@ -22,17 +25,17 @@ Lab Venue : Digital Electronics Lab (E4 level 3)  - Outreach Room
 
 | Week | Date | Activity | Remarks |
 |-------|---------------|---------------------------------------------------------------|-----------|
-| 3 | 31 Jan | Lab 1 Intro |  |
-| 4 | 5 Feb, 7 Feb | Lab 1 Consultation, Lab 2 Intro |  |
-| 5 | 12 Feb, 14 Feb | Lab 1 Demo, Lab 2 Consultation |  |
-| 6 | 19 Feb, 21 Feb | **Lab 2 Demo**, Lab 3 Intro |  |
+| 3 | 28 Jan, 30 Jan | Lab 1 Intro |  |
+| 4 | 4 Feb, 6 Feb | Lab 1 Consultation, Lab 2 Intro |  |
+| 5 | 11 Feb, 13 Feb | **Lab 1 Demo**, Lab 2 Consultation |  |
+| 6 | 18 Feb | **Lab 2 Deadline**, Lab 3 Intro | Submission of files to Canvas due on **18 Feb** for **everyone**. Evaluation will be along with Lab 3 in Week 7. Lab 3 Intro only on Friday - recording will be made available |
 | Recess | No session | Work on Lab 3 |  |
-| 7 | 5 Mar, 7 Mar | **Lab 3 Demo**, Lab 4 Intro |  |
-| 8 | 12 Mar, 14 Mar | Project Intro |  |
-| 9 | 19 Mar, 21 Mar | **Lab 4 Demo**, Project Consultation |  |
-| 10 | 26 Mar, 28 Mar (wellness day, alternate arrangements will be done) | **Project Progress Evaluation** and Consultation |  |
-| 11 | 2 Apr, 4 Apr | Project Consultation |  |
-| 12 | 9 Apr, 11 Apr | **Project Demo** |  |
+| 7 | 4 Mar, 6 Mar | **Lab 2&3 Demo**, Lab 4 Intro |  |
+| 8 | 11 Mar, 13 Mar | Project Intro |  |
+| 9 | 18 Mar, 20 Mar | **Lab 4 Demo**, Project Consultation |  |
+| 10 | 25 Mar, 27 Mar | **Project Progress Evaluation** and Consultation |  |
+| 11 | 1 Apr | Project Consultation (Wed only) |  |
+| 12 | 8 Apr, 10 Apr | **Project Demo** |  |
 
 ### Kria Board
 
@@ -57,7 +60,8 @@ Here are some tips to take good care of your board:
 
 For each assessment, you **must** demonstrate on the stipulated date during your schedule time slot as given in the assessment schedule. If you don't, you get a **0 mark** for that lab!
 
-You are supposed to submit your codes to Canvas by the deadline for uploading - if you submit after the deadline, you will be given a **10% discount** in marks. You are expected to submit the exact same code used for evaluation - any bug fixes/improvements after the demo could you useful for future labs and project, but will not result in an increase in marks after the demo.
+You are supposed to submit your codes to Canvas by the deadline for uploading - if you submit after the deadline, there will be a **10% penalty** in marks. 
+The codes submitted should be *the same codes used for evaluation*. Any bug fixes/improvements after the demo could you useful for future labs and project, but will not result in an increase in marks after the demo - in fact, a mismatch could result in a penalty.
 
 A late demo is allowed (with no penalty) only if you can produce documented evidence to justify the late demo/submission - in such a case, please let us know immediately as and when such a situation arises.
 
@@ -67,25 +71,27 @@ Kindly *DO NOT send emails regarding labs* wherever possible. Post see below on
 
 ### How to get help
 
-If you have any questions regarding the content of any of the labs, please follow these steps, *in this order*, to answer them.  
+If you have any questions regarding the content of the labs, please follow these steps, *in this order*, to answer them.  
 
 1. Please read the lab manual closely. We will try our best to keep the manual updated with any common errors, or issues, that you may face.
 
 2. If the lab manual does not answer your question, [the GitHub repository](https://github.com/nus-EE4218/labs) has a [discussions page](https://github.com/NUS-EE4218/labs/discussions). Please search here for your question, in case it has already been answered before. We will leave questions and answers from previous semesters on this page, so over time, more and more information should be covered between here and the manuals.
 
-3. If you cannot find an answer to your question in the discussions either, then please create a new discussion. Make sure your title is as succinct, but descriptive, as possible, for the benefit of others who may search the issues page later. Also, do make sure you include all relevant details in the discussion content. [This webpage](https://www.freecodecamp.org/news/how-to-ask-good-technical-questions/) offers some helpful advice on how to ask good technical questions.
+3. If you cannot find an answer to your question in the discussions either, then please create a new discussion. Make sure your title is as succinct, but descriptive, as possible, for the benefit of others who may search the page later. Also, do make sure you include all relevant details in the discussion content. [This webpage](https://www.freecodecamp.org/news/how-to-ask-good-technical-questions/) offers some helpful advice on how to ask good technical questions.
 
 4. Please **DO NOT** send emails to the teaching staff asking technical questions regarding the lab activities. We will ignore all such emails, with no exception. Post all technical questions to the discussions page. This benefits others, because anyone who has the issue in the future can solve it quickly with a search. It also benefits you, because you may receive an answer faster from a classmate, than from us.
 
 On that subject, please do join in and help each other out in the discussions as far as possible.
 
-### Plagiarism Warning
+### Fair Use of LLMs and Open Source Code
 
-It might be tempting to 'refer' to the code found in the textbook / online sources. However, please note that we take dishonesty very very seriously. If we are confident that you did plagiarize, you might not even be given a chance to explain. Consequences can range from an unpleasant surprise on the day of the release of results to having an interview with the NUS board of discipline.
+It is ok to rely on LLMs or other online code in moderation. However, you should
 
-If you think renaming variables / rearranging code helps circumvent plagiarism detection, you might want to read this - <http://en.wikipedia.org/wiki/Plagiarism_detection#In_source_code>.
+* Understand the code in detail and be able to explain it.
+* Not infringe anyone's copyright, i.e., it should be code released under an open-source/permissive license. 
+* Demarcate such code clearly, and give proper attribution to the source/LLM, along with the prompts used. Using AI-generated code without attribution is considered plagiarism.
 
-Discussions are encouraged, but 'we had discussed' is not a valid excuse if your codes turn out to be uncomfortably similar.
+Discussions are encouraged, but 'we had discussed' is not a valid excuse if your codes turn out to be uncomfortably similar to that of another group (except when you use online code with attribution as mentioned above).
 
 Though there will be intra-team differentiation in marks according to the contribution levels, a team will be collectively responsible for plagiarized code. Your teammates might be better off with no contribution at all from you than to receive plagiarized code.
 

@@ -14,7 +14,7 @@ We will need to implement prediction (predicting the label of a new input data) 
 
 ### Procedure
 
-All the required files are [here](https://github.com/NUS-EE4218/labs/tree/main/Project).
+All the required files are [here](https://github.com/NUS-EE4218/labs/tree/main/docs/Project/Project_Files).
 
 You will send the data from the PC via the serial console (RealTerm, through the option to send a file). It is fine to hardcode the size of the data in your program; however, the data itself should be sent via the serial console.
 

@@ -8,7 +8,7 @@ Once you have gotten it to work, please attempt the assignment below.
 
 The assignment essentially involves combining Lab 1 and Lab 2, such that the data can be streamed from RealTerm to the C code running on ARM Cortex A53, the processing is done in hardware using the coprocessor, and the results are sent back to RealTerm. You can optionally do the processing in software (C) and compare the results, but the results have to be sent back to the console.
 
-All the required files are [here](https://github.com/NUS-EE4218/labs/tree/main/Lab_3)
+All the required files are [here](https://github.com/NUS-EE4218/labs/tree/main/docs/Lab_3/Lab_3_Files)
 
 Please follow the following procedure.
 
