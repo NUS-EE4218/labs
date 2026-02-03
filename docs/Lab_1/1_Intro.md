@@ -98,12 +98,12 @@ Verilog and VHDL files can be freely mixed. For example, you can use memory_RAM
 ## Submission Info
 
 Demonstrate during your designated slot in **Week 5**.
-Upload to Canvas within 1 hour of your demo the following.
+
+Upload to Canvas within 1 hour of your demo the following. One submission per group is sufficient.
 
 - A very short (<=2 pages) report explaining your system architecture, FSM, resource usage details such as the number of slices/LUTs, etc.
-
 - The relevant files you have created/modified, not the entire project folder, including
-    * .v/.vhd (RTL and testbenches) and 
-    * .txt/.mem files (i.e., only those ). 
+  - .v/.vhd (RTL and testbenches) 
+  - .txt/.mem files. 
 
     The files should be the ones **used for the demo**, not modified to fix issues that became apparent during the demo. It should be as a .zip archive, with the filename GroupNum_Lab1.zip.

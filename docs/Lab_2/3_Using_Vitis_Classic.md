@@ -1,5 +1,7 @@
 # Software development using Vitis Classic
 
+If you are using Vitis version >= 2024.1, please follow the instructions for [VS Code-based Vitis (non-classic)](3_Using_Vitis.md) instead.
+
 This page details the steps involved in creating a software application using Vitis, an Eclipse-based IDE, to run on the hardware platform created using Vivado. You should be using a Vitis version that matches your Vivado version.
 
 Note: There are slight differences in GUI and options based on the version. The spirit of what is being done remains the same.
@@ -73,6 +75,9 @@ targets -set -nocase -filter {name =~ "\*PSU\*"}
 mwr 0xff5e0200 0x0100  
 rst -system
 ```
+
+!!! info
+    If your program is inhibiting unpredictable behavior when dealing with large data, it could be due to stack or heap size limitations. You can increase the heap or stack size by editing the linker script (.ld file) which you can find in the project sources.
 
 References:
 
