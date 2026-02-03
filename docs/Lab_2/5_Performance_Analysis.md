@@ -15,9 +15,7 @@ A couple of hints:
 You need only one counter, whereas the timer IP block incorporates 2 counters by default. You can double-click the block in Vivado and uncheck the second one to reduce the hardware usage and synthesis time.
 You can get started with the xtmrctr_polled_example project for axis_timer_0 (tmrctr). You can get this from hardware_1_wrapper>platform.spr> Peripheral Drivers section of the Board Support Package. Try running this first, and later integrate the relevant parts into your software C code.
 
-## Profiling
-
-**Optional**
+## Profiling (Optional)
 
 The process of collecting information about a program dynamically (i.e., during runtime) is called profiling. Many IDEs come with some sort of profiling tool.  There are a lot of different approaches to profiling.
 
