@@ -20,8 +20,8 @@ module tb_myip_v1_0(
 
     );
     
-    reg                          ACLK = 0;    // Synchronous clock
-    reg                          ARESETN; // System reset, active low
+    reg                          ACLK = 0;    	 // Synchronous clock
+    reg                          ARESETN; 		 // System reset, active low
     // slave in interface
     wire                         S_AXIS_TREADY;  // Ready to accept data in
     reg      [31 : 0]            S_AXIS_TDATA;   // Data in
