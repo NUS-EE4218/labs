@@ -43,7 +43,7 @@ module myip_v1_0
 		M_AXIS_TVALID,
 		M_AXIS_TDATA,
 		M_AXIS_TLAST,
-		M_AXIS_TREADY
+		M_AXIS_TREADY,
 		// DO NOT EDIT ABOVE THIS LINE ////////////////////
 	);
 
@@ -56,7 +56,7 @@ module myip_v1_0
 	input					S_AXIS_TVALID;  // Data in is valid
 	// master out interface
 	output	reg				M_AXIS_TVALID;  // Data out is valid
-	output	reg [31 : 0]	M_AXIS_TDATA;   // Data Out
+	output	reg [31 : 0]	M_AXIS_TDATA = 0;   // Data Out
 	output	reg				M_AXIS_TLAST;   // Optional data out qualifier
 	input					M_AXIS_TREADY;  // Connected slave device is ready to accept data out
 
@@ -93,13 +93,13 @@ module myip_v1_0
 	reg    	[A_depth_bits-1:0] A_write_address;			// myip_v1_0 -> A_RAM. To be assigned within myip_v1_0. Possibly reg. 
 	reg    	[width-1:0] A_write_data_in;				// myip_v1_0 -> A_RAM. To be assigned within myip_v1_0. Possibly reg.
 	wire    A_read_en;									// matrix_multiply_0 -> A_RAM.
-	wire    [A_depth_bits-1:0] A_read_address = 0;		// matrix_multiply_0 -> A_RAM.
+	wire    [A_depth_bits-1:0] A_read_address;		// matrix_multiply_0 -> A_RAM.
 	wire	[width-1:0] A_read_data_out;				// A_RAM -> matrix_multiply_0.
 	reg    	B_write_en;									// myip_v1_0 -> B_RAM. To be assigned within myip_v1_0. Possibly reg.
 	reg	    [B_depth_bits-1:0] B_write_address;			// myip_v1_0 -> B_RAM. To be assigned within myip_v1_0. Possibly reg.
 	reg 	[width-1:0] B_write_data_in;				// myip_v1_0 -> B_RAM. To be assigned within myip_v1_0. Possibly reg.
 	wire 	B_read_en;									// matrix_multiply_0 -> B_RAM.
-	wire 	[B_depth_bits-1:0] B_read_address = 0;		// matrix_multiply_0 -> B_RAM.
+	wire 	[B_depth_bits-1:0] B_read_address;		// matrix_multiply_0 -> B_RAM.
 	wire	[width-1:0] B_read_data_out;				// B_RAM -> matrix_multiply_0.
 	wire 	RES_write_en;								// matrix_multiply_0 -> RES_RAM.
 	wire 	[RES_depth_bits-1:0] RES_write_address;		// matrix_multiply_0 -> RES_RAM.
@@ -124,6 +124,7 @@ module myip_v1_0
 	localparam Read_Inputs = 4'b0100;
 	localparam Compute = 4'b0010;
 	localparam Write_Outputs  = 4'b0001;
+	localparam Wait = 4'b0011;
 	
 	localparam Read_A = 0;
 	localparam Read_B = 1;
@@ -218,16 +219,29 @@ module myip_v1_0
                     A_write_en  <= 0;
                     B_write_en  <= 0;
 					// Coprocessor function to be implemented (matrix multiply) should be here. Right now, nothing happens here.
-					state		<= Write_Outputs;
+					if (Done) begin
+						Start 		<= 0;
+						state		<= Wait;
+						RES_read_en 		<= 1;
+						RES_read_address	<= write_counter;
+					end
 					// Possible to save a cycle by asserting M_AXIS_TVALID and presenting M_AXIS_TDATA just before going into 
 					// Write_Outputs state. However, need to adjust write_counter limits accordingly
 					// Alternatively, M_AXIS_TVALID and M_AXIS_TDATA can be asserted combinationally to save a cycle.
 				end
 			
+				Wait:
+				begin
+						state <= Write_Outputs;
+				end
+				
 				Write_Outputs:
 				begin
-					M_AXIS_TVALID	<= 1;
-					M_AXIS_TDATA	<= sum + write_counter;
+					RES_read_en 		<= 1;
+					// RES_read_address	<= write_counter;
+
+					M_AXIS_TVALID <= 1;
+					M_AXIS_TDATA	<= RES_read_data_out;
 					// Coprocessor function (adding 1 to sum in each iteration = adding iteration count to sum) happens here (partly)
 					if (M_AXIS_TREADY == 1) 
 					begin
@@ -240,9 +254,12 @@ module myip_v1_0
 						else
 						begin
 							write_counter	<= write_counter + 1;
+							RES_read_address	<= write_counter + 1;
+							state <= Wait;
 						end
 					end
 				end
+				
 			endcase
 		end
 	end

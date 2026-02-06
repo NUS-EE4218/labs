@@ -134,6 +134,7 @@ module matrix_multiply
 				if (row == M-1) begin
 					// Last row written
 					state <= DONE;
+					RES_write_en <= 1'b0;
 				end else begin
 					// Next row
 					row <= row + 1'b1;
