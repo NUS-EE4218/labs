@@ -77,13 +77,13 @@ module myip_v1_0
 	reg    	[A_depth_bits-1:0] A_write_address;			// myip_v1_0 -> A_RAM. To be assigned within myip_v1_0. Possibly reg. 
 	reg    	[width-1:0] A_write_data_in;				// myip_v1_0 -> A_RAM. To be assigned within myip_v1_0. Possibly reg.
 	wire    A_read_en;									// matrix_multiply_0 -> A_RAM.
-	wire    [A_depth_bits-1:0] A_read_address;		// matrix_multiply_0 -> A_RAM.
+	wire    [A_depth_bits-1:0] A_read_address;		    // matrix_multiply_0 -> A_RAM.
 	wire	[width-1:0] A_read_data_out;				// A_RAM -> matrix_multiply_0.
 	reg    	B_write_en;									// myip_v1_0 -> B_RAM. To be assigned within myip_v1_0. Possibly reg.
 	reg	    [B_depth_bits-1:0] B_write_address;			// myip_v1_0 -> B_RAM. To be assigned within myip_v1_0. Possibly reg.
 	reg 	[width-1:0] B_write_data_in;				// myip_v1_0 -> B_RAM. To be assigned within myip_v1_0. Possibly reg.
 	wire 	B_read_en;									// matrix_multiply_0 -> B_RAM.
-	wire 	[B_depth_bits-1:0] B_read_address;		// matrix_multiply_0 -> B_RAM.
+	wire 	[B_depth_bits-1:0] B_read_address;		    // matrix_multiply_0 -> B_RAM.
 	wire	[width-1:0] B_read_data_out;				// B_RAM -> matrix_multiply_0.
 	wire 	RES_write_en;								// matrix_multiply_0 -> RES_RAM.
 	wire 	[RES_depth_bits-1:0] RES_write_address;		// matrix_multiply_0 -> RES_RAM.
@@ -202,7 +202,7 @@ module myip_v1_0
                     read_counter    <= 0;
                     A_write_en  <= 0;
                     B_write_en  <= 0;
-                    Start <= 0;  // Deassert Start after 1 cycle
+                    // Start <= 0;  // Deassert Start after 1 cycle
 					// Coprocessor function to be implemented (matrix multiply) should be here. Right now, nothing happens here.
 					if (Done) begin
 						Start 		<= 0;
