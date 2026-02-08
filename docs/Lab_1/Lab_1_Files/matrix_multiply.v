@@ -133,8 +133,8 @@ module matrix_multiply
 
 				if (row == M-1) begin
 					// Last row written
+					Done <= 1'b1;
 					state <= DONE;
-					RES_write_en <= 1'b0;
 				end else begin
 					// Next row
 					row <= row + 1'b1;
@@ -150,7 +150,7 @@ module matrix_multiply
 			end
 
 			DONE: begin
-				// Pulse Done for exactly 1 cycle
+				// Pulse Done for exactly 2 cycles
 				Done  <= 1'b1;
 				state <= IDLE;
 			end
