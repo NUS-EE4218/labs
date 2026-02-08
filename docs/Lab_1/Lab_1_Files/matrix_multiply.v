@@ -5,8 +5,8 @@
 module matrix_multiply
 	#(	parameter width = 8, 			// width is the number of bits per location
 		parameter A_depth_bits = 3, 	// depth is the number of locations (2^number of address bits)
-		parameter B_depth_bits = 2, 	// e.g., RAM A has 2^3=8 addresses, requires 3 bits to represent them
-		parameter RES_depth_bits = 1
+		parameter B_depth_bits = 2, 	// e.g., RAM A has 2^3=8 addresses, needs 3 bits to represent, RAM B has 2^2=4 addresses, needs 2 bits to represent
+		parameter RES_depth_bits = 1	// RES is 2X1 matrix, needs 1 bit to represent.
 	) 
 	(
 		input clk,										
@@ -28,35 +28,37 @@ module matrix_multiply
 	);
 	
 	// implement the logic to read A_RAM, read B_RAM, do the multiplication and write the results to RES_RAM
-	// Note: A_RAM and B_RAM are to be read synchronously. Read the wiki for more details.
+	// Note: A_RAM and B_RAM are to be read synchronously.
+	// Read the wiki for more details.
 	
 
 	// Derived dimensions (for the default lab setup):
-	// M = number of rows in A = number of entries in RES = 2^RES_depth_bits (2)
-	// N = number of columns in A = number of entries in B = 2^B_depth_bits (4)
+	// M = number of rows in A (2) = number of entries in RES (2X1 matrix)= 2^RES_depth_bits
+	// N = number of columns in A (4) = number of entries in B (4) = 2^B_depth_bits = same as shifting 1'b01 by B_depth_bits times
 	localparam integer M = (1 << RES_depth_bits);	// Multiplying by 2 to get # of rows
 	localparam integer N = (1 << B_depth_bits);		// Multiplying by 2 to get # of cols
 	
 	// FSM states
-	localparam IDLE    = 3'd000;
-	localparam WAIT    = 3'd001; // wait 1 cycle for synchronous RAM output
-	localparam COMPUTE = 3'd010; // multiply-accumulate using current A/B outputs
-	localparam WRITE   = 3'd011; // write RES[row]
-	localparam DONE    = 3'd100; // pulse Done for 1 cycle
+	localparam IDLE    = 3'b000;
+	localparam WAIT    = 3'b001;       // wait 1 cycle for synchronous RAM output
+	localparam COMPUTE = 3'b010;       // multiply-accumulate using current A/B outputs
+	localparam WRITE   = 3'b011;       // write RES[row]
+	localparam DONE    = 3'b100;       // pulse Done for 1 cycle
 
-	reg [2:0] state;			 // store the current state of the MM unit
+	reg [2:0] state;			       // store the current state of the MM unit
 
-	reg [RES_depth_bits-1:0] row;      // 0..M-1, which row we are currently computing (2)
-	reg [B_depth_bits-1:0]   col;      // 0..N-1, which col we are currently computing (4)
+	reg [RES_depth_bits-1:0] row;      // 1-bit register, 0..M-1, to store which row we are currently computing (2)
+	reg [B_depth_bits-1:0]   col;      // 2-bit register, 0..N-1, to store which col we are currently computing (4)
 
-	reg  [15:0] acc;                   // sum of 16-bit products fits in 16 bits for lab constraints
-	wire [15:0] prod = A_read_data_out * B_read_data_out;
-	wire [15:0] acc_next = acc + prod;
+	reg  [width*2-1:0] acc;            // sum of 16-bit products fits in 16 bits for lab constraints
+	wire [width*2-1:0] prod = A_read_data_out * B_read_data_out;
+	wire [width*2-1:0] acc_next = acc + prod;
 
-	reg [width-1:0] row_result_byte;   // stores (acc_next / 256) for stable write in next state
+	reg [width-1:0] row_result_byte;   // 8-bit reg that stores (acc_next / 256) for stable write in next state
 
 	// Helper: compute A address = row*N + col
 	// Since # of cols, N = 2^B_depth_bits, row*N = row << B_depth_bits
+	// row << B_depth_bits is same as row*N
 	wire [A_depth_bits-1:0] a_addr_next = (row << B_depth_bits) + col;
 
 	always @(posedge clk) begin
@@ -84,7 +86,7 @@ module matrix_multiply
 
 					row <= {RES_depth_bits{1'b0}};
 					col <= {B_depth_bits{1'b0}};
-					acc <= 16'd0;
+					acc <= {(2*width){1'b0}};
 
 					// Issue first read addresses (data will be available after 1 cycle)
 					A_read_address <= (({RES_depth_bits{1'b0}}) << B_depth_bits) + {B_depth_bits{1'b0}};
@@ -162,5 +164,3 @@ module matrix_multiply
 	end
 
 endmodule
-
-
