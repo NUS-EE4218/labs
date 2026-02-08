@@ -2,9 +2,14 @@
 
 This page describes how to use Vivado to create a hardware platform using IP Integrator, and to synthesize the hardware into a bitstream. The bitstream is used to configure the FPGA to become the hardware platform that we have created. The bitstream and other hardware info are exported as a .xsa file.
 
+Note: There are slight differences in GUI and options based on the version. The spirit of what is being done remains the same.
+
 Open Vivado.
 
 File>Project>New
+
+!!! info
+    As a general rule, DO NOT use spaces in the paths for any of your projects/workspaces. This is a good practice not only for Vitis/Vivado but for a number of hardware and software development tools.
 
 Next> Specify a project name and location>Next>Next>Next>Next> Select the board - go to the boards tab and select _Kria KV260 Vision AI Starter Kit SOM_ >Next>Finish.
 
@@ -56,11 +61,13 @@ The validate your design, i.e., to check if there are incompatible connections /
 
 While this is good enough to do the basic requirements for this lab, let us push ourselves a bit more and get readier for future labs.
 
-Click the + button on the IP Integrator canvas to add an IP. Select AXI-Stream FIFO. ![](2_HW_Platform/image-7bf91aa5-2f4d-4cf5-ab81-a80f8805119e.png) . This IP acts as a bridge between AXI (the bus-based, addressable bus system) to AXI-Stream (point-to-point, non-addressable link). This will be used to integrate our coprocessor into the rest of the system in future labs so that the main processor can send/receive data via AXI. 
+Click the + button on the IP Integrator canvas to add an IP. Select AXI-Stream FIFO. ![](2_HW_Platform/image-7bf91aa5-2f4d-4cf5-ab81-a80f8805119e.png). This IP acts as a bridge between AXI (the bus-based, addressable bus system) to AXI-Stream (point-to-point, non-addressable link). This will be used to integrate our coprocessor into the rest of the system in future labs so that the main processor can send/receive data via AXI. 
 
 While the IP Integrator shows the option for running connection automation, do not do this as yet. Instead, double-click on the AXI Stream FIFO that we added to customize it.
 
-Change the settings as follows, and click OK. Choosing AXI (full AXI) instead of AXI Lite (default) allows the data transfer to be potentially faster, as full AXI can do burst transfers (slave auto-increments addresses so that multiple data can be transferred with a single address). We can disable 'Enable Transmit Control' as we will be doing all the data transfer continuously. Make sure that the Data Width is 32. Increase the Transmit FIFO depth to 1024, as we will be sending more than 512 words later. Similarly, increase the Receive FIFO depth to 1024 as well - this is necessary only in loopback mode - in the next assignment, we will be connecting a coprocessor instead, which return as result less than 512 words.
+Change the settings as follows, and click OK. Choosing AXI (full AXI) instead of AXI Lite (default) allows the data transfer to be potentially faster, as full AXI can do burst transfers (slave auto-increments addresses so that multiple data can be transferred with a single address). We can disable 'Enable Transmit Control' as we will be doing all the data transfer continuously. Make sure that the Data Width is 32. 
+
+Under the Transmit FIFO options **AND** the Receive FIFO options (not shown in picture), increase FIFO depth to 1024, as we will be sending more than 512 words later through the loopback connection between the TX and RX line which passes through **both** buffers.
 
 ![](2_HW_Platform/image-0eedde7a-d9bc-4c68-8686-509eaf919f54.png)
 
