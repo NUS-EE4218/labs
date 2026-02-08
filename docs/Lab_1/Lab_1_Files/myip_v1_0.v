@@ -105,7 +105,7 @@ module myip_v1_0
 	wire 	[RES_depth_bits-1:0] RES_write_address;		// matrix_multiply_0 -> RES_RAM.
 	wire 	[width-1:0] RES_write_data_in;				// matrix_multiply_0 -> RES_RAM.
 	reg 	RES_read_en = 0;  							// myip_v1_0 -> RES_RAM. To be assigned within myip_v1_0. Possibly reg.
-	reg    	[RES_depth_bits-1:0] RES_read_address = 0;	// myip_v1_0 -> RES_RAM. To be assigned within myip_v1_0. Possibly reg.
+	wire    [RES_depth_bits-1:0] RES_read_address = write_counter;	// myip_v1_0 -> RES_RAM. To be assigned within myip_v1_0. Possibly reg.
 	wire	[width-1:0] RES_read_data_out;				// RES_RAM -> myip_v1_0
 	
 	// wires (or regs) to connect to matrix_multiply for assignment 1
@@ -223,26 +223,27 @@ module myip_v1_0
 						Start 		<= 0;
 						state		<= Wait;
 						RES_read_en 		<= 1;
-						RES_read_address	<= write_counter;
 					end
 					// Possible to save a cycle by asserting M_AXIS_TVALID and presenting M_AXIS_TDATA just before going into 
 					// Write_Outputs state. However, need to adjust write_counter limits accordingly
 					// Alternatively, M_AXIS_TVALID and M_AXIS_TDATA can be asserted combinationally to save a cycle.
 				end
 			
-				Wait:
+				Wait: // To allow 1 clock cycle for RES_read_data_out to update
 				begin
-						state <= Write_Outputs;
+					RES_read_en <= 1;
+					M_AXIS_TVALID <= 0;
+					
+					state <= Write_Outputs;
 				end
 				
 				Write_Outputs:
 				begin
 					RES_read_en 		<= 1;
-					// RES_read_address	<= write_counter;
 
 					M_AXIS_TVALID <= 1;
 					M_AXIS_TDATA	<= RES_read_data_out;
-					// Coprocessor function (adding 1 to sum in each iteration = adding iteration count to sum) happens here (partly)
+
 					if (M_AXIS_TREADY == 1) 
 					begin
 						if (write_counter == NUMBER_OF_OUTPUT_WORDS-1)
@@ -254,12 +255,12 @@ module myip_v1_0
 						else
 						begin
 							write_counter	<= write_counter + 1;
-							RES_read_address	<= write_counter + 1;
+
 							state <= Wait;
 						end
 					end
 				end
-				
+
 			endcase
 		end
 	end
