@@ -1,0 +1,24 @@
+#-----------------------------------------------------------
+# Vivado v2025.2 (64-bit)
+# SW Build 6299465 on Fri Nov 14 19:35:11 GMT 2025
+# IP Build 6300035 on Fri Nov 14 10:48:45 MST 2025
+# SharedData Build 6298862 on Thu Nov 13 04:50:51 MST 2025
+# Start of session at: Tue Feb 17 02:35:53 2026
+# Process ID         : 12568
+# Current directory  : C:/Users/ELVIS/OneDrive - National University of Singapore/A. NUS/EE4218/EE4218-Lab/docs/Lab_2/Lab_2_Files/Lab-2-Files/Lab_2.runs/impl_1
+# Command line       : vivado.exe -log design_1_wrapper.vdi -applog -product Vivado -messageDb vivado.pb -mode batch -source design_1_wrapper.tcl -notrace
+# Log file           : C:/Users/ELVIS/OneDrive - National University of Singapore/A. NUS/EE4218/EE4218-Lab/docs/Lab_2/Lab_2_Files/Lab-2-Files/Lab_2.runs/impl_1/design_1_wrapper.vdi
+# Journal file       : C:/Users/ELVIS/OneDrive - National University of Singapore/A. NUS/EE4218/EE4218-Lab/docs/Lab_2/Lab_2_Files/Lab-2-Files/Lab_2.runs/impl_1\vivado.jou
+# Running On         : ELVIS-ASUS-VIVOBOOK
+# Platform           : Windows Server 2016 or Windows 10
+# Operating System   : 26200
+# Processor Detail   : 13th Gen Intel(R) Core(TM) i9-13900H
+# CPU Frequency      : 2995 MHz
+# CPU Physical cores : 14
+# CPU Logical cores  : 20
+# Host memory        : 16785 MB
+# Swap memory        : 51539 MB
+# Total Virtual      : 68325 MB
+# Available Virtual  : 57102 MB
+#-----------------------------------------------------------
+source design_1_wrapper.tcl -notrace

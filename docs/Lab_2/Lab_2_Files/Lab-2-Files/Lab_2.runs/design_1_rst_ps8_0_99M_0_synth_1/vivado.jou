@@ -1,0 +1,24 @@
+#-----------------------------------------------------------
+# Vivado v2025.2 (64-bit)
+# SW Build 6299465 on Fri Nov 14 19:35:11 GMT 2025
+# IP Build 6300035 on Fri Nov 14 10:48:45 MST 2025
+# SharedData Build 6298862 on Thu Nov 13 04:50:51 MST 2025
+# Start of session at: Fri Feb 13 11:44:18 2026
+# Process ID         : 19204
+# Current directory  : C:/EE4218_Lab/Lab_2/Lab_2.runs/design_1_rst_ps8_0_99M_0_synth_1
+# Command line       : vivado.exe -log design_1_rst_ps8_0_99M_0.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source design_1_rst_ps8_0_99M_0.tcl
+# Log file           : C:/EE4218_Lab/Lab_2/Lab_2.runs/design_1_rst_ps8_0_99M_0_synth_1/design_1_rst_ps8_0_99M_0.vds
+# Journal file       : C:/EE4218_Lab/Lab_2/Lab_2.runs/design_1_rst_ps8_0_99M_0_synth_1\vivado.jou
+# Running On         : MIN
+# Platform           : Windows Server 2016 or Windows 10
+# Operating System   : 26200
+# Processor Detail   : AMD Ryzen 7 8845HS w/ Radeon 780M Graphics
+# CPU Frequency      : 3793 MHz
+# CPU Physical cores : 8
+# CPU Logical cores  : 16
+# Host memory        : 14827 MB
+# Swap memory        : 21474 MB
+# Total Virtual      : 36302 MB
+# Available Virtual  : 17068 MB
+#-----------------------------------------------------------
+source design_1_rst_ps8_0_99M_0.tcl -notrace
