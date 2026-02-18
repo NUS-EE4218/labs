@@ -52,7 +52,7 @@ Upload the (only those files you have created/modified, not the entire project f
 * input/output test files
 * a text file that mentions the time taken in cycles or milliseconds (you should be able to convert between the two easily anyway) - this info can be copy-pasted from the realterm console to a text file
 * a screenshot of the profiling output <span style="color: brown;">(optional, if you have done profiling)</span>
-to Canvas by 11:59 PM, **20 Feb 2026**.
+to Canvas by 11:59 PM, **21 Feb 2026**.
 You will also be required to do a demonstration in **Week 7** based on what you submitted at the point of the assignment deadline, not the version you may have improved after the deadline.
 
 It should be as a single .zip archive, with the filename GroupNum_Lab2.zip.
