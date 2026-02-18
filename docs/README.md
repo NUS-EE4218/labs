@@ -28,7 +28,7 @@ Lab Venue : Digital Electronics Lab (E4 level 3) - Outreach Room
 | 3 | 28 Jan, 30 Jan | Lab 1 Intro |  |
 | 4 | 4 Feb, 6 Feb | Lab 1 Consultation, Lab 2 Intro |  |
 | 5 | 11 Feb, 13 Feb | **Lab 1 Demo**, Lab 2 Consultation |  |
-| 6 | 18 Feb | **Lab 2 Deadline**, Lab 3 Intro | Submission of files to Canvas due on **18 Feb** for **everyone**. Evaluation will be along with Lab 3 in Week 7. Lab 3 Intro only on Friday - recording will be made available |
+| 6 | 18 Feb | **Lab 2 Deadline**, Lab 3 Intro | Submission of files to Canvas due on **20 Feb** for **everyone**. Evaluation will be along with Lab 3 in Week 7. Lab 3 Intro only on Friday - recording will be made available |
 | Recess | No session | Work on Lab 3 |  |
 | 7 | 4 Mar, 6 Mar | **Lab 2&3 Demo**, Lab 4 Intro |  |
 | 8 | 11 Mar, 13 Mar | Project Intro |  |
