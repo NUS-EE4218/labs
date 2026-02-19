@@ -1,6 +1,6 @@
 # Coprocessor Integration using AXI Stream FIFO
 
-You can read more about AXI Stream FIFO at <https://www.xilinx.com/support/documentation/ip_documentation/axi_fifo_mm_s/v4_1/pg080-axi-fifo-mm-s.pdf> (please do!)
+You can read more about [AXI Stream FIFO](https://docs.amd.com/v/u/4.1-English/pg080-axi-fifo-mm-s) on AMD website (please do!).
 
 When we use AXI Stream FIFO as the bridge, the processor reads the operands from the memory (RAM) and writes them to the transmit FIFO in AXI Stream FIFO peripheral via AXI (not AXI Stream), which in turn passes it to the coprocessor via AXI Stream. The result returned by the coprocessor gets deposited into a receive FIFO in AXI Stream FIFO peripheral, from which the processor reads it via AXI (not AXI Stream) and writes it to the memory (RAM).
 
@@ -13,6 +13,8 @@ The following instructions also assume that the coprocessor is already added/ava
 ![image.png](FIFO/FIFO_System.png)
 
 ![image.png](FIFO/FIFO_IP.png)
+
+Note that the IP may look slightly differently depending on the version of Vitis, and the exact way it was created.
 
 Now, make/modify the following connections.
 
@@ -36,11 +38,11 @@ You can now save the block design (Ctrl+S) and generate bitstream.
 
 The rest of it is similar to Lab 2.
 
-You need to export hardware including bitstream.
+You need to export hardware, including bitstream.
 
-Open Vitis Classic > create a new workspace (using the previous one is also ok) > create a new platform project using the new .xsa file (upgrading the previous one is ok too), > create an application project.
+Open Vitis > create a new workspace (using the previous one is also ok) > create a new platform project using the new .xsa file (upgrading the previous one is ok too), > create an application project.
 
-The application project (say, Hello World) main file contents should be replaced by test_fifo_myip_v1_0.c to test the coprocessor for adding numbers. Note the close parallel it has with tb_myip_v1_0.v/vhd. You can make appropriate changes to this file to deal with different input and output sizes if your coprocessor functionality is different.
+The application project (say, Hello World) main file contents should be replaced by test_fifo_myip_v1_0.c to test the coprocessor for adding numbers. You can make appropriate changes to this file to deal with different input and output sizes if your coprocessor functionality is different.
 
 Now, create a run configuration, open the serial console program (e.g., RealTerm), and run.
 

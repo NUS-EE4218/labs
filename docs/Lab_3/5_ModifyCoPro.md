@@ -1,41 +1,53 @@
 # Modifying the Coprocessor
 
-Changing the HDL file for the co-processor alone isn't usually sufficient to ensure the changed functionality. Creating a custom IP all over again using the new HDL file isn't necessary either.
-
-Right-click on the custom IP in the block design, and choose **Edit in IP Packager**. This will open up a Vivado Project. Change the co-processor functionality here. Click the Package IP in the Flow Navigator. Since we aren't changing interfaces, all we need to do is to click **Re-Package IP** in Review and Package.
-
-Once you come back to your main Vivado project, it will show a banner that 'IP Catalog is Out of Date' or 'myip_0 should be upgraded'. If it is the former, click **Rerun** in the IP Status Tab below. If it is the latter, clicking Report IP Status / Show IP Status will open up the IP Status Tab. Either way, after myip_0 is selected, click **Upgrade Selected**.
+Once you update your IP using HLS and come back to your main Vivado project, it will show a banner that 'IP Catalog is Out of Date' or 'myip_0 should be upgraded'. If it is the former, click **Rerun** in the IP Status Tab below. If it is the latter, clicking Report IP Status / Show IP Status will open up the IP Status Tab. Either way, after myip_0 is selected, click **Upgrade Selected**.
 
 If the 'IP Status' tab does not appear, make sure that the IP Integrator is selected in the Flow Navigator, and Reports (top menu bar) > Report IP Status.
 
-An IP Upgrade Completed will pop up once the IP is successfully upgraded. When you dismiss the message by clicking OK, it will show up a Generate Output Products window. Click **Generate**. Once the output products are generated, click OK to dismiss the message.  The IP Status will again show that one or more IPs have changed. Click **Rerun **again (the second time is for regenerating reports), but you need not (and won't be able to) click Upgrade Selected this time.
+An IP Upgrade Completed will pop up once the IP is successfully upgraded. When you dismiss the message by clicking OK, it will show up a Generate Output Products window. Click **Generate**. Once the output products are generated, click OK to dismiss the message.  The IP Status will again show that one or more IPs have changed. Click **Rerun**again (the second time is for regenerating reports), but you need not (and won't be able to) click Upgrade Selected this time.
 
 You can check if the IP is updated by following the screenshot below.
 
-![image2020-5-27_1-53-39.png](ModifyCoPro/ModifyCoPro_VivadoSources.png)
+![](ModifyCoPro/ModifyCoPro_VivadoSources.png)
 
-Now, you can go ahead and** Generate Bitstream**.
+Now, you can go ahead and**Generate Bitstream**.
 
 Once the hardware is generated, Export > **Export Hardware**. Don't forget to **Include bitstream**.
 
-The SDK will pop up a window/warning regarding Hardware Specification FIle Change. Click **Yes** to continue and wait for your BSP and project to be rebuilt.
+However, a new .xsa file will not cause the platform project to be modified automatically.
 
-For Vitis, you have to do it explicitly by right-clicking on the hardware platform as shown in the figure below. You will then be required to browse to the updated .xsa file, followed by two OKs.
+## Vitis
 
-![image2020-5-27_1-29-24.png](ModifyCoPro/ModifyCoPro_VitisExplorer.png)
+In Vitis, select the Switch / re-read XSA option as shown in the screenshot below. You will be required to browse to the updated file followed by select/OK. It will take a short while to re-read the .xsa file.
 
-Then build the design_1_wrapper.
+Once this is done, build the platform project again.
 
-![image2020-5-27_1-33-31.png](ModifyCoPro/ModifyCoPro_VitisExplorer_Build.png)
+![ModifyCoPro_Vitis_Select_New_XSA](ModifyCoPro/ModifyCoPro_Vitis_Select_New_XSA.png)
 
-Change your C code if/as necessary and then build your application project. If you get errors about fsbl, you can ignore it as long as the .elf corresponding to your application is successfully built. (FSBL = first stage boot loader, needed only if you are planning to boot from SD card. In our case, the program is loaded by the debugger hardware, so we don't have to bother.). 
+If you run into issues, Regenerate BSP as shown in the screenshot below.
 
-The Vitis project doesn't always get updated that properly. If you run into issues, Reset BSP Sources as shown in the figure below, and build the hardware and application projects.
+![ModifyCoPro_VitisRegenerateBSP](ModifyCoPro/ModifyCoPro_VitisRegenerateBSP.png)
 
-![image2020-5-27_10-16-46.png](ModifyCoPro/ModifyCoPro_VitisResetBSP.png)
+If that doesn't work either, create a new workspace, and then an application project using the new .xsa file. Copy over your C code to the new project.
+
+If it still shows the old coprocessor functionality, you might want to try deleting intermediate files in Vivado and regenerating the bitstream.
+
+## Vitis Classic
+
+For Vitis Classic, right-click on the hardware platform as shown in the figure below. You will be required to browse to the updated .xsa file, followed by two OKs.
+
+![](ModifyCoPro/ModifyCoPro_VitisExplorer.png)
+
+Then build the platform project (e.g., design_1_wrapper).
+
+![](ModifyCoPro/ModifyCoPro_VitisExplorer_Build.png)
+
+The Vitis Classic project doesn't always get updated that properly. If you run into issues, Reset BSP Sources as shown in the figure below, and build the hardware and application projects.
+
+![](ModifyCoPro/ModifyCoPro_VitisResetBSP.png)
 
 If that doesn't work either, create a new workspace, and then an application project using the new .xsa file. Copy over your C code to the new project.
 
 Don't forget to **program the FPGA again** before running your code (which will be done automatically if the option to Program FPGA is checked in Run Configurations), as the hardware has now changed!
 
-If it still shows the old coprocessor functionality, perhaps you did not repackage the IP properly. If you are sure you did, you might want to try deleting intermediate files in Vivado and regenerating the bitstream.
+If it still shows the old coprocessor functionality, you might want to try deleting intermediate files in Vivado and regenerating the bitstream.

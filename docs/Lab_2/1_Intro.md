@@ -1,7 +1,7 @@
 # Introduction to Hardware/Software Co-Design
 
-!!! success "Final"
-    This assignment description is now complete. There could still be minor updates, which will be <span style="color: brown;">highlighted</span>. 
+!!! success "Usable"
+    This lab description is complete. There could still be minor updates, which will be <span style="color: brown;">highlighted</span>. 
 
 ## Introduction
 
