@@ -1,0 +1,1768 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://nus-ceg5203.github.io/labs/">
+      
+      
+      
+        <link rel="next" href="General/Installing_Vitis/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+    
+    
+      
+        <title>EE4218 Labs</title>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Merriweather:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Merriweather";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="stylesheets/extra.css">
+    
+    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="nus" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#ee4218-lab-manuals" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="." title="EE4218 Labs" class="md-header__button md-logo" aria-label="EE4218 Labs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            EE4218 Labs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              EE4218 Lab Manuals
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="." title="EE4218 Labs" class="md-nav__button md-logo" aria-label="EE4218 Labs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    EE4218 Labs
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    EE4218 Lab Manuals
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="." class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    EE4218 Lab Manuals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#lab-info" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lab Info
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Lab Info">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lab-venue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lab Venue
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lab-description" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lab Description
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lab-schedule" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lab Schedule
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kria-board" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kria Board
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Kria Board">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#board-handling-guidelines" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Board Handling Guidelines
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#policies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Policies
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Policies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#late-demo-submission-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Late demo / submission policy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#email-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Email policy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-to-get-help" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How to get help
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fair-use-of-llms-and-open-source-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fair Use of LLMs and Open Source Code
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#updates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Updates
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#license" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        License
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    General
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    General
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="General/Installing_Vitis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installing Vitis 2025.1
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 1
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Lab 1
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Lab_1/1_Intro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction to Hardware Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Lab_1/2_Design_Tips/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design Considerations and Tips
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 2
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Lab 2
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Lab_2/1_Intro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction to Hardware/Software Co-Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Lab_2/2_HW_Platform/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Creating the Hardware Platform
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Lab_2/3_Using_Vitis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Software development using Vitis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Lab_2/3_Using_Vitis_Classic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Software development using Vitis Classic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Lab_2/4_Serial_Console/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Serial Console - RealTerm
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Lab_2/5_Performance_Analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Measuring Performance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Lab_2/6_Tips_Suggestions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tips and Suggestions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 3
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Lab 3
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Lab_3/1_IntegratingCoPro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Integrating the Coprocessor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Lab_3/2_PackagingIP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Packaging Coprocessor as an IP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Lab_3/3_FIFO/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Coprocessor Integration using AXI Stream FIFO
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Lab_3/4_DMA/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Coprocessor Integration using AXI DMA
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Lab_3/5_ModifyCoPro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modifying the Coprocessor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 4
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Lab 4
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Lab_4/1_HLSIntro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    High Level Synthesis, Measuring Performance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Lab_4/2_HLSFLow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HLS Flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Lab_4/3_MultipleCoPro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Connecting Multiple Coprocessors (Optional)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Project
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Project/1_ProjDesc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Description
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Project/2_EvalCrit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Evaluation Criteria, Deliverables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#lab-info" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lab Info
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Lab Info">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lab-venue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lab Venue
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lab-description" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lab Description
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lab-schedule" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lab Schedule
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kria-board" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kria Board
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Kria Board">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#board-handling-guidelines" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Board Handling Guidelines
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#policies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Policies
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Policies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#late-demo-submission-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Late demo / submission policy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#email-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Email policy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-to-get-help" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How to get help
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fair-use-of-llms-and-open-source-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fair Use of LLMs and Open Source Code
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#updates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Updates
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#license" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        License
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="ee4218-lab-manuals">EE4218 Lab Manuals</h1>
+<p>Welcome to the exciting world of embedded systems. We have prepared a series of labs for this course to give you hands-on experience in Hardware/Software Co-design. Each lab consists of two parts: 1) the first part consists of a tutorial with step-by-step guidance and 2) the second part is an assignment to allow students to use practical knowledge gained from the first part to solve a fairly simple design and implementation problem.</p>
+<div class="admonition warning">
+<p class="admonition-title">Follow the Spirit</p>
+<p>Some screenshots in the manuals may be taken on other versions of Vivado/Vitis or for other configurations. The instructions could also vary slightly depending on the exact design/configuration you follow. The spirit of the instructions remain the same. Understand the significance of each step rather than following it mechanically - <strong>understand why you are doing what you are doing</strong>.</p>
+</div>
+<h2 id="lab-info">Lab Info</h2>
+<h3 id="lab-venue">Lab Venue</h3>
+<p>Lab Venue : Digital Electronics Lab (E4 level 3) - Outreach Room</p>
+<h3 id="lab-description">Lab Description</h3>
+<table>
+<thead>
+<tr>
+<th>Lab</th>
+<th>Description</th>
+<th>Weight</th>
+<th>Remarks</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Introduction to Hardware Design</td>
+<td>7%</td>
+<td></td>
+</tr>
+<tr>
+<td>2</td>
+<td>Introduction to Hardware/Software Co-design</td>
+<td>7%</td>
+<td></td>
+</tr>
+<tr>
+<td>3</td>
+<td>Integrating the Co-processor</td>
+<td>7%</td>
+<td></td>
+</tr>
+<tr>
+<td>4</td>
+<td>High-Level Synthesis</td>
+<td>7%</td>
+<td></td>
+</tr>
+<tr>
+<td>5</td>
+<td>Mini Project</td>
+<td>22%</td>
+<td>2% for Progress Evaluation 20% for Final Demo</td>
+</tr>
+</tbody>
+</table>
+<h3 id="lab-schedule">Lab Schedule</h3>
+<table>
+<thead>
+<tr>
+<th>Week</th>
+<th>Date</th>
+<th>Activity</th>
+<th>Remarks</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3</td>
+<td>28 Jan, 30 Jan</td>
+<td>Lab 1 Intro</td>
+<td></td>
+</tr>
+<tr>
+<td>4</td>
+<td>4 Feb, 6 Feb</td>
+<td>Lab 1 Consultation, Lab 2 Intro</td>
+<td></td>
+</tr>
+<tr>
+<td>5</td>
+<td>11 Feb, 13 Feb</td>
+<td><strong>Lab 1 Demo</strong>, Lab 2 Consultation</td>
+<td></td>
+</tr>
+<tr>
+<td>6</td>
+<td>18 Feb</td>
+<td><strong>Lab 2 Deadline</strong>, Lab 3 Intro</td>
+<td>Submission of files to Canvas due on <strong>20 Feb</strong> for <strong>everyone</strong>. Evaluation will be along with Lab 3 in Week 7. Lab 3 Intro only on Friday - recording will be made available</td>
+</tr>
+<tr>
+<td>Recess</td>
+<td>No session</td>
+<td>Work on Lab 3</td>
+<td></td>
+</tr>
+<tr>
+<td>7</td>
+<td>4 Mar, 6 Mar</td>
+<td><strong>Lab 2&amp;3 Demo</strong>, Lab 4 Intro</td>
+<td></td>
+</tr>
+<tr>
+<td>8</td>
+<td>11 Mar, 13 Mar</td>
+<td>Project Intro</td>
+<td></td>
+</tr>
+<tr>
+<td>9</td>
+<td>18 Mar, 20 Mar</td>
+<td><strong>Lab 4 Demo</strong>, Project Consultation</td>
+<td></td>
+</tr>
+<tr>
+<td>10</td>
+<td>25 Mar, 27 Mar</td>
+<td><strong>Project Progress Evaluation</strong> and Consultation</td>
+<td></td>
+</tr>
+<tr>
+<td>11</td>
+<td>1 Apr</td>
+<td>Project Consultation (Wed only)</td>
+<td></td>
+</tr>
+<tr>
+<td>12</td>
+<td>8 Apr, 10 Apr</td>
+<td><strong>Project Demo</strong></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="kria-board">Kria Board</h3>
+<p>You will be provided a Kria KV260 SOM Vision Starter Kit containing a Xilinx Zynq Ultrascale+ SoC. More information about the board can be found at <a href="https://www.xilinx.com/products/som/kria/kv260-vision-starter-kit/kv260-getting-started/getting-started.html">https://www.xilinx.com/products/som/kria/kv260-vision-starter-kit/kv260-getting-started/getting-started.html</a> (scroll down).</p>
+<h4 id="board-handling-guidelines">Board Handling Guidelines</h4>
+<p>Like most development boards and PCBs, your FPGA board is fragile. Treat it with care and respect, as if it were your own. It is reasonably expensive at over S$500, and not so easy to get replaced.</p>
+<p>Here are some tips to take good care of your board:</p>
+<ul>
+<li>Do not touch the PCB tracks, or the components on the board. Static discharge can damage or destroy electronic components, and these boards can be particularly susceptible.</li>
+<li>Use the nice plastic box with foam lining to transport your FPGA board. Do not use a plastic bag or other plastic container to carry your boards, and most certainly don't put it bare in your backpack/tote/briefcase/whatever you bring to class.</li>
+<li>When using the board, keep it on a stable, flat surface. Do NOT have it hanging off the USB cable, or hanging off the edge of a table, or on your lap, or anywhere that isn't a suitable, solid surface.</li>
+<li>Absolutely DO NOT DROP your board. When moving it around, hold the board by the edges and make sure the USB cable is unplugged so as to minimize strain on the port and to avoid it getting caught on something.</li>
+<li>Avoid plugging and unplugging the micro-USB cable more than necessary. To reset the board, you can use the power switch on the top left of the board, or unplug the USB-A connector from your computer if really necessary. Micro USB is a notoriously fragile connector, and it's best to avoid putting more strain on it than necessary. USB-A is much sturdier so that end of the cable is not as much of a concern.</li>
+<li>Apply common sense and standard practices for taking care of electronics: don't eat or drink near your board in case you get crumbs (or worse, a spill) on the board. Don't throw the board around. Plug and unplug accessories with care. Be gentle when using the switches and buttons.</li>
+</ul>
+<h2 id="policies">Policies</h2>
+<h3 id="late-demo-submission-policy">Late demo / submission policy</h3>
+<p>For each assessment, you <strong>must</strong> demonstrate on the stipulated date during your schedule time slot as given in the assessment schedule. If you don't, you get a <strong>0 mark</strong> for that lab!</p>
+<p>You are supposed to submit your codes to Canvas by the deadline for uploading - if you submit after the deadline, there will be a <strong>10% penalty</strong> in marks. 
+The codes submitted should be <em>the same codes used for evaluation</em>. Any bug fixes/improvements after the demo could you useful for future labs and project, but will not result in an increase in marks after the demo - in fact, a mismatch could result in a penalty.</p>
+<p>A late demo is allowed (with no penalty) only if you can produce documented evidence to justify the late demo/submission - in such a case, please let us know immediately as and when such a situation arises.</p>
+<h3 id="email-policy">Email policy</h3>
+<p>Kindly <em>DO NOT send emails regarding labs</em> wherever possible. Post see below on how to get help. Only if the matter is personal / administrative, please contact the lecturer via Canvas Inbox (not emails).</p>
+<h3 id="how-to-get-help">How to get help</h3>
+<p>If you have any questions regarding the content of the labs, please follow these steps, <em>in this order</em>, to answer them.  </p>
+<ol>
+<li>
+<p>Please read the lab manual closely. We will try our best to keep the manual updated with any common errors, or issues, that you may face.</p>
+</li>
+<li>
+<p>If the lab manual does not answer your question, <a href="https://github.com/nus-EE4218/labs">the GitHub repository</a> has a <a href="https://github.com/NUS-EE4218/labs/discussions">discussions page</a>. Please search here for your question, in case it has already been answered before. We will leave questions and answers from previous semesters on this page, so over time, more and more information should be covered between here and the manuals.</p>
+</li>
+<li>
+<p>If you cannot find an answer to your question in the discussions either, then please create a new discussion. Make sure your title is as succinct, but descriptive, as possible, for the benefit of others who may search the page later. Also, do make sure you include all relevant details in the discussion content. <a href="https://www.freecodecamp.org/news/how-to-ask-good-technical-questions/">This webpage</a> offers some helpful advice on how to ask good technical questions.</p>
+</li>
+<li>
+<p>Please <strong>DO NOT</strong> send emails to the teaching staff asking technical questions regarding the lab activities. We will ignore all such emails, with no exception. Post all technical questions to the discussions page. This benefits others, because anyone who has the issue in the future can solve it quickly with a search. It also benefits you, because you may receive an answer faster from a classmate, than from us.</p>
+</li>
+</ol>
+<p>On that subject, please do join in and help each other out in the discussions as far as possible.</p>
+<h3 id="fair-use-of-llms-and-open-source-code">Fair Use of LLMs and Open Source Code</h3>
+<p>It is ok to rely on LLMs or other online code in moderation. However, you should</p>
+<ul>
+<li>Understand the code in detail and be able to explain it.</li>
+<li>Not infringe anyone's copyright, i.e., it should be code released under an open-source/permissive license. </li>
+<li>Demarcate such code clearly, and give proper attribution to the source/LLM, along with the prompts used. Using AI-generated code without attribution is considered plagiarism.</li>
+</ul>
+<p>Discussions are encouraged, but 'we had discussed' is not a valid excuse if your codes turn out to be uncomfortably similar to that of another group (except when you use online code with attribution as mentioned above).</p>
+<p>Though there will be intra-team differentiation in marks according to the contribution levels, a team will be collectively responsible for plagiarized code. Your teammates might be better off with no contribution at all from you than to receive plagiarized code.</p>
+<h2 id="updates">Updates</h2>
+<hr />
+<hr />
+<h2 id="license">License</h2>
+<p><a href="https://github.com/nus-EE4218/labs">NUS EE4218 Lab Manuals</a> © 2024 by <a href="https://github.com/nus-EE4218">NUS EE4218 Team</a> is licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/?ref=chooser-v1">CC BY-NC-SA 4.0</a>  </p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": ["content.tooltips"], "search": "assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="javascripts/mathjax.js"></script>
+      
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

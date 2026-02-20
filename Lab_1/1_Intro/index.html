@@ -1,0 +1,1545 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://nus-ceg5203.github.io/labs/Lab_1/1_Intro/">
+      
+      
+        <link rel="prev" href="../../General/Installing_Vitis/">
+      
+      
+        <link rel="next" href="../2_Design_Tips/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+    
+    
+      
+        <title>Introduction to Hardware Design - EE4218 Labs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Merriweather:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Merriweather";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="nus" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#introduction-to-hardware-design" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="EE4218 Labs" class="md-header__button md-logo" aria-label="EE4218 Labs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            EE4218 Labs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Introduction to Hardware Design
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="EE4218 Labs" class="md-nav__button md-logo" aria-label="EE4218 Labs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    EE4218 Labs
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    EE4218 Lab Manuals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    General
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    General
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../General/Installing_Vitis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installing Vitis 2025.1
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 1
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Lab 1
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction to Hardware Design
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction to Hardware Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Introduction
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#creating-and-simulating-hdl-sources-and-programming-fpga" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Creating and Simulating HDL Sources and Programming FPGA
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#introduction-to-axi-stream" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Introduction to AXI Stream
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assignment-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assignment 1
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Assignment 1">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#axis-matrix-multiplication-coprocessor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AXIS Matrix Multiplication Coprocessor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#coprocessor-logic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Coprocessor Logic
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Files / Templates
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#submission-info" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Submission Info
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../2_Design_Tips/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design Considerations and Tips
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 2
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Lab 2
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Lab_2/1_Intro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction to Hardware/Software Co-Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Lab_2/2_HW_Platform/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Creating the Hardware Platform
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Lab_2/3_Using_Vitis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Software development using Vitis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Lab_2/3_Using_Vitis_Classic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Software development using Vitis Classic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Lab_2/4_Serial_Console/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Serial Console - RealTerm
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Lab_2/5_Performance_Analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Measuring Performance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Lab_2/6_Tips_Suggestions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tips and Suggestions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 3
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Lab 3
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Lab_3/1_IntegratingCoPro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Integrating the Coprocessor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Lab_3/2_PackagingIP/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Packaging Coprocessor as an IP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Lab_3/3_FIFO/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Coprocessor Integration using AXI Stream FIFO
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Lab_3/4_DMA/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Coprocessor Integration using AXI DMA
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Lab_3/5_ModifyCoPro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modifying the Coprocessor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 4
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Lab 4
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Lab_4/1_HLSIntro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    High Level Synthesis, Measuring Performance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Lab_4/2_HLSFLow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HLS Flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Lab_4/3_MultipleCoPro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Connecting Multiple Coprocessors (Optional)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Project
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Project/1_ProjDesc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Description
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Project/2_EvalCrit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Evaluation Criteria, Deliverables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Introduction
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#creating-and-simulating-hdl-sources-and-programming-fpga" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Creating and Simulating HDL Sources and Programming FPGA
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#introduction-to-axi-stream" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Introduction to AXI Stream
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assignment-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assignment 1
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Assignment 1">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#axis-matrix-multiplication-coprocessor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AXIS Matrix Multiplication Coprocessor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#coprocessor-logic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Coprocessor Logic
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Files / Templates
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#submission-info" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Submission Info
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="introduction-to-hardware-design">Introduction to Hardware Design</h1>
+<div class="admonition success">
+<p class="admonition-title">Usable</p>
+<p>This lab description is complete. There could still be minor updates, which will be <span style="color: brown;">highlighted</span>. </p>
+</div>
+<h2 id="introduction">Introduction</h2>
+<p>The purpose of Lab 1 is to introduce you to systematic hardware design. The lab has a refresher of the hardware design flow from EE2026. <strong>Lab 1 can be done on any version of Vivado/Vitis without issues. Lab 1 does not require the FGPA board - it is pure simulation.</strong></p>
+<p>You will be doing an assignment that involves creating a coprocessor for matrix multiplication. Testing on real hardware will require a complete computer system (hardware-software co-design framework), which will be introduced in Lab 2. The actual integration will be done in Lab 3. When integrated into the system, the main processor can just stream the data to be processed to the coprocessor, which will do the computations and stream the results back to the main processor.</p>
+<h2 id="creating-and-simulating-hdl-sources-and-programming-fpga">Creating and Simulating HDL Sources and Programming FPGA</h2>
+<p>Those who are already familiar with Vivado and FPGA implementation can skip this step and go straight to the assignment problem. Others can refer to the <a href="https://nus-cs2100de.github.io/labs/manuals/01/lab_01/">CS2100DE Lab 1</a> manual, which contains step-by-step instructions for the creation of HDL files, simulation, and FPGA implementation. The FPGA used in this course is different from that used in CS2100DE, so the input/output pin numbers to be used in the .xdc file are different.</p>
+<h2 id="introduction-to-axi-stream">Introduction to AXI Stream</h2>
+<p>The coprocesor (accelerator IP) that we create needs to be interfaced with the rest of the system for the processor to make it act as a coprocessor. The interface of an accelerator can be</p>
+<ul>
+<li>
+<p>Register-based: The processor can read and write the registers within the coprocessor to write inputs/read outputs - each register has an address within the address space of the processor. The parameters and return values are mapped to these registers/addresses. For example, the elements of an input vector/matrix A which has a depth (number of elements) of 512 and width (number of bytes/element) of 4 has address in the range peripheral_base + A_offset + 4*element_index (remember memory-mapped I/O from EE2028?). 4*element index will in this case will be in the range 0x000 to 0x800. The base address of the coprocessor peripheral is assigned in Vivado under the address tab. The coprocessor typically has an Advanced eXtensible Interface (AXI4 - supports burst transfers - faster for bulk data transfer, but requires more hardware) or AXI Lite interface which can be connected to the AXI bus of the system as a slave.</p>
+</li>
+<li>
+<p>Stream-based: There are separate input and output streams through which the data is streamed in/out. There is no concept of addresses, and the meaning of the data is derived from the order of the data (and possibly some 'tags'). For example, if we have two input vectors A and B of sizes 512 and 8 respectively, the first 512 words correspond to A, the next 64 correspond to B, and so on. Please read the Introduction to AXI Stream below.</p>
+</li>
+<li>
+<p>Memory-based: The co-processor reads inputs from / writes output to memory directly.</p>
+</li>
+</ul>
+<p>The hardware we are going to develop makes use of the AXI Stream interface to simplify the data receiving and sending processes. The AXI-Stream (AXIS) channels are 32-bit (can be higher), synchronous, master-slave, simplex (uni-directional flow of data per channel), point-to-point (only 2 devices are involved - no addressing needed) communication interfaces. A typical coprocessor needs one AXIS channel for inputs (AXIS Slave) and one AXIS channel for outputs (AXIS Master). AXIS coprocessors can't be connected directly to the AXI4 memory-mapped bus and requires some form of a bridge such as AXI Stream FIFO or AXI DMA.</p>
+<p>To see more on AXIS <a href="https://docs.amd.com/v/u/en-US/ug761_axi_reference_guide">here</a>.</p>
+<p><img alt="image.png" src="../Intro/AXIS_waveform.png" /></p>
+<p>The AXIS bus protocol is illustrated below (taken from the document in the link above).</p>
+<p>Data transfer is always from a Master interface to a Slave interface. This means a hardware block will receive data (input) through its slave interface (let's call it S_AXIS), and send data (output) through its master interface (let's call it M_AXIS).</p>
+<p><strong>TVALID</strong> is an indication from the master to the slave that the data placed by the master on <strong>TDATA</strong> is valid.</p>
+<p><strong>TREADY</strong> is an indication from slave to master that the slave is willing to accept data. The slave should capture the data at the very next active clock edge if TVALID and TREADY are both true. However, the master is not obliged to send any data simply because TREADY is asserted by the slave.</p>
+<p><strong>TLAST</strong> is an indication from the master to slave that the current data word is the last. TLAST is considered a sideband signal and is optional for AXIS. All the other signals mentioned above are essential signals for AXIS. It is useful in scenarios where the slave doesn't know exactly how many data words are sent by the master and is required if the slave is AXI Stream FIFO or AXI DMA, as these IPs (we will see in Lab 3) expect it.</p>
+<p>Other sideband signals such as <strong>TSTRB</strong> and <strong>TKEEP</strong> may need to be asserted by the master if the slave expects it - we will see later that AXI Stream FIFO doesn't, AXI DMA does. </p>
+<h2 id="assignment-1">Assignment 1</h2>
+<p>Assignment #1 is a homework exercise that involves creation and testing of an AXIS Matrix Multiplication Coprocessor and carries 7 marks.</p>
+<h3 id="axis-matrix-multiplication-coprocessor">AXIS Matrix Multiplication Coprocessor</h3>
+<p>Let <strong>A</strong> be an <em>m</em> × <em>n</em> matrix of your choice, containing elements between 0 and 127, each value represented as an 8-bit unsigned number. The coprocessor receives the elements of <strong>A</strong> as 32-bit numbers, of which the most significant 24-bits are 0sᶿ, one element per clock cycle through S_AXIS_DATA following the AXIS  bus protocol. You can assume a <a href="https://en.wikipedia.org/wiki/Row-_and_column-major_order">row-major order</a>, i.e., the first <em>n</em> values received are elements of the first row, the next <em>n</em> values elements of the second row, and so on. For now, let us assume that <em>m</em> = 2 and <em>n</em> = 4.</p>
+<p>Let <strong>B</strong> be an <em>n</em> × <em>1</em> matrix of your choice, received through S_AXIS_DATA in a similar manner as <strong>A</strong>, after all the elements of <strong>A</strong> have been received. In other words, the first <em>m</em>*<em>n</em> elements belong to matrix <strong>A</strong>, and the next <em>n</em> elements belong to matrix <strong>B</strong>.</p>
+<p>The coprocessor needs to find the product of <strong>A</strong> and <strong>B</strong> and divide it by 256. i.e <strong>RES</strong> =<strong>(A</strong> * <strong>B) / 256</strong>. Naturally, <strong>RES</strong> has to be an <em>m</em> × 1 matrix.</p>
+<p>The elements of <strong>RES</strong> should be sent out of the coprocessor through M_AXIS_DATA following the AXIS  bus protocol, one element per clock.</p>
+<p>The system should be able to operate continuously. Soon after (doesn't necessarily mean the very next clock cycle; within 2-4 clock cycles is ok), the coprocessor should be able to receive the next set of inputs, i.e., the next <strong>A</strong> and <strong>B</strong> without the need to assert an external reset.</p>
+<p>Your design should be such that it is easy to change matrix dimensions (<em>m</em> and <em>n</em>) with minimal effort. Ideally, it should be parameterized, but at the least should be designed in a flexible enough manner. The second dimension for B can be fixed to 1 for simplicity.</p>
+<p>ᶿIn fact, the most significant 25 bits are 0s since the number is between 0 and 127. However, let us just stick to the principle that we are dealing with an 8-bit unsigned number. Think of the values you send as representing the fractional part alone in unsigned fixed-point notation (0.8 - 0 bits for the integer part and 8 bits for the fractional part), i.e., using an implicit scale factor of 256. This requires us to adjust the position of the point by dividing by the scale factor after multiplication. This adjustment is unnecessary for addition and subtraction. Does this ring a bell? In EE/CG2028 Assignment #1, you used a scale factor to avoid dealing with fractions. Same story here; the scale factor is 256 instead of a power of 10.</p>
+<h3 id="coprocessor-logic">Coprocessor Logic</h3>
+<ul>
+<li>You need to have two RAMs - one each for <strong>A</strong> and <strong>B</strong>, and one element of either <strong>A</strong> or <strong>B</strong> can be populated with the incoming element through S_AXIS_TDATA in the 'Read_Inputs' state. You can also split the 'Read_Inputs' state into two separate states for storing A and B.</li>
+<li>Once all the values have been stored into <strong>A</strong> and <strong>B</strong> RAM(s), you will need to assert the 'Start' signal to the Matrix_Multiply unit.</li>
+<li>The Matrix_Multiply unit reads <strong>A</strong> and <strong>B</strong> RAMs and computes the product/256, element by element. Each element of the result is written into the appropriate location in the <strong>RES</strong> RAM. Matrix_Multiply will assert a 'Done' signal when the computation has finished.</li>
+<li>You will need to populate the 'Compute' state during which your coprocessor waits for the 'Done' signal from the Matrix_Multiply unit.</li>
+<li>Once the 'Done' is received from Matrix_Multiply unit, the contents of <strong>RES</strong> RAM should be sent out through M_AXIS_TDATA in 'Write_Outputs' state.</li>
+<li>After this, the system goes back to 'Idle' state. Note that you do not have to reset the RAM contents. However, other counters, etc might need to be reset.</li>
+<li>'Start' and 'Done' can be implemented /assumed to last for exactly one cycle.</li>
+</ul>
+<h3 id="files-templates">Files / Templates</h3>
+<p>You can find all lab 1 files <a href="https://github.com/NUS-EE4218/labs/tree/main/docs/Lab_1/Lab_1_Files">here</a>.</p>
+<ul>
+<li>
+<p>myip_v1_0.v / myip_v1_0.vhd - top-level module implementing the AXIS coprocessor. Currently, it simply takes in 4 words over 4 cycles and returns their sum, sum+1, sum+2, and sum+3 over 4 cycles. You need to modify this appropriately to interact with RAMs and Matrix_Multiply unit. You should not modify the inputs/outputs of myip_v1_0.v / myip_v1_0.vhd, as they should follow the AXIS standard. Synthesizing this will yield 56 warnings (could change slightly depending on the version of the tool) which are expected since memory and matrix multiply units are not used in the template code.</p>
+</li>
+<li>
+<p>memory_RAM.v / memory_RAM.vhd - memory to implement <strong>A</strong>, <strong>B,</strong> and <strong>RES</strong>. There is no need to modify this. It should be used as a component (you will need one instance for each RAM, with appropriate parameters used for width and depth) in myip_v1_0.v. It is fine to modify it if you really want to, as long as the read is synchronous.</p>
+</li>
+<li>
+<p>matrix_multiply.v /  matrix_multiply.vhd - a skeleton template for the actual matrix multiplication. Upon receiving the 'Start' signal, it reads from <strong>A</strong> and <strong>B</strong> RAMs, performs the fixed point multiplication, writes the result to <strong>RES</strong> RAM, and then asserts the 'Done' signal. This needs to be implemented properly and should be used as a component in myip_v1_0.v.</p>
+</li>
+<li>
+<p>test_input.mem - test vector input to the coprocessor; used by the testbench (tb_myip_v1_0.v). The numbers in the file should be in hex (2 hex digits = 8 bits).</p>
+</li>
+<li>
+<p>test_result_expected.mem - expected output to validate the output given by the coprocessor; used by the testbench (tb_myip_v1_0.v/vhd). The numbers in the file should be in hex (2 hex digits = 8 bits).</p>
+</li>
+<li>
+<p>tb_myip_v1_0.v / tb_myip_v1_0.vhd - a self-checking testbench for the coprocessor (myip_v1_0). It tests the addition functionality as mentioned in the description for the original myip_v1_0.v/vhd above.</p>
+</li>
+</ul>
+<p>It reads in an input vector from test_input.mem and passes it to the coprocessor, gets the result vector from the coprocessor, and compares it with the expected result vector in the file test_result_expected.mem. The testbench does this for two different test vectors (cases). If the actual result vector tallies with the expected result vector for both the test vectors (cases), it will print a message 'Test Passed', else, it prints 'Test Failed'. Note that in this example, the input vector, result vector, and expected result vector are all having 4 elements per test case.</p>
+<p>You can add the .mem files to the project and Vivado will automatically recognize it as a memory file and will add it under Simulation Sources &gt; Memory File. Alternatively (i.e., instead of adding it to the project), you can specify the full path to the files in the testbench - use forward slashes for the path to the test files, even on Windows, kind of like URLs.​</p>
+<p>The testbench can be modified very easily to test the matrix multiplication coprocessor. You will also need to change the input and output .mem files appropriately. For each test case, you need to have a vector of 12 elements (8 for A and 4 for B) for input, and the expected result vector will have 2 elements (RES). A well-designed <strong>testbench is expected</strong> (not only for this lab but for all hardware parts you implement for EE4218). - <strong>You should do both behavioral simulation as well as post-synthesis functional simulation</strong>. </p>
+<p>Verilog and VHDL files can be freely mixed. For example, you can use memory_RAM.v instead of memory_RAM.vhd as a component of myip_v1_0.vhd.</p>
+<h2 id="submission-info">Submission Info</h2>
+<p>Demonstrate during your designated slot in <strong>Week 5</strong>.</p>
+<p>Upload to Canvas within 1 hour of your demo the following. One submission per group is sufficient.</p>
+<ul>
+<li>A very short (&lt;=2 pages) report explaining your system architecture, FSM, resource usage details such as the number of slices/LUTs, etc.</li>
+<li>The relevant files you have created/modified, not the entire project folder, including</li>
+<li>.v/.vhd (RTL and testbenches) </li>
+<li>
+<p>.txt/.mem files. </p>
+<p>The files should be the ones <strong>used for the demo</strong>, not modified to fix issues that became apparent during the demo. It should be as a .zip archive, with the filename GroupNum_Lab1.zip.</p>
+</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["content.tooltips"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
