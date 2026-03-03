@@ -31,7 +31,7 @@ Please follow the following procedure.
 
 ### Submission Info
 
-Assignment 3 (7 marks)
+Assignment 3 (<span style="color: brown;">6</span> marks). As DMA can be tricky to get to work, only 1 mark is allocated for that.
 
 Demonstrate in **week 7**.
 
