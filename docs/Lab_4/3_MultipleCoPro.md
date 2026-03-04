@@ -2,7 +2,10 @@
 
 This document describes how you can (optional) connect multiple coprocessors to your system.
 
-It is possible to connect 2 coprocessors through 2 AXI FIFOs (or AXI DMAs). This is not a requirement, but not a bad idea as you can compare the software, HLS, and HDL versions in one go. You just need to add one more AXI Stream FIFO IP from the IP catalog and make connections the same way you did for the first one. On the C side, the following should help. A similar idea can be used if you have 2 coprocessors connected through 2 AXI DMAs (or for any two instances of the same IP for that matter).
+It is possible to connect 2 coprocessors through 2 AXI FIFOs (or AXI DMAs). This is not a requirement, but not a bad idea as you can compare the various implementations in one go. You just need to add one more AXI Stream FIFO IP from the IP catalog and make connections the same way you did for the first one. On the C side, the following should help. A similar idea can be used if you have 2 coprocessors connected through 2 AXI DMAs (or for any two instances of the same IP for that matter).
+
+!!! info "General Idea"
+    The code below is to illustrate the general idea. Appropriate changes will be necessary depending on the specific peripheral being duplicated as well as the version of Vitis used.
 
 ``` c
 
@@ -20,9 +23,9 @@ int main()
     XLlFifo_Config *Config1;
  
     /* Initialize the Device Configuration Interface driver for FIFO0 */
-    Config0 = XLlFfio_LookupConfig(XPAR_AXI_FIFO_0_DEVICE_ID);
+    Config0 = XLlFfio_LookupConfig(XPAR_AXI_FIFO_MM_S_0_BASEADDR);
     if (!Config0) {
-        xil_printf("No config found for %d\r\n", XPAR_AXI_FIFO_0_DEVICE_ID);
+        xil_printf("No config found for %d\r\n", XPAR_AXI_FIFO_MM_S_0_BASEADDR);
         return XST_FAILURE;
     }
  
@@ -33,9 +36,9 @@ int main()
     }
  
      /* Initialize the Device Configuration Interface driver for FIFO1 */
-    Config1 = XLlFfio_LookupConfig(XPAR_AXI_FIFO_1_DEVICE_ID);
+    Config1 = XLlFfio_LookupConfig(XPAR_AXI_FIFO_MM_S_1_BASEADDR);
     if (!Config1) {
-        xil_printf("No config found for %d\r\n", XPAR_AXI_FIFO_1_DEVICE_ID);
+        xil_printf("No config found for %d\r\n", XPAR_AXI_FIFO_MM_S_1_BASEADDR);
         return XST_FAILURE;
     }
  
