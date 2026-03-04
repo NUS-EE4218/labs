@@ -9,7 +9,7 @@ For this part, we will boot Ubuntu Linux on Kria board.
 
 AMD/Xilinx *does not* provide a [ready-to-use image for Kria board](https://www.pynq.io/boards.html) yet.
 
-A zipped SD card image is provided [here](<tba>). The download password is mentioned in the Canvas announcements. Download and unzip the image (.img).
+A zipped SD card image is provided [here](https://www.dropbox.com/scl/fi/flqe87ytiqcc8fw3z9nlo/Ubuntu_Pynq_Kria_v1.img.zip?rlkey=33y3mt949cpnv824br8dvvmqe&st=uc4tap52&dl=0). The download password is mentioned in the Canvas announcements. Download and unzip the image (.img).
 
 It is the [official Kria Ubuntu 22.04 image](https://ubuntu.com/download/amd) modified with the following:
 
