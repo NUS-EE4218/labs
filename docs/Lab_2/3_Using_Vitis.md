@@ -21,7 +21,7 @@ You will get a new platform project dialog. Enter a **name** for your project an
 In the next screen, make sure **Hardware Design** is selected. The click the **Browse** button. A file selector window will open, where you will have to navigate to <vivado project path> and select the **design\_1\_wrapper.xsa** file and click Next.  It will take a few seconds to read the .xsa file. Accept the defaults\*. 
 
 \*OS=standalone, Processor=psu\_cortexa53\_0, Generate boot components (First Stage Boot Loader aka FSBL) checked, etc. It is possible to do a non-FSBL initialisation via .tcl scripts that invoke the debugger, but we will just let it be via FSBL.
-If you fancy playing with FreeRTOS (which gives you support for multithreading etc.), you can choose that, though for CEG5203, standalone (a library providing basic functions such as stdin/stdout used by prinft/scanf and some other basic functionalities for 'bare metal' programming) is good enough.
+If you fancy playing with FreeRTOS (which gives you support for multithreading etc.), you can choose that, though for the course, standalone (a library providing basic functions such as stdin/stdout used by prinft/scanf and some other basic functionalities for 'bare metal' programming) is good enough.
 
 Click **Next** and click **Finish**.
 

@@ -6,25 +6,29 @@ The goal of this project is to create a hardware accelerator for a [multilayer 
 
 We will be implementing the hardware accelerator for inference (prediction), not for training. Training the neural network (which involves optimizing the weights of the connections in the network to minimize prediction error) can be done separately on a PC / Laptop and the weights can be stored in a file. For the sample data given on this page, the training is already done and the weights are provided. Implementing the architecture mentioned below and using these weights is good enough to meet the basic requirements. Even if you are using a different neural network architecture or dataset, the training can still be done offline.
 
+For the rest of this manual, we will use the OpenCL terminology:
+ * Host: The software running on ARM Cortex A53 (PS).
+ * Device: The accelerator / co-processor implementing the neural network in hardware, interfaced using DMA (recommended) or FIFO (fallback option) or AXI/AXI-Lite natively. This should be able to receive the weights and the data from the host, and return the predicted labels.
+
 We will need to implement prediction (predicting the label of a new input data) in 3 different ways
 
-1. SOFT: A pure software implementation on the ARM Cortex A53.
-2. HARD_HDL: An AXIS co-processor implementing the neural network in hardware, written in HDL. This should be able to receive the weights and the data from the software running on ARM Cortex A53, and return the predicted labels.
-3. HARD_HLS: An AXI / AXI Lite / AXIS co-processor implementing the neural network in hardware, which is at least partly created using the HLS tool. This should be able to receive the weights and the data from the software running on ARM Cortex A53, and return the predicted labels.
+1. SOFT: A pure software implementation running on the Host.
+2. HARD_HDL: A system with a Device written in HDL.
+3. HARD_HLS: An AXI / AXI Lite / AXIS Device, which is at least partly created using the HLS tool.
+
+The Host can be standalone (lower overhead) or Pynq (higher overhead, but has the advantage of being able to use a full OS and Python for the Host code).
 
 ### Procedure
 
 All the required files are [here](https://github.com/NUS-EE4218/labs/tree/main/docs/Project/Project_Files).
 
-You will send the data from the PC via the serial console (RealTerm, through the option to send a file). It is fine to hardcode the size of the data in your program; however, the data itself should be sent via the serial console.
+It is fine to hardcode the data in your Host. The Host should get the prediction done through SOFT or HARD_HDL or HARD_HLS, and display the results in some form - the raw result data need not be displayed. You can, for example, display the classification accuracy in case labels are known in advance, like how it is for the provided sample data. You could also display just the prediction, in case your system is able to take in real-time inputs, the labels of which aren't known in advance.
 
-The C program running on the ARM Cortex A53 processor should receive the dataset, get the prediction done through SOFT or HARD_HDL or HARD_HLS, and send the predictions back to the console. This can be captured in a file, which can then be compared against the actual labels to compute the prediction accuracy (using, say, Excel).
+The weights should not be hard-coded in your coprocessor design, i.e., the coprocessor should be able to deal with different weights. This allows the same coprocessor (hardware) to deal with possibly different datasets and weights, provided the neural network architecture and data dimensionality do not change. At least, the data dimensionality should not exceed what you had designed for, i.e., 7 for the design mentioned below on this page. A lower-dimensional data can be easily dealt with by setting the weights corresponding to unused features to 0. A dataset that has more samples / data points can be dealt with by having an appropriate host program that can break it into chunks which the coprocessor can accept, which is 64 in our case.
 
-The weights can be hard-coded in the C program or sent from the PC, but it should not be hard-coded in your coprocessor design, i.e., the coprocessor should be able to deal with different weights. This allows the same coprocessor (hardware) to deal with possibly different datasets and weights, provided the neural network architecture and data dimensionality do not change. At least, the data dimensionality should not exceed what you had designed for, i.e., 7 for the design mentioned below on this page. A lower-dimensional data can be easily dealt with by setting the weights corresponding to unused features to 0. A dataset that has more samples / data points can be dealt with by having an appropriate C program that can break it into chunks which the coprocessor can accept, which is 64 in our case.
+You can have 3 separate host programs and 2 different devices for demonstrating the functionality of the 3 predictors. However, it will be more elegant (though not mandatory) to use a single hardware platform, and a host program written such that the selection between SOFT, HARD_HDL, or HARD_HLS to do the prediction can be done easily. For example, this can be by sending some sort of message from the serial console or ssh.
 
-You can have 3 separate C programs and 2 different hardware for demonstrating the functionality of the 3 predictors. However, it will be more elegant (though not mandatory) to use a single hardware platform, and a C program written such that the selection between SOFT, HARD_HDL, or HARD_HLS to do the prediction can be done easily. For example, this can be by sending some sort of message from the serial console.
-
-It is required to have a timer to compare the time taken by the three predictors.
+It is required to have some form of a performance measurement mechanism to compare the time taken by the three predictors. This can be from AXI Timer if using standalone, or an OS provided timer if using Pynq.
 
 You can make your own choices regarding the neural network architecture such as the number of hidden layers, the number of neurons in each hidden layer, etc, subject to some minimum requirements:
 
@@ -83,7 +87,7 @@ You can google for terms such as pruning, quantization, encoding, approximate co
 
 The exact way you do the computations and the precision to use is entirely up to you.
 
-- It is a good idea to mimic the representation system you are planning to implement in hardware in your C implementation first. Later on, try it out in HLS as well, where you can mimic the hardware more closely through ap_uint<> datatype, which allows for arbitrary precision (not just 32-bit as vanilla C).
+- It is a good idea (but not a requirement) to mimic the representation system you are planning to implement in hardware in a C implementation first. Later on, try it out in HLS as well, where you can mimic the hardware more closely through ap_uint<> datatype, which allows for arbitrary precision (not just 32-bit as vanilla C).
 - This way, there will be a closer correspondence between C and HDL implementations - which means you will have a better idea of what exactly you are implementing, and the results you should get in each step, and hence you will have an easier time debugging.
+- You can do arbitrary precision in Python too with appropriate libraries, just that Python code isn't usable directly for HLS.
 - Also, if you are doing your own training, you can fine-tune the number of hidden layer neurons, etc. using your C implementation before setting the corresponding parameters in HDL.
-- A single hidden layer should be sufficient for many practical applications and having multiple hidden layers could be problematic in certain situations.
