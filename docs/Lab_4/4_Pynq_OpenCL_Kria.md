@@ -83,7 +83,7 @@ The example program adds 4 numbers, invoking the coprocessor and prints the sum,
 
 Have a look at the .py code and understand the functionality. It is more or less the same as the C program used with AXI DMA, except that the bitstream is downloaded by the host python code, rather than before the host code is run (which was the case with Assignment 2). This also means a few seconds delay before the computation is started and results are printed.
 
-Pynq requires the .hwh file with the same name as the .bit file, and in the same folder. This is already done for the example in the PynqDMAExample folder.
+Pynq requires the .hwh file\* with the same name as the .bit file, and in the same folder. This is already done for the example in the PynqDMAExample folder.
 
 `sudo -s` // the prompt will change to #. You are now in a root shell.
 
@@ -93,9 +93,9 @@ Pynq requires the .hwh file with the same name as the .bit file, and in the same
 
 `python3 PynqDMAExample.py` // run it
 
-To have a new .bit and .hwh, first have the .xsa ready. The .xsa can be unzipped using any tool that can deal with .zip (rename it to .zip if necessary). You will then find the .bit and the .hwh (The one we need is the top level .hwh, usually named design_1.hwh; not those named design_1_axi_smc_*.hwh) file. Rename the .hwh file to have the same as the .bit file, except for the extension.
+\*To have a new .bit and .hwh, first have the .xsa ready. The .xsa can be unzipped using any tool that can deal with .zip (rename it to .zip if necessary). You will then find the .bit and the .hwh (The one we need is the top level .hwh, usually named design_1.hwh; not those named design_1_axi_smc_*.hwh) file. Rename the .hwh file to have the same as the .bit file, except for the extension.
 
-Update: Version 3.x of Pynq allows the unextracted .xsa file to be used directly
+Version 3.x of Pynq, which is that is used in the provided SD card, allows the unextracted .xsa file to be used directly. 
 
 If you have SSH /Jupyter lab access, you can copy these files via MobaXterm/Muon SSH/Jupyter lab UI conveniently.
 
