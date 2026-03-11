@@ -93,9 +93,9 @@ Pynq requires the .hwh file\* with the same name as the .bit file, and in the sa
 
 `python3 PynqDMAExample.py` // run it
 
-\*To have a new .bit and .hwh, first have the .xsa ready. The .xsa can be unzipped using any tool that can deal with .zip (rename it to .zip if necessary). You will then find the .bit and the .hwh (The one we need is the top level .hwh, usually named design_1.hwh; not those named design_1_axi_smc_*.hwh) file. Rename the .hwh file to have the same as the .bit file, except for the extension.
+To have a new .bit and .hwh, first have the .xsa ready. The .xsa can be unzipped using any tool that can deal with .zip (rename it to .zip if necessary). You will then find the .bit and the .hwh (The one we need is the top level .hwh, usually named design_1.hwh; not those named design_1_axi_smc_*.hwh) file. Rename the .hwh file to have the same as the .bit file, except for the extension.
 
-Version 3.x of Pynq, which is that is used in the provided SD card, allows the unextracted .xsa file to be used directly. 
+\*Version 3.x of Pynq (which is that is used in the provided SD card) allows the unextracted .xsa file to be used directly instead of the .bit file. Extracting the .hwh file is unnecessary in this case.
 
 If you have SSH /Jupyter lab access, you can copy these files via MobaXterm/Muon SSH/Jupyter lab UI conveniently.
 
