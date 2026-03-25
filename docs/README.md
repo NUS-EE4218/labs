@@ -17,9 +17,9 @@ Lab Venue : Digital Electronics Lab (E4 level 3) - Outreach Room
 |-------|---------------|---------------------------------------------------------------|-----------|
 | 1 | Introduction to Hardware Design | 7% |  |
 | 2 | Introduction to Hardware/Software Co-design | 7% |  |
-| 3 | Integrating the Co-processor | 7% |  |
+| 3 | Integrating the Co-processor | <span style="color: brown;">6% </span> |  |
 | 4 | High-Level Synthesis | 7% |  |
-| 5 | Mini Project | 22% | 2% for Progress Evaluation 20% for Final Demo |
+| 5 | Mini Project | <span style="color: brown;">23%</span> | <span style="color: brown;">2%</span> for Progress Evaluation 20% for Final Demo |
 
 ### Lab Schedule
 
