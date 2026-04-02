@@ -67,7 +67,7 @@ Some notes on how to use Serial and Ethernet are given below.
 
     You can find the IP address from your laptop via `arp -a` from both Windows (Start Menu > cmd, or Start local terminal in MobaXterm) and Linux command line. In Windows, the IP address of the board will typically be 192.168.137.x, where x is between 2 and 254, corresponding to the Interface 192.168.137.1. If the interface looks like 169.x.x.x, it means internet connection sharing is not working. In Linux, the IP address given to the device is typically 10.42.0.x.
 
-    The IP address can be also be found from Kria Linux commandline via a Serial connection, and running `hostname -I` or `ip addr show` or `ip a` or `ifconfig` - for the last 3 commands, look for the inet value corresponding to eth0.
+    The IP address can be also be found from Kria Linux commandline via a Serial connection, and running `hostname -I` or `ip addr show` or `ip a` or `ifconfig` - for the last 3 commands, look for the inet value corresponding to eth0. If no meaningful ip is found, you can try `sudo dhclient eth0` to force a DHCP lookup, failing which you can also try toggling the network interface via `sudo ifconfig eth0 down` followed by `sudo ifconfig eth0 up`.
 
     IP address can also be set statically depending on the use case. In this scenario, IP addresses of both the Kria board and the laptop Ethernet interface will need to be set statically. This provides stable connection settings - IP address will not change; but our ability to use anything that needs internet, such as `apt` and `pip` may be limited.
 
