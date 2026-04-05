@@ -85,13 +85,29 @@ Have a look at the .py code and understand the functionality. It is more or less
 
 Pynq requires the .hwh file\* with the same name as the .bit file, and in the same folder. This is already done for the example in the PynqDMAExample folder.
 
-`sudo -s` // the prompt will change to #. You are now in a root shell.
+For running python files:
 
-`source /etc/profile.d/pynq_venv.sh` // activate the virtual environment
+```bash
+sudo -s # the prompt will change to '#'. You are now in a root shell.
 
-`cd /home/ubuntu/PynqDMAExample/` // change to the directory containing the python script
+source /etc/profile.d/pynq_venv.sh # activate the virtual environment
 
-`python3 PynqDMAExample.py` // run it
+cd /home/ubuntu/PynqDMAExample/ # change to the directory containing the python script
+
+python3 PynqDMAExample.py # run it
+```
+
+Running with Jupyter Notebook is also possible, 
+
+```bash
+sudo -s 
+source /etc/profile.d/pynq_venv.sh
+cd /root/jupyter_notebooks/  # Examples from AMD/Xilinx are stored here
+
+
+jupyter notebook password # Require password to log in to Jupyter Lab. Any password will work.
+jupyter notebook --allow-root # Will start the server. Url will be printed out on the terminal. Ex <kriaboard_ip_address>:9091 in your browser, and run the notebooks there.
+```
 
 To have a new .bit and .hwh, first have the .xsa ready. The .xsa can be unzipped using any tool that can deal with .zip (rename it to .zip if necessary). You will then find the .bit and the .hwh (The one we need is the top level .hwh, usually named design_1.hwh; not those named design_1_axi_smc_*.hwh) file. Rename the .hwh file to have the same as the .bit file, except for the extension.
 
