@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mutual Exclusion Visualizer - Interactive Teaching Tool</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  background:#0a0e27;color:#e0e0e0;
+  min-height:100vh;min-height:100dvh;
+  display:flex;flex-direction:column;
+}
+.header{
+  text-align:center;padding:12px 16px 6px;
+  background:linear-gradient(135deg,#0a0e27,#1a1e47);
+  border-bottom:2px solid #2a2e57;flex-shrink:0;
+}
+.header h1{
+  font-size:clamp(1rem,3.2vw,1.6rem);
+  background:linear-gradient(90deg,#60a5fa,#a78bfa,#f472b6);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;margin-bottom:3px;
+}
+.header p{color:#8888aa;font-size:clamp(0.65rem,1.8vw,0.82rem)}
+.mode-selector{
+  display:flex;justify-content:center;gap:8px;
+  padding:8px 12px;background:#0d1130;
+  border-bottom:1px solid #2a2e57;flex-shrink:0;flex-wrap:wrap;
+}
+.mode-btn{
+  padding:7px 14px;border:2px solid #3a3e67;border-radius:30px;
+  background:transparent;color:#aaa;font-size:clamp(0.68rem,1.8vw,0.82rem);
+  cursor:pointer;transition:all .3s;font-weight:600;white-space:nowrap;
+}
+.mode-btn:hover{border-color:#60a5fa;color:#60a5fa;background:rgba(96,165,250,.08)}
+.mode-btn.active{border-color:#f87171;background:rgba(248,113,113,.13);color:#f87171;box-shadow:0 0 15px rgba(248,113,113,.1)}
+.mode-btn.active.with-mutex{border-color:#34d399;background:rgba(52,211,153,.13);color:#34d399;box-shadow:0 0 15px rgba(52,211,153,.1)}
+.mode-btn.active.spinlock{border-color:#fbbf24;background:rgba(251,191,36,.13);color:#fbbf24;box-shadow:0 0 15px rgba(251,191,36,.1)}
+.main-container{
+  display:flex;flex:1;overflow:hidden;
+  max-width:1500px;width:100%;margin:0 auto;
+  padding:10px;gap:10px;
+}
+.viz-panel{flex:1;min-width:0;display:flex;flex-direction:column}
+.info-panel{
+  width:340px;flex-shrink:0;display:flex;flex-direction:column;
+  gap:8px;overflow-y:auto;overflow-x:hidden;
+  scrollbar-width:thin;scrollbar-color:#2a2e57 transparent;
+}
+.info-panel::-webkit-scrollbar{width:5px}
+.info-panel::-webkit-scrollbar-thumb{background:#2a2e57;border-radius:4px}
+.svg-wrap{
+  position:relative;flex:1;min-height:0;
+  background:linear-gradient(145deg,#0d1130,#111540);
+  border:1px solid #2a2e57;border-radius:12px;overflow:hidden;
+}
+.svg-wrap svg{display:block;width:100%;height:100%}
+.controls{
+  display:flex;justify-content:center;align-items:center;gap:10px;
+  padding:8px 12px;background:#0d1130;border-radius:10px;
+  border:1px solid #2a2e57;margin-top:8px;flex-shrink:0;
+}
+.ctrl-btn{
+  width:40px;height:40px;border-radius:50%;border:2px solid #3a3e67;
+  background:rgba(255,255,255,.03);color:#ccc;font-size:1rem;
+  cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;
+}
+.ctrl-btn:hover:not(:disabled){border-color:#60a5fa;color:#60a5fa;background:rgba(96,165,250,.1);transform:scale(1.05)}
+.ctrl-btn:disabled{opacity:.3;cursor:not-allowed}
+.ctrl-btn.primary{width:48px;height:48px;border-color:#60a5fa;color:#60a5fa;font-size:1.2rem}
+.step-indicator{font-size:.82rem;color:#8888aa;min-width:68px;text-align:center;font-weight:600}
+.kbd-hint{text-align:center;margin-top:5px;font-size:.67rem;color:#444;flex-shrink:0;line-height:1.5}
+.kbd{display:inline-block;padding:1px 5px;background:#1a1e47;border:1px solid #3a3e67;border-radius:3px;font-family:monospace;font-size:.67rem;color:#777}
+.card{background:linear-gradient(145deg,#0d1130,#111540);border:1px solid #2a2e57;border-radius:10px;padding:10px}
+.card h3{font-size:.73rem;text-transform:uppercase;letter-spacing:.7px;color:#60a5fa;margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.card h3 .icon{font-size:.95rem}
+.step-description{font-size:clamp(0.78rem,2vw,0.88rem);line-height:1.5;color:#ccc;min-height:36px}
+.hl{color:#60a5fa;font-weight:600}
+.hl-r{color:#f87171;font-weight:600}
+.hl-g{color:#34d399;font-weight:600}
+.hl-y{color:#fbbf24;font-weight:600}
+.hl-v{color:#c084fc;font-weight:600}
+.resource-table{width:100%;border-collapse:collapse;font-size:.74rem}
+.resource-table th{text-align:left;padding:4px 5px;color:#8888aa;border-bottom:1px solid #2a2e57;font-weight:600}
+.resource-table td{padding:4px 5px;border-bottom:1px solid rgba(42,46,87,.4);font-variant-numeric:tabular-nums}
+.status-dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:4px}
+.status-dot.free{background:#34d399}.status-dot.held{background:#f87171}.status-dot.waiting{background:#fbbf24}
+.status-dot.error{background:#f87171;box-shadow:0 0 6px #f87171}
+.log-container{max-height:150px;overflow-y:auto;flex:1;scrollbar-width:thin;scrollbar-color:#2a2e57 transparent}
+.log-container::-webkit-scrollbar{width:4px}
+.log-container::-webkit-scrollbar-thumb{background:#2a2e57;border-radius:3px}
+.log-entry{padding:3px 0;border-bottom:1px solid rgba(42,46,87,.3);font-size:.72rem;color:#777;display:flex;gap:5px}
+.log-entry.active{color:#ddd;font-weight:500}
+.log-entry.error{color:#f87171}
+.log-entry.success{color:#34d399}
+.log-step{color:#60a5fa;font-weight:700;min-width:16px}
+.legend{display:flex;flex-wrap:wrap;gap:8px;font-size:.7rem}
+.legend-item{display:flex;align-items:center;gap:4px}
+.legend-swatch{width:12px;height:12px;border-radius:3px;border:1px solid rgba(255,255,255,.08)}
+.overlay-banner{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);padding:10px 24px;border-radius:8px;font-size:clamp(.9rem,2.8vw,1.2rem);font-weight:800;letter-spacing:1.5px;opacity:0;transition:opacity .5s;pointer-events:none;z-index:10;text-transform:uppercase;text-align:center;line-height:1.4}
+.error-banner{background:rgba(220,38,38,.92);color:#fff;box-shadow:0 0 40px rgba(220,38,38,.5)}
+.success-banner{background:rgba(5,150,105,.92);color:#fff;box-shadow:0 0 40px rgba(5,150,105,.5)}
+.overlay-banner.visible{opacity:1}
+.race-indicator{display:inline-block;padding:2px 8px;border-radius:10px;font-size:.68rem;font-weight:700;letter-spacing:.4px}
+.race-indicator.danger{background:rgba(248,113,113,.15);color:#f87171;border:1px solid rgba(248,113,113,.3)}
+.race-indicator.safe{background:rgba(52,211,153,.12);color:#34d399;border:1px solid rgba(52,211,153,.3)}
+
+/* CODE PANEL */
+.code-panels{display:flex;gap:8px;flex-shrink:0;margin-top:8px}
+.code-card{
+  flex:1;min-width:0;background:linear-gradient(145deg,#0d1130,#111540);
+  border:1px solid #2a2e57;border-radius:10px;padding:8px 10px;overflow:hidden;
+}
+.code-card h4{
+  font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;
+  margin-bottom:5px;display:flex;align-items:center;gap:5px;
+}
+.code-card h4.thread-a{color:#60a5fa}
+.code-card h4.thread-b{color:#a78bfa}
+.code-block{
+  font-family:'Fira Code','Cascadia Code','JetBrains Mono',monospace;
+  font-size:clamp(0.62rem,1.5vw,0.76rem);
+  line-height:1.65;white-space:pre;overflow-x:auto;
+  scrollbar-width:thin;scrollbar-color:#2a2e57 transparent;
+  color:#7a7a9a;
+}
+.code-block::-webkit-scrollbar{height:3px}
+.code-block::-webkit-scrollbar-thumb{background:#2a2e57;border-radius:2px}
+.code-line{
+  display:block;padding:1px 6px;border-radius:3px;
+  transition:background .3s,color .3s;border-left:2px solid transparent;
+}
+.code-line.active-a{
+  background:rgba(96,165,250,.12);color:#93c5fd;
+  border-left-color:#60a5fa;
+}
+.code-line.active-b{
+  background:rgba(167,139,250,.12);color:#c4b5fd;
+  border-left-color:#a78bfa;
+}
+.code-line.error-line{
+  background:rgba(248,113,113,.12);color:#fca5a5;
+  border-left-color:#f87171;
+}
+.code-line.done-line{
+  background:rgba(52,211,153,.08);color:#6ee7b7;
+  border-left-color:#34d399;
+}
+.code-line.blocked-line{
+  background:rgba(251,191,36,.1);color:#fcd34d;
+  border-left-color:#fbbf24;
+}
+.code-line .kw{color:#c084fc}
+.code-line .fn{color:#60a5fa}
+.code-line .cm{color:#4a4a6a;font-style:italic}
+.code-line .num{color:#fbbf24}
+.code-line .var{color:#f0abfc}
+.code-line .str{color:#34d399}
+.code-line .op{color:#f87171}
+
+@keyframes pulseRed{0%,100%{filter:drop-shadow(0 0 4px rgba(248,113,113,.3))}50%{filter:drop-shadow(0 0 14px rgba(248,113,113,.8))}}
+@keyframes pulseGreen{0%,100%{filter:drop-shadow(0 0 4px rgba(52,211,153,.3))}50%{filter:drop-shadow(0 0 12px rgba(52,211,153,.7))}}
+@keyframes pulseYellow{0%,100%{filter:drop-shadow(0 0 3px rgba(251,191,36,.3))}50%{filter:drop-shadow(0 0 10px rgba(251,191,36,.6))}}
+@keyframes dashMove{to{stroke-dashoffset:-20}}
+.pulse-red{animation:pulseRed 1.4s ease-in-out infinite}
+.pulse-green{animation:pulseGreen 1.4s ease-in-out infinite}
+.pulse-yellow{animation:pulseYellow 1.4s ease-in-out infinite}
+.arrow-animated{animation:dashMove .8s linear infinite}
+
+@media(max-width:1024px){
+  .main-container{flex-direction:column;overflow-y:auto;padding:8px}
+  .info-panel{width:100%;overflow:visible;flex-shrink:0}
+  .svg-wrap{min-height:260px;flex:none;aspect-ratio:5/3.5}
+  .kbd-hint{display:none}
+  .code-panels{flex-direction:row}
+}
+@media(max-width:600px){
+  .mode-btn{padding:5px 10px;font-size:.68rem}
+  .controls{gap:6px;padding:6px}
+  .ctrl-btn{width:36px;height:36px;font-size:.95rem}
+  .ctrl-btn.primary{width:42px;height:42px;font-size:1.1rem}
+  .step-indicator{font-size:.74rem;min-width:58px}
+  .svg-wrap{aspect-ratio:5/4}
+  .card{padding:8px}
+  .code-panels{flex-direction:column}
+  .code-block{font-size:.62rem}
+}
+
+@media (min-width: 768px) {
+  :root {
+    --desktop-max-w: 960px;
+    --desktop-gap: 0.5rem;
+    --desktop-pad: 0.4rem;
+    --desktop-f-sm: 0.78rem;
+    --desktop-f-md: 0.85rem;
+    --desktop-f-lg: 0.95rem;
+  }
+
+  body, #app, .container, .wrapper, main {
+    max-width: var(--desktop-max-w) !important;
+    margin: 0 auto !important;
+    padding: var(--desktop-pad) !important;
+  }
+
+  /* Compact the 3 main sections (Race/Mutex/Spinlock or Thread panels) */
+  .panels, .modes, .grid, .visualization, .container > div {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: var(--desktop-gap) !important;
+  }
+
+  .panel, .card, .mode-box, .thread-view {
+    padding: var(--desktop-pad) !important;
+    font-size: var(--desktop-f-sm) !important;
+    line-height: 1.25 !important;
+  }
+
+  /* Tighten controls & step navigation */
+  .controls, .nav, .step-bar, .buttons {
+    flex-wrap: nowrap !important;
+    gap: var(--desktop-gap) !important;
+    padding: var(--desktop-pad) 0 !important;
+    font-size: var(--desktop-f-md) !important;
+  }
+
+  .controls button, .step-btn, select {
+    padding: 0.2rem 0.45rem !important;
+    font-size: var(--desktop-f-sm) !important;
+    min-height: 26px;
+    line-height: 1.1 !important;
+  }
+
+  /* Headings & tables */
+  h1, h2, h3, .title { font-size: var(--desktop-f-lg) !important; margin: 0.3rem 0 !important; }
+  table, .state-table, .log { font-size: var(--desktop-f-sm) !important; padding: var(--desktop-pad) !important; }
+  th, td { padding: 0.25rem 0.4rem !important; }
+  .legend, .footnote, .hint { font-size: var(--desktop-f-sm) !important; margin-top: 0.4rem !important; }
+}
+
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>🔒 Mutual Exclusion Visualizer</h1>
+  <p>Why concurrent access to shared data needs protection — with C code</p>
+</div>
+<div class="mode-selector">
+  <button class="mode-btn active" data-mode="no_mutex" onclick="switchMode('no_mutex')">💥 No Mutex (Race)</button>
+  <button class="mode-btn" data-mode="with_mutex" onclick="switchMode('with_mutex')">🔒 With Mutex</button>
+  <button class="mode-btn" data-mode="spinlock" onclick="switchMode('spinlock')">⏳ Spinlock</button>
+</div>
+<div class="main-container">
+  <div class="viz-panel">
+    <div class="svg-wrap" id="svgWrap">
+      <svg id="mainSvg" viewBox="0 0 520 340" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="gPA" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#3b82f6" stop-opacity=".28"/><stop offset="100%" stop-color="#6366f1" stop-opacity=".08"/></linearGradient>
+          <linearGradient id="gPB" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#8b5cf6" stop-opacity=".28"/><stop offset="100%" stop-color="#a855f7" stop-opacity=".08"/></linearGradient>
+          <linearGradient id="gShared" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f59e0b" stop-opacity=".2"/><stop offset="100%" stop-color="#f97316" stop-opacity=".06"/></linearGradient>
+          <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse"><path d="M30 0L0 0 0 30" fill="none" stroke="#1a1e47" stroke-width=".4"/></pattern>
+          <marker id="ahBlue" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#60a5fa"/></marker>
+          <marker id="ahPurple" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#a78bfa"/></marker>
+          <marker id="ahRed" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#f87171"/></marker>
+          <marker id="ahGreen" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#34d399"/></marker>
+          <marker id="ahYellow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#fbbf24"/></marker>
+        </defs>
+        <rect width="520" height="340" fill="url(#grid)" opacity=".4"/>
+        <g id="gBack"></g><g id="gArrows"></g><g id="gEntities"></g><g id="gLabels"></g><g id="gOverlay"></g>
+      </svg>
+      <div class="overlay-banner error-banner" id="errorBanner">💥 RACE CONDITION</div>
+      <div class="overlay-banner success-banner" id="successBanner">✅ CORRECT RESULT</div>
+    </div>
+    <!-- CODE PANELS -->
+    <div class="code-panels" id="codePanels">
+      <div class="code-card"><h4 class="thread-a">🖥️ Thread A</h4><div class="code-block" id="codeA"></div></div>
+      <div class="code-card"><h4 class="thread-b">💻 Thread B</h4><div class="code-block" id="codeB"></div></div>
+    </div>
+    <div class="controls">
+      <button class="ctrl-btn" onclick="resetScenario()" title="Reset (R)">⟲</button>
+      <button class="ctrl-btn" id="btnPrev" onclick="prevStep()" title="Previous (←)">◀</button>
+      <span class="step-indicator" id="stepInd">Step 0/0</span>
+      <button class="ctrl-btn primary" id="btnNext" onclick="nextStep()" title="Next (→/Space)">▶</button>
+      <button class="ctrl-btn" id="btnEnd" onclick="goToEnd()" title="End">⏭</button>
+    </div>
+    <div class="kbd-hint">
+      <span class="kbd">←</span> Prev <span class="kbd">→</span><span class="kbd">Space</span> Next
+      <span class="kbd">R</span> Reset <span class="kbd">1</span><span class="kbd">2</span><span class="kbd">3</span> Modes · Click diagram to advance
+    </div>
+  </div>
+  <div class="info-panel">
+    <div class="card"><h3><span class="icon">📖</span> Current Step</h3><div class="step-description" id="stepDesc">Press <span class="hl">▶</span> or <span class="hl">→</span> to begin.</div></div>
+    <div class="card"><h3><span class="icon">📊</span> State</h3><table class="resource-table"><thead><tr><th>Entity</th><th>Value</th><th>Action</th><th>Status</th></tr></thead><tbody id="tBody"></tbody></table></div>
+    <div class="card" style="flex:1;display:flex;flex-direction:column;min-height:80px"><h3><span class="icon">📝</span> Event Log</h3><div class="log-container" id="logBox"></div></div>
+    <div class="card"><h3><span class="icon">🔑</span> Legend</h3><div class="legend">
+      <div class="legend-item"><div class="legend-swatch" style="background:#3b82f6"></div>Thread A</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#8b5cf6"></div>Thread B</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#f59e0b"></div>Shared Var</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#10b981"></div>Lock</div>
+    </div></div>
+  </div>
+</div>
+<script>
+// === LAYOUT ===
+const P={
+  A:{x:100,y:100,r:44},
+  B:{x:420,y:100,r:44},
+  SH:{x:260,y:260,hw:76,hh:40},
+  LK:{x:260,y:100,hw:40,hh:28}
+};
+const ns='http://www.w3.org/2000/svg';
+function mkEl(t,a,p){const e=document.createElementNS(ns,t);for(const[k,v]of Object.entries(a))e.setAttribute(k,v);if(p)p.appendChild(e);return e}
+function mkTxt(x,y,s,f,sz,a,p){const t=mkEl('text',{x,y,'text-anchor':'middle','dominant-baseline':'middle',fill:f,'font-size':sz,'font-family':"'Segoe UI',system-ui,sans-serif",...(a||{})},p);t.textContent=s;return t}
+function borderC(cx,cy,r,tx,ty){const a=Math.atan2(ty-cy,tx-cx);return{x:cx+Math.cos(a)*r,y:cy+Math.sin(a)*r}}
+function borderR(cx,cy,hw,hh,tx,ty){const dx=tx-cx,dy=ty-cy,ta=Math.abs(dy/(dx||1e-9));let bx,by;if(ta<=hh/hw){bx=hw*Math.sign(dx||1);by=bx*dy/(dx||1e-9)}else{by=hh*Math.sign(dy||1);bx=by*dx/(dy||1e-9)};return{x:cx+bx,y:cy+by}}
+function drawArrow(gA,from,to,color,marker,dash,anim,bulge){
+  let s,e;
+  if(from.r)s=borderC(from.x,from.y,from.r,to.x,to.y);else s=borderR(from.x,from.y,from.hw,from.hh,to.x,to.y);
+  if(to.r)e=borderC(to.x,to.y,to.r,from.x,from.y);else e=borderR(to.x,to.y,to.hw,to.hh,from.x,from.y);
+  const dx=e.x-s.x,dy=e.y-s.y,d=Math.hypot(dx,dy),px=-dy/d,py=dx/d;
+  const b=(bulge||1)*Math.min(d*.18,28);
+  const mx=(s.x+e.x)/2+px*b,my=(s.y+e.y)/2+py*b;
+  const p=mkEl('path',{d:`M${s.x.toFixed(1)},${s.y.toFixed(1)} Q${mx.toFixed(1)},${my.toFixed(1)} ${e.x.toFixed(1)},${e.y.toFixed(1)}`,fill:'none',stroke:color,'stroke-width':'2.3','stroke-dasharray':dash||'none','marker-end':marker,opacity:'.8'},gA);
+  if(anim)p.classList.add('arrow-animated');
+  return{lx:(s.x+mx+e.x)/3,ly:(s.y+my+e.y)/3};
+}
+
+// === CODE TEMPLATES ===
+// Removed extra spacing by ensuring no empty strings or breaks are in the arrays
+const CODE={
+no_mutex:{
+  A:[
+    {id:'a0',html:'<span class="cm">// Thread A: no lock!</span>'},
+    {id:'a1',html:'<span class="kw">int</span> <span class="var">tmp</span> = <span class="var">balance</span>;  <span class="cm">// READ</span>'},
+    {id:'a2',html:'<span class="var">tmp</span> = <span class="var">tmp</span> <span class="op">+</span> <span class="num">10</span>;      <span class="cm">// MODIFY</span>'},
+    {id:'a3',html:'<span class="var">balance</span> = <span class="var">tmp</span>;    <span class="cm">// WRITE</span>'},
+  ],
+  B:[
+    {id:'b0',html:'<span class="cm">// Thread B: no lock!</span>'},
+    {id:'b1',html:'<span class="kw">int</span> <span class="var">tmp</span> = <span class="var">balance</span>;  <span class="cm">// READ</span>'},
+    {id:'b2',html:'<span class="var">tmp</span> = <span class="var">tmp</span> <span class="op">+</span> <span class="num">10</span>;      <span class="cm">// MODIFY</span>'},
+    {id:'b3',html:'<span class="var">balance</span> = <span class="var">tmp</span>;    <span class="cm">// WRITE</span>'},
+  ]
+},
+with_mutex:{
+  A:[
+    {id:'a0',html:'<span class="cm">// Thread A: mutex</span>'},
+    {id:'a1',html:'<span class="fn">pthread_mutex_lock</span>(&<span class="var">mtx</span>);'},
+    {id:'a2',html:'<span class="kw">int</span> <span class="var">tmp</span> = <span class="var">balance</span>;  <span class="cm">// READ</span>'},
+    {id:'a3',html:'<span class="var">tmp</span> = <span class="var">tmp</span> <span class="op">+</span> <span class="num">10</span>;      <span class="cm">// MODIFY</span>'},
+    {id:'a4',html:'<span class="var">balance</span> = <span class="var">tmp</span>;    <span class="cm">// WRITE</span>'},
+    {id:'a5',html:'<span class="fn">pthread_mutex_unlock</span>(&<span class="var">mtx</span>);'},
+  ],
+  B:[
+    {id:'b0',html:'<span class="cm">// Thread B: mutex</span>'},
+    {id:'b1',html:'<span class="fn">pthread_mutex_lock</span>(&<span class="var">mtx</span>);'},
+    {id:'b2',html:'<span class="kw">int</span> <span class="var">tmp</span> = <span class="var">balance</span>;  <span class="cm">// READ</span>'},
+    {id:'b3',html:'<span class="var">tmp</span> = <span class="var">tmp</span> <span class="op">+</span> <span class="num">10</span>;      <span class="cm">// MODIFY</span>'},
+    {id:'b4',html:'<span class="var">balance</span> = <span class="var">tmp</span>;    <span class="cm">// WRITE</span>'},
+    {id:'b5',html:'<span class="fn">pthread_mutex_unlock</span>(&<span class="var">mtx</span>);'},
+  ]
+},
+spinlock:{
+  A:[
+    {id:'a0',html:'<span class="cm">// Thread A: spinlock</span>'},
+    {id:'a1',html:'<span class="kw">while</span>(<span class="fn">test_and_set</span>(&<span class="var">lock</span>));'},
+    {id:'a2',html:'<span class="kw">int</span> <span class="var">tmp</span> = <span class="var">balance</span>;  <span class="cm">// READ</span>'},
+    {id:'a3',html:'<span class="var">tmp</span> = <span class="var">tmp</span> <span class="op">+</span> <span class="num">10</span>;      <span class="cm">// MODIFY</span>'},
+    {id:'a4',html:'<span class="var">balance</span> = <span class="var">tmp</span>;    <span class="cm">// WRITE</span>'},
+    {id:'a5',html:'<span class="var">lock</span> = <span class="num">0</span>;           <span class="cm">// RELEASE</span>'},
+  ],
+  B:[
+    {id:'b0',html:'<span class="cm">// Thread B: spinlock</span>'},
+    {id:'b1',html:'<span class="kw">while</span>(<span class="fn">test_and_set</span>(&<span class="var">lock</span>));'},
+    {id:'b2',html:'<span class="kw">int</span> <span class="var">tmp</span> = <span class="var">balance</span>;  <span class="cm">// READ</span>'},
+    {id:'b3',html:'<span class="var">tmp</span> = <span class="var">tmp</span> <span class="op">+</span> <span class="num">10</span>;      <span class="cm">// MODIFY</span>'},
+    {id:'b4',html:'<span class="var">balance</span> = <span class="var">tmp</span>;    <span class="cm">// WRITE</span>'},
+    {id:'b5',html:'<span class="var">lock</span> = <span class="num">0</span>;           <span class="cm">// RELEASE</span>'},
+  ]
+}
+};
+
+// === SCENARIOS ===
+// hlA/hlB: array of {line: index, cls: 'active-a'|'active-b'|'error-line'|...}
+const S={
+no_mutex:{title:"No Mutex — Race Condition",steps:[
+{desc:'Two threads both execute <code>balance += 10</code>. Shared <span class="hl-y">balance = 100</span>. Expected final: <strong>120</strong>. No lock protects the critical section.',
+  shared:100,localA:null,localB:null,lockOwner:null,lockExists:false,
+  phaseA:'idle',phaseB:'idle',error:false,ok:false,arrows:[],
+  hlA:[],hlB:[],
+  log:'balance=100. No lock. Both threads ready.'},
+{desc:'<span class="hl">Thread A</span> executes <code>tmp = balance</code> — reads 100 into its local register.',
+  shared:100,localA:100,localB:null,lockOwner:null,lockExists:false,
+  phaseA:'read',phaseB:'idle',error:false,ok:false,
+  arrows:[{from:'SH',to:'A',color:'#60a5fa',marker:'url(#ahBlue)',label:'read 100',bulge:1}],
+  hlA:[{line:1,cls:'active-a'}],hlB:[],
+  log:'A: tmp = balance → 100'},
+{desc:'⚡ <span class="hl-r">Context switch!</span> A is suspended after READ but before WRITE. A\'s local <code>tmp=100</code> is frozen in its register.',
+  shared:100,localA:100,localB:null,lockOwner:null,lockExists:false,
+  phaseA:'suspended',phaseB:'idle',error:false,ok:false,arrows:[],
+  hlA:[{line:1,cls:'blocked-line'}],hlB:[],
+  log:'⚡ Context switch! A suspended mid-operation.'},
+{desc:'<span class="hl-v">Thread B</span> reads <code>tmp = balance</code> — also sees <strong>100</strong> (A hasn\'t written yet!).',
+  shared:100,localA:100,localB:100,lockOwner:null,lockExists:false,
+  phaseA:'suspended',phaseB:'read',error:false,ok:false,
+  arrows:[{from:'SH',to:'B',color:'#a78bfa',marker:'url(#ahPurple)',label:'read 100',bulge:-1}],
+  hlA:[{line:1,cls:'blocked-line'}],hlB:[{line:1,cls:'active-b'}],
+  log:'B: tmp = balance → 100 (stale!)'},
+{desc:'<span class="hl-v">Thread B</span> computes <code>tmp = 100 + 10</code> = 110.',
+  shared:100,localA:100,localB:110,lockOwner:null,lockExists:false,
+  phaseA:'suspended',phaseB:'modify',error:false,ok:false,arrows:[],
+  hlA:[{line:1,cls:'blocked-line'}],hlB:[{line:2,cls:'active-b'}],
+  log:'B: tmp = 100 + 10 → 110'},
+{desc:'<span class="hl-v">Thread B</span> writes <code>balance = 110</code>.',
+  shared:110,localA:100,localB:110,lockOwner:null,lockExists:false,
+  phaseA:'suspended',phaseB:'write',error:false,ok:false,
+  arrows:[{from:'B',to:'SH',color:'#a78bfa',marker:'url(#ahPurple)',label:'write 110',bulge:-1}],
+  hlA:[{line:1,cls:'blocked-line'}],hlB:[{line:3,cls:'active-b'}],
+  log:'B: balance = 110 ✓ (B\'s part correct)'},
+{desc:'⚡ Switch back to <span class="hl">Thread A</span>. A still has stale <code>tmp = 100</code>. A computes <code>100 + 10 = 110</code>.',
+  shared:110,localA:110,localB:110,lockOwner:null,lockExists:false,
+  phaseA:'stale',phaseB:'done',error:false,ok:false,arrows:[],
+  hlA:[{line:2,cls:'error-line'}],hlB:[{line:3,cls:'done-line'}],
+  log:'⚡ Switch to A. A: tmp=100+10=110 (STALE!)'},
+{desc:'<span class="hl">Thread A</span> writes <code>balance = 110</code> — <span class="hl-r">overwrites B\'s update!</span>',
+  shared:110,localA:110,localB:110,lockOwner:null,lockExists:false,
+  phaseA:'write-stale',phaseB:'done',error:false,ok:false,
+  arrows:[{from:'A',to:'SH',color:'#f87171',marker:'url(#ahRed)',label:'write 110 ⚠',bulge:1}],
+  hlA:[{line:3,cls:'error-line'}],hlB:[{line:3,cls:'done-line'}],
+  log:'A: balance = 110 — OVERWRITES B!'},
+{desc:'<span class="hl-r">💥 LOST UPDATE!</span> balance = <strong>110</strong> instead of <strong>120</strong>. B\'s increment was lost because A used a stale read. The 3-step read-modify-write was <em>not atomic</em>.',
+  shared:110,localA:110,localB:110,lockOwner:null,lockExists:false,
+  phaseA:'done',phaseB:'done',error:true,ok:false,arrows:[],
+  hlA:[{line:3,cls:'error-line'}],hlB:[{line:3,cls:'error-line'}],
+  log:'💥 RACE! balance=110 (expected 120). Lost update!'}
+]},
+
+with_mutex:{title:"With Mutex — Protected",steps:[
+{desc:'Same code, but wrapped in <code>pthread_mutex_lock/unlock</code>. The mutex ensures only one thread is in the critical section at a time.<br><span class="hl-y">balance = 100</span>.',
+  shared:100,localA:null,localB:null,lockOwner:null,lockExists:true,
+  phaseA:'idle',phaseB:'idle',error:false,ok:false,arrows:[],
+  hlA:[],hlB:[],
+  log:'Mutex initialized. balance=100.'},
+{desc:'<span class="hl">Thread A</span> calls <code>pthread_mutex_lock(&mtx)</code>. Mutex is free → <span class="hl-g">acquired!</span>',
+  shared:100,localA:null,localB:null,lockOwner:'A',lockExists:true,
+  phaseA:'locked',phaseB:'idle',error:false,ok:false,
+  arrows:[{from:'A',to:'LK',color:'#34d399',marker:'url(#ahGreen)',label:'lock() ✓',bulge:-1}],
+  hlA:[{line:1,cls:'active-a'}],hlB:[],
+  log:'A: mutex_lock → acquired 🔒'},
+{desc:'<span class="hl">Thread A</span> reads: <code>tmp = balance</code> → 100.',
+  shared:100,localA:100,localB:null,lockOwner:'A',lockExists:true,
+  phaseA:'read',phaseB:'idle',error:false,ok:false,
+  arrows:[{from:'SH',to:'A',color:'#60a5fa',marker:'url(#ahBlue)',label:'read 100',bulge:1}],
+  hlA:[{line:2,cls:'active-a'}],hlB:[],
+  log:'A: tmp = balance → 100 (in CS)'},
+{desc:'⚡ Context switch! <span class="hl-v">Thread B</span> tries <code>pthread_mutex_lock</code> — mutex held by A → <span class="hl-y">B BLOCKS</span> (sleeps).',
+  shared:100,localA:100,localB:null,lockOwner:'A',lockExists:true,
+  phaseA:'read',phaseB:'blocked',error:false,ok:false,
+  arrows:[{from:'B',to:'LK',color:'#fbbf24',marker:'url(#ahYellow)',label:'BLOCKED',bulge:1,dash:'6 4',anim:true}],
+  hlA:[{line:2,cls:'active-a'}],hlB:[{line:1,cls:'blocked-line'}],
+  log:'B: mutex_lock → BLOCKED 💤 (A holds lock)'},
+{desc:'<span class="hl">Thread A</span> computes <code>tmp = 100+10</code> and writes <code>balance = 110</code>.',
+  shared:110,localA:110,localB:null,lockOwner:'A',lockExists:true,
+  phaseA:'write',phaseB:'blocked',error:false,ok:false,
+  arrows:[{from:'A',to:'SH',color:'#60a5fa',marker:'url(#ahBlue)',label:'write 110',bulge:1}],
+  hlA:[{line:3,cls:'active-a'},{line:4,cls:'active-a'}],hlB:[{line:1,cls:'blocked-line'}],
+  log:'A: tmp=110, balance=110'},
+{desc:'<span class="hl">Thread A</span> calls <code>pthread_mutex_unlock</code>. Lock released → <span class="hl-g">B wakes up and acquires!</span>',
+  shared:110,localA:110,localB:null,lockOwner:'B',lockExists:true,
+  phaseA:'done',phaseB:'locked',error:false,ok:false,
+  arrows:[{from:'B',to:'LK',color:'#34d399',marker:'url(#ahGreen)',label:'lock() ✓',bulge:1}],
+  hlA:[{line:5,cls:'done-line'}],hlB:[{line:1,cls:'active-b'}],
+  log:'A: unlock. B wakes → acquires 🔒'},
+{desc:'<span class="hl-v">Thread B</span> reads: <code>tmp = balance</code> → <span class="hl-g">110</span> (the updated value!).',
+  shared:110,localA:110,localB:110,lockOwner:'B',lockExists:true,
+  phaseA:'done',phaseB:'read',error:false,ok:false,
+  arrows:[{from:'SH',to:'B',color:'#a78bfa',marker:'url(#ahPurple)',label:'read 110',bulge:-1}],
+  hlA:[{line:5,cls:'done-line'}],hlB:[{line:2,cls:'active-b'}],
+  log:'B: tmp = balance → 110 ✓ (fresh!)'},
+{desc:'<span class="hl-v">Thread B</span> computes <code>110+10=120</code>, writes <code>balance = 120</code>.',
+  shared:120,localA:110,localB:120,lockOwner:'B',lockExists:true,
+  phaseA:'done',phaseB:'write',error:false,ok:false,
+  arrows:[{from:'B',to:'SH',color:'#a78bfa',marker:'url(#ahPurple)',label:'write 120',bulge:-1}],
+  hlA:[{line:5,cls:'done-line'}],hlB:[{line:3,cls:'active-b'},{line:4,cls:'active-b'}],
+  log:'B: tmp=120, balance=120'},
+{desc:'<span class="hl-v">Thread B</span> unlocks mutex.',
+  shared:120,localA:110,localB:120,lockOwner:null,lockExists:true,
+  phaseA:'done',phaseB:'done',error:false,ok:false,arrows:[],
+  hlA:[{line:5,cls:'done-line'}],hlB:[{line:5,cls:'done-line'}],
+  log:'B: unlock. Both done.'},
+{desc:'<span class="hl-g">✅ CORRECT!</span> balance = <strong>120</strong>. The mutex serialized access: A\'s full read-modify-write completed before B could start. No stale reads.',
+  shared:120,localA:110,localB:120,lockOwner:null,lockExists:true,
+  phaseA:'done',phaseB:'done',error:false,ok:true,arrows:[],
+  hlA:[{line:1,cls:'done-line'},{line:2,cls:'done-line'},{line:3,cls:'done-line'},{line:4,cls:'done-line'},{line:5,cls:'done-line'}],
+  hlB:[{line:1,cls:'done-line'},{line:2,cls:'done-line'},{line:3,cls:'done-line'},{line:4,cls:'done-line'},{line:5,cls:'done-line'}],
+  log:'✅ balance=120. Mutex worked!'}
+]},
+
+spinlock:{title:"Spinlock — Busy-Wait Mutex",steps:[
+{desc:'Spinlock variant: <code>while(test_and_set(&lock));</code> — an atomic hardware instruction. Waiting thread <em>busy-waits</em> instead of sleeping.<br><span class="hl-y">balance = 100</span>.',
+  shared:100,localA:null,localB:null,lockOwner:null,lockExists:true,lockType:'spin',
+  phaseA:'idle',phaseB:'idle',error:false,ok:false,arrows:[],
+  hlA:[],hlB:[],
+  log:'Spinlock ready. balance=100.'},
+{desc:'<span class="hl">Thread A</span>: <code>test_and_set(&lock)</code> returns 0 (was free) → <span class="hl-g">acquired!</span> Lock is now 1.',
+  shared:100,localA:null,localB:null,lockOwner:'A',lockExists:true,lockType:'spin',
+  phaseA:'locked',phaseB:'idle',error:false,ok:false,
+  arrows:[{from:'A',to:'LK',color:'#34d399',marker:'url(#ahGreen)',label:'TAS→0 ✓',bulge:-1}],
+  hlA:[{line:1,cls:'active-a'}],hlB:[],
+  log:'A: test_and_set→0 (free). Acquired! 🔒'},
+{desc:'<span class="hl">Thread A</span> reads <code>tmp = balance</code> → 100.',
+  shared:100,localA:100,localB:null,lockOwner:'A',lockExists:true,lockType:'spin',
+  phaseA:'read',phaseB:'idle',error:false,ok:false,
+  arrows:[{from:'SH',to:'A',color:'#60a5fa',marker:'url(#ahBlue)',label:'read 100',bulge:1}],
+  hlA:[{line:2,cls:'active-a'}],hlB:[],
+  log:'A: tmp = balance → 100'},
+{desc:'<span class="hl-v">Thread B</span>: <code>test_and_set(&lock)</code> returns 1 (locked!) → loop continues. B <span class="hl-y">spins</span>, burning CPU: <code>while(test_and_set)…</code>',
+  shared:100,localA:100,localB:null,lockOwner:'A',lockExists:true,lockType:'spin',
+  phaseA:'read',phaseB:'spinning',error:false,ok:false,
+  arrows:[{from:'B',to:'LK',color:'#fbbf24',marker:'url(#ahYellow)',label:'TAS→1 🔄',bulge:1,dash:'4 4',anim:true}],
+  hlA:[{line:2,cls:'active-a'}],hlB:[{line:1,cls:'blocked-line'}],
+  log:'B: test_and_set→1. Spinning… 🔄🔄🔄'},
+{desc:'<span class="hl">Thread A</span>: <code>tmp=100+10=110</code>, writes <code>balance=110</code>. B still spinning in the background.',
+  shared:110,localA:110,localB:null,lockOwner:'A',lockExists:true,lockType:'spin',
+  phaseA:'write',phaseB:'spinning',error:false,ok:false,
+  arrows:[{from:'A',to:'SH',color:'#60a5fa',marker:'url(#ahBlue)',label:'write 110',bulge:1},{from:'B',to:'LK',color:'#fbbf24',marker:'url(#ahYellow)',label:'spinning…',bulge:1,dash:'4 4',anim:true}],
+  hlA:[{line:3,cls:'active-a'},{line:4,cls:'active-a'}],hlB:[{line:1,cls:'blocked-line'}],
+  log:'A: write 110. B still spinning…'},
+{desc:'<span class="hl">Thread A</span>: <code>lock = 0</code> (release). On B\'s next iteration, <code>test_and_set</code> returns 0 → <span class="hl-g">B acquires instantly!</span> No OS wake-up delay.',
+  shared:110,localA:110,localB:null,lockOwner:'B',lockExists:true,lockType:'spin',
+  phaseA:'done',phaseB:'locked',error:false,ok:false,
+  arrows:[{from:'B',to:'LK',color:'#34d399',marker:'url(#ahGreen)',label:'TAS→0 ✓',bulge:1}],
+  hlA:[{line:5,cls:'done-line'}],hlB:[{line:1,cls:'active-b'}],
+  log:'A: lock=0. B: TAS→0, acquired! 🔒'},
+{desc:'<span class="hl-v">B</span> reads <code>tmp = balance</code> → <span class="hl-g">110</span> (correct!).',
+  shared:110,localA:110,localB:110,lockOwner:'B',lockExists:true,lockType:'spin',
+  phaseA:'done',phaseB:'read',error:false,ok:false,
+  arrows:[{from:'SH',to:'B',color:'#a78bfa',marker:'url(#ahPurple)',label:'read 110',bulge:-1}],
+  hlA:[{line:5,cls:'done-line'}],hlB:[{line:2,cls:'active-b'}],
+  log:'B: tmp = balance → 110 ✓'},
+{desc:'<span class="hl-v">B</span>: <code>110+10=120</code>, writes <code>balance=120</code>. Releases spinlock.',
+  shared:120,localA:110,localB:120,lockOwner:null,lockExists:true,lockType:'spin',
+  phaseA:'done',phaseB:'write',error:false,ok:false,
+  arrows:[{from:'B',to:'SH',color:'#a78bfa',marker:'url(#ahPurple)',label:'write 120',bulge:-1}],
+  hlA:[{line:5,cls:'done-line'}],hlB:[{line:4,cls:'active-b'},{line:5,cls:'active-b'}],
+  log:'B: write 120, lock=0.'},
+{desc:'<span class="hl-g">✅ CORRECT!</span> balance = <strong>120</strong>.<br><br><strong>Spinlock vs Mutex trade-off:</strong><br>✅ Spin: no context-switch overhead, instant acquisition<br>❌ Spin: wastes CPU cycles while waiting<br>Best for: very short critical sections on multicore systems.',
+  shared:120,localA:110,localB:120,lockOwner:null,lockExists:true,lockType:'spin',
+  phaseA:'done',phaseB:'done',error:false,ok:true,arrows:[],
+  hlA:[{line:1,cls:'done-line'},{line:2,cls:'done-line'},{line:3,cls:'done-line'},{line:4,cls:'done-line'},{line:5,cls:'done-line'}],
+  hlB:[{line:1,cls:'done-line'},{line:2,cls:'done-line'},{line:3,cls:'done-line'},{line:4,cls:'done-line'},{line:5,cls:'done-line'}],
+  log:'✅ balance=120. Spinlock worked!'}
+]}};
+
+let mode='no_mutex',step=0;
+
+// === RENDER CODE ===
+function renderCode(st){
+  const codeA=CODE[mode].A;
+  const codeB=CODE[mode].B;
+  const hlAMap={};st.hlA.forEach(h=>hlAMap[h.line]=h.cls);
+  const hlBMap={};st.hlB.forEach(h=>hlBMap[h.line]=h.cls);
+
+  // Changed .join('\n') to .join('') to remove the one-line spacing provided by the newline/CSS white-space interaction
+  document.getElementById('codeA').innerHTML=codeA.map((line,i)=>{
+    const cls=hlAMap[i]||'';
+    return `<span class="code-line ${cls}">${line.html}</span>`;
+  }).join('');
+
+  document.getElementById('codeB').innerHTML=codeB.map((line,i)=>{
+    const cls=hlBMap[i]||'';
+    return `<span class="code-line ${cls}">${line.html}</span>`;
+  }).join('');
+}
+
+// === RENDER SVG ===
+function render(){
+  const st=S[mode].steps[step];
+  const gB=document.getElementById('gBack'),gA=document.getElementById('gArrows'),gE=document.getElementById('gEntities'),gL=document.getElementById('gLabels'),gO=document.getElementById('gOverlay');
+  gB.innerHTML='';gA.innerHTML='';gE.innerHTML='';gL.innerHTML='';gO.innerHTML='';
+
+  const showLock=st.lockExists;
+
+  // Critical section boxes
+  const csPhases=['read','write','locked','modify'];
+  if(csPhases.includes(st.phaseA)||st.phaseA==='write-stale'){
+    mkEl('rect',{x:'32',y:'46',width:'136',height:'120',rx:'10',fill:'rgba(96,165,250,.04)',stroke:'#3b82f6','stroke-width':'.8','stroke-dasharray':'4 3',opacity:'.5'},gB);
+    mkTxt(100,160,'critical section','#3b82f6','7.5px',{'font-style':'italic',opacity:'.45'},gB);
+  }
+  if(csPhases.includes(st.phaseB)){
+    mkEl('rect',{x:'352',y:'46',width:'136',height:'120',rx:'10',fill:'rgba(139,92,246,.04)',stroke:'#8b5cf6','stroke-width':'.8','stroke-dasharray':'4 3',opacity:'.5'},gB);
+    mkTxt(420,160,'critical section','#8b5cf6','7.5px',{'font-style':'italic',opacity:'.45'},gB);
+  }
+
+  // Arrows
+  const pm={A:P.A,B:P.B,SH:P.SH,LK:P.LK};
+  st.arrows.forEach(a=>{
+    const info=drawArrow(gA,pm[a.from],pm[a.to],a.color,a.marker,a.dash,a.anim,a.bulge);
+    if(a.label){
+      mkEl('rect',{x:info.lx-38,y:info.ly-8,width:76,height:16,rx:'4',fill:'rgba(10,14,39,.88)'},gL);
+      mkTxt(info.lx,info.ly,a.label,a.color,'8.5px',{'font-weight':'600'},gL);
+    }
+  });
+
+  // Thread A
+  const cA=P.A;
+  const strA=st.phaseA==='write-stale'||st.phaseA==='stale'?'#f87171':st.phaseA==='done'&&st.ok?'#34d399':st.phaseA==='suspended'?'#fbbf24':'#3b82f6';
+  const cAEl=mkEl('circle',{cx:cA.x,cy:cA.y,r:cA.r,fill:'url(#gPA)',stroke:strA,'stroke-width':'2.5'},gE);
+  if(st.phaseA==='write-stale')cAEl.classList.add('pulse-red');
+  if(st.phaseA==='done'&&st.ok)cAEl.classList.add('pulse-green');
+  mkTxt(cA.x,cA.y-13,'Thread A','#fff','13px',{'font-weight':'700'},gE);
+  mkTxt(cA.x,cA.y+13,'🖥️','#fff','18px',{},gE);
+  if(st.localA!==null){
+    const isStale=st.phaseA==='stale'||st.phaseA==='write-stale';
+    const lc=isStale?'#f87171':'#60a5fa';
+    mkEl('rect',{x:cA.x-26,y:cA.y+48,width:52,height:20,rx:'5',fill:'rgba(10,14,39,.9)',stroke:lc,'stroke-width':'1.2'},gE);
+    mkTxt(cA.x,cA.y+58,'tmp:'+st.localA,lc,'9px',{'font-weight':'700'},gE);
+    if(isStale)mkTxt(cA.x,cA.y+73,'STALE⚠','#f87171','7.5px',{'font-weight':'700'},gE);
+  }
+  // Phase badge
+  const phColors={read:'#60a5fa',write:'#60a5fa',modify:'#60a5fa',locked:'#34d399',suspended:'#fbbf24',stale:'#f87171','write-stale':'#f87171'};
+  const phLabels={read:'READ',write:'WRITE',modify:'MODIFY',locked:'LOCK ✓',suspended:'SUSPENDED',stale:'STALE','write-stale':'STALE WRITE'};
+  if(phLabels[st.phaseA]){
+    const pc=phColors[st.phaseA];
+    mkEl('rect',{x:cA.x-32,y:cA.y-66,width:64,height:16,rx:'8',fill:'rgba(10,14,39,.85)',stroke:pc,'stroke-width':'.8'},gE);
+    mkTxt(cA.x,cA.y-58,phLabels[st.phaseA],pc,'7.5px',{'font-weight':'700'},gE);
+  }
+
+  // Thread B
+  const cB=P.B;
+  const strB=st.phaseB==='blocked'||st.phaseB==='spinning'?'#fbbf24':st.phaseB==='done'&&st.ok?'#34d399':'#8b5cf6';
+  const cBEl=mkEl('circle',{cx:cB.x,cy:cB.y,r:cB.r,fill:'url(#gPB)',stroke:strB,'stroke-width':'2.5'},gE);
+  if(st.phaseB==='done'&&st.ok)cBEl.classList.add('pulse-green');
+  if(st.phaseB==='spinning')cBEl.classList.add('pulse-yellow');
+  mkTxt(cB.x,cB.y-13,'Thread B','#fff','13px',{'font-weight':'700'},gE);
+  mkTxt(cB.x,cB.y+13,'💻','#fff','18px',{},gE);
+  if(st.localB!==null){
+    mkEl('rect',{x:cB.x-26,y:cB.y+48,width:52,height:20,rx:'5',fill:'rgba(10,14,39,.9)',stroke:'#a78bfa','stroke-width':'1.2'},gE);
+    mkTxt(cB.x,cB.y+58,'tmp:'+st.localB,'#a78bfa','9px',{'font-weight':'700'},gE);
+  }
+  const phB={read:'READ',write:'WRITE',modify:'MODIFY',locked:'LOCK ✓',blocked:'BLOCKED 💤',spinning:'SPINNING 🔄'};
+  const pcB={read:'#a78bfa',write:'#a78bfa',modify:'#a78bfa',locked:'#34d399',blocked:'#fbbf24',spinning:'#fbbf24'};
+  if(phB[st.phaseB]){
+    const pc=pcB[st.phaseB];
+    mkEl('rect',{x:cB.x-36,y:cB.y-66,width:72,height:16,rx:'8',fill:'rgba(10,14,39,.85)',stroke:pc,'stroke-width':'.8'},gE);
+    mkTxt(cB.x,cB.y-58,phB[st.phaseB],pc,'7.5px',{'font-weight':'700'},gE);
+  }
+
+  // Shared Variable
+  const sh=P.SH;
+  const shC=st.error?'#f87171':st.ok?'#34d399':'#f59e0b';
+  const shR=mkEl('rect',{x:sh.x-sh.hw,y:sh.y-sh.hh,width:sh.hw*2,height:sh.hh*2,rx:'12',fill:'url(#gShared)',stroke:shC,'stroke-width':'2.5'},gE);
+  if(st.error)shR.classList.add('pulse-red');
+  if(st.ok)shR.classList.add('pulse-green');
+  mkTxt(sh.x,sh.y-16,'Shared Memory','#fff','11px',{'font-weight':'700'},gE);
+  mkTxt(sh.x,sh.y+2,'balance','#ccc','10px',{},gE);
+  const vc=st.error?'#f87171':st.ok?'#34d399':'#fbbf24';
+  mkTxt(sh.x,sh.y+22,String(st.shared),vc,'20px',{'font-weight':'800'},gE);
+  if(st.error||st.ok){
+    const ex=st.ok?'= 120 ✓':'≠ 120 ✗';
+    mkTxt(sh.x,sh.y+sh.hh+14,'expected 120 → '+ex,st.ok?'#34d399':'#f87171','9px',{'font-weight':'600'},gO);
+  }
+
+  // Lock
+  if(showLock){
+    const lk=P.LK;
+    const lkC=st.lockOwner?'#f87171':'#34d399';
+    mkEl('rect',{x:lk.x-lk.hw,y:lk.y-lk.hh,width:lk.hw*2,height:lk.hh*2,rx:'9',fill:st.lockOwner?'rgba(248,113,113,.06)':'rgba(52,211,153,.06)',stroke:lkC,'stroke-width':'2'},gE);
+    mkTxt(lk.x,lk.y-8,st.lockType==='spin'?'Spinlock':'Mutex','#fff','9.5px',{'font-weight':'700'},gE);
+    mkTxt(lk.x,lk.y+10,st.lockOwner?'🔒':'🔓','#fff','14px',{},gE);
+    if(st.lockOwner){
+      mkEl('rect',{x:lk.x-20,y:lk.y+24,width:40,height:14,rx:'3',fill:'rgba(10,14,39,.9)',stroke:lkC,'stroke-width':'.8'},gE);
+      mkTxt(lk.x,lk.y+31,'by '+st.lockOwner,lkC,'7.5px',{'font-weight':'700'},gE);
+    }
+  }
+
+  // Both-in-CS warning
+  if(!showLock&&csPhases.includes(st.phaseA)&&csPhases.includes(st.phaseB)){
+    mkEl('rect',{x:'155',y:'75',width:'210',height:'30',rx:'7',fill:'rgba(248,113,113,.1)',stroke:'#f87171','stroke-width':'1',opacity:'.7'},gO);
+    mkTxt(260,90,'⚠ BOTH IN CRITICAL SECTION','#f87171','9px',{'font-weight':'700'},gO);
+  }
+
+  mkTxt(260,13,S[mode].title,'#555','9px',{'font-weight':'600'},gL);
+
+  // Banners
+  document.getElementById('errorBanner').classList.toggle('visible',st.error);
+  document.getElementById('successBanner').classList.toggle('visible',st.ok);
+
+  // UI
+  document.getElementById('stepDesc').innerHTML=st.desc;
+  const total=S[mode].steps.length-1;
+  document.getElementById('stepInd').textContent=`Step ${step}/${total}`;
+  document.getElementById('btnPrev').disabled=step<=0;
+  document.getElementById('btnNext').disabled=step>=total;
+  document.getElementById('btnEnd').disabled=step>=total;
+
+  // Table
+  const sc=p=>{if(p.match(/stale|error|write-stale/i))return'error';if(p.match(/block|wait|spin|suspend/i))return'waiting';if(p==='done')return'free';return p==='idle'?'free':'held'};
+  const phTbl=p=>({idle:'Idle',read:'Reading',write:'Writing',modify:'Computing',locked:'Has lock',blocked:'Blocked 💤',spinning:'Spinning 🔄',suspended:'Suspended',stale:'Stale ⚠','write-stale':'Stale write ⚠',done:'Done ✓'}[p]||p);
+  const actTbl=p=>({idle:'—',read:'READ shared',write:'WRITE shared',modify:'+10',locked:'lock()',blocked:'Waiting…',spinning:'Busy-wait',suspended:'Preempted',stale:'Has old val',done:'—','write-stale':'Overwriting!'}[p]||'—');
+  document.getElementById('tBody').innerHTML=
+    `<tr><td>Thread A</td><td>${st.localA!==null?st.localA:'—'}</td><td>${actTbl(st.phaseA)}</td><td><span class="status-dot ${sc(st.phaseA)}"></span>${phTbl(st.phaseA)}</td></tr>
+     <tr><td>Thread B</td><td>${st.localB!==null?st.localB:'—'}</td><td>${actTbl(st.phaseB)}</td><td><span class="status-dot ${sc(st.phaseB)}"></span>${phTbl(st.phaseB)}</td></tr>
+     <tr><td>balance</td><td style="font-weight:700;color:${vc}">${st.shared}</td><td>Shared</td><td>${st.error?'<span class="race-indicator danger">CORRUPTED</span>':st.ok?'<span class="race-indicator safe">CORRECT</span>':'Active'}</td></tr>
+     ${showLock?`<tr><td>${st.lockType==='spin'?'Spinlock':'Mutex'}</td><td>${st.lockOwner||'free'}</td><td>${st.lockOwner?'Held':'Available'}</td><td><span class="status-dot ${st.lockOwner?'held':'free'}"></span>${st.lockOwner?'Locked':'Unlocked'}</td></tr>`:''}`;
+
+  // Log
+  const lc=document.getElementById('logBox');lc.innerHTML='';
+  for(let i=0;i<=step;i++){
+    const s=S[mode].steps[i];
+    const d=document.createElement('div');
+    d.className='log-entry'+(i===step?' active':'')+(s.error?' error':'')+(s.ok?' success':'');
+    d.innerHTML=`<span class="log-step">${i}</span><span>${s.log}</span>`;
+    lc.appendChild(d);
+  }
+  lc.scrollTop=lc.scrollHeight;
+
+  // Code
+  renderCode(st);
+}
+
+function nextStep(){if(step<S[mode].steps.length-1){step++;render()}}
+function prevStep(){if(step>0){step--;render()}}
+function goToEnd(){step=S[mode].steps.length-1;render()}
+function resetScenario(){step=0;render()}
+function switchMode(m){
+  mode=m;step=0;
+  document.querySelectorAll('.mode-btn').forEach(b=>{
+    b.classList.remove('active','with-mutex','spinlock');
+    if(b.dataset.mode===m){b.classList.add('active');if(m==='with_mutex')b.classList.add('with-mutex');if(m==='spinlock')b.classList.add('spinlock')}
+  });render();
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();nextStep()}
+  else if(e.key==='ArrowLeft'){e.preventDefault();prevStep()}
+  else if(e.key==='r'||e.key==='R')resetScenario();
+  else if(e.key==='End'){e.preventDefault();goToEnd()}
+  else if(e.key==='Home'){e.preventDefault();resetScenario()}
+  else if(e.key==='1')switchMode('no_mutex');
+  else if(e.key==='2')switchMode('with_mutex');
+  else if(e.key==='3')switchMode('spinlock');
+});
+document.getElementById('svgWrap').addEventListener('click',e=>{if(!e.target.closest('button'))nextStep()});
+let touchX=0;
+document.addEventListener('touchstart',e=>{touchX=e.touches[0].clientX},{passive:true});
+document.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-touchX;if(Math.abs(dx)>50){dx<0?nextStep():prevStep()}},{passive:true});
+render();
+</script>
+</body>
+</html>

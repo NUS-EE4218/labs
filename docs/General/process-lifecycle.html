@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Process Lifecycle Visualizer</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  background:#0a0e27;color:#e0e0e0;
+  min-height:100vh;min-height:100dvh;
+  display:flex;flex-direction:column;
+}
+.header{
+  text-align:center;padding:12px 16px 6px;
+  background:linear-gradient(135deg,#0a0e27,#1a1e47);
+  border-bottom:2px solid #2a2e57;flex-shrink:0;
+}
+.header h1{
+  font-size:clamp(1rem,3.2vw,1.6rem);
+  background:linear-gradient(90deg,#60a5fa,#a78bfa,#f472b6);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;margin-bottom:3px;
+}
+.header p{color:#8888aa;font-size:clamp(0.65rem,1.8vw,0.82rem)}
+.mode-selector{
+  display:flex;justify-content:center;gap:8px;
+  padding:8px 12px;background:#0d1130;
+  border-bottom:1px solid #2a2e57;flex-shrink:0;flex-wrap:wrap;
+}
+.mode-btn{
+  padding:7px 14px;border:2px solid #3a3e67;border-radius:30px;
+  background:transparent;color:#aaa;font-size:clamp(0.68rem,1.8vw,0.82rem);
+  cursor:pointer;transition:all .3s;font-weight:600;white-space:nowrap;
+}
+.mode-btn:hover{border-color:#60a5fa;color:#60a5fa;background:rgba(96,165,250,.08)}
+.mode-btn.active{border-color:#60a5fa;background:rgba(96,165,250,.13);color:#60a5fa;box-shadow:0 0 15px rgba(96,165,250,.1)}
+.mode-num{
+  display:inline-block;width:18px;height:18px;line-height:18px;text-align:center;
+  border-radius:4px;background:rgba(255,255,255,.06);font-size:10px;
+  margin-right:4px;vertical-align:middle;
+}
+.mode-btn.active .mode-num{background:#60a5fa;color:#0a0e27}
+
+/* Algorithm sub-bar */
+.algo-bar{
+  display:none;gap:8px;padding:6px 12px;
+  background:rgba(96,165,250,.03);border-bottom:1px solid #2a2e57;
+  justify-content:center;flex-wrap:wrap;align-items:center;
+}
+.algo-bar.visible{display:flex}
+.algo-bar-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#8888aa;margin-right:4px}
+.algo-btn{
+  padding:5px 12px;border:2px solid #3a3e67;border-radius:30px;
+  background:transparent;color:#aaa;font-size:clamp(0.62rem,1.6vw,0.76rem);
+  cursor:pointer;transition:all .3s;font-weight:600;white-space:nowrap;
+}
+.algo-btn:hover{border-color:#a78bfa;color:#a78bfa;background:rgba(167,139,250,.08)}
+.algo-btn.active{border-color:#a78bfa;background:rgba(167,139,250,.13);color:#a78bfa}
+
+/* Main layout */
+.main-container{
+  display:flex;flex:1;overflow:hidden;
+  max-width:1500px;width:100%;margin:0 auto;
+  padding:10px;gap:10px;
+}
+.viz-panel{flex:1;min-width:0;display:flex;flex-direction:column}
+.info-panel{
+  width:340px;flex-shrink:0;display:flex;flex-direction:column;
+  gap:8px;overflow-y:auto;overflow-x:hidden;
+  scrollbar-width:thin;scrollbar-color:#2a2e57 transparent;
+}
+.info-panel::-webkit-scrollbar{width:5px}
+.info-panel::-webkit-scrollbar-thumb{background:#2a2e57;border-radius:4px}
+
+/* SVG canvas */
+.svg-wrap{
+  position:relative;flex:1;min-height:0;
+  background:linear-gradient(145deg,#0d1130,#111540);
+  border:1px solid #2a2e57;border-radius:12px;overflow:hidden;
+}
+.svg-wrap svg{display:block;width:100%;height:100%}
+
+/* Controls */
+.controls{
+  display:flex;justify-content:center;align-items:center;gap:10px;
+  padding:8px 12px;background:#0d1130;border-radius:10px;
+  border:1px solid #2a2e57;margin-top:8px;flex-shrink:0;
+}
+.ctrl-btn{
+  width:40px;height:40px;border-radius:50%;border:2px solid #3a3e67;
+  background:rgba(255,255,255,.03);color:#ccc;font-size:1rem;
+  cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;
+}
+.ctrl-btn:hover:not(:disabled){border-color:#60a5fa;color:#60a5fa;background:rgba(96,165,250,.1);transform:scale(1.05)}
+.ctrl-btn:disabled{opacity:.3;cursor:not-allowed}
+.ctrl-btn.primary{width:48px;height:48px;border-color:#60a5fa;color:#60a5fa;font-size:1.2rem}
+.step-indicator{font-size:.82rem;color:#8888aa;min-width:68px;text-align:center;font-weight:600}
+.kbd-hint{text-align:center;margin-top:5px;font-size:.67rem;color:#444;flex-shrink:0;line-height:1.5}
+.kbd{display:inline-block;padding:1px 5px;background:#1a1e47;border:1px solid #3a3e67;border-radius:3px;font-family:monospace;font-size:.67rem;color:#777}
+
+/* Cards */
+.card{background:linear-gradient(145deg,#0d1130,#111540);border:1px solid #2a2e57;border-radius:10px;padding:10px}
+.card h3{font-size:.73rem;text-transform:uppercase;letter-spacing:.7px;color:#60a5fa;margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.card h3 .icon{font-size:.95rem}
+.step-description{font-size:clamp(0.78rem,2vw,0.88rem);line-height:1.5;color:#ccc;min-height:36px}
+.step-why{font-size:clamp(0.72rem,1.8vw,0.82rem);line-height:1.5;color:#8888aa;margin-top:6px}
+
+/* Table */
+.resource-table{width:100%;border-collapse:collapse;font-size:.74rem}
+.resource-table th{text-align:left;padding:4px 5px;color:#8888aa;border-bottom:1px solid #2a2e57;font-weight:600}
+.resource-table td{padding:4px 5px;border-bottom:1px solid rgba(42,46,87,.4);font-variant-numeric:tabular-nums}
+.status-dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:4px}
+.status-dot.new{background:#00e5ff;box-shadow:0 0 6px #00e5ff}
+.status-dot.ready{background:#a78bfa;box-shadow:0 0 6px #a78bfa}
+.status-dot.running{background:#60a5fa;box-shadow:0 0 6px #60a5fa}
+.status-dot.blocked{background:#fbbf24;box-shadow:0 0 6px #fbbf24}
+.status-dot.terminated{background:#34d399;box-shadow:0 0 6px #34d399}
+
+/* Log */
+.log-container{max-height:150px;overflow-y:auto;flex:1;scrollbar-width:thin;scrollbar-color:#2a2e57 transparent}
+.log-container::-webkit-scrollbar{width:4px}
+.log-container::-webkit-scrollbar-thumb{background:#2a2e57;border-radius:3px}
+.log-entry{padding:3px 0;border-bottom:1px solid rgba(42,46,87,.3);font-size:.72rem;color:#777;display:flex;gap:5px}
+.log-entry.active{color:#ddd;font-weight:500}
+.log-step{color:#60a5fa;font-weight:700;min-width:48px}
+.log-empty{color:#555;font-style:italic;font-size:.72rem}
+
+/* Legend */
+.legend{display:flex;flex-wrap:wrap;gap:8px;font-size:.7rem}
+.legend-item{display:flex;align-items:center;gap:4px}
+.legend-swatch{width:12px;height:12px;border-radius:3px;border:1px solid rgba(255,255,255,.08)}
+
+/* SVG text styles */
+.state-label{
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  font-weight:700;text-anchor:middle;dominant-baseline:central;pointer-events:none;
+}
+.state-sublabel{
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  font-weight:400;fill:#8888aa;text-anchor:middle;pointer-events:none;
+}
+.arrow-label{
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  font-weight:600;fill:#8888aa;text-anchor:middle;pointer-events:none;
+}
+.arrow-path{fill:none;stroke:rgba(255,255,255,.12);stroke-width:1.5;marker-end:url(#arrowhead)}
+.arrow-path.active{stroke-width:2.5;filter:drop-shadow(0 0 4px currentColor)}
+.arrow-path.active-admit{stroke:#00e5ff}
+.arrow-path.active-dispatch{stroke:#a78bfa}
+.arrow-path.active-timeout{stroke:#fbbf24}
+.arrow-path.active-ioreq{stroke:#fbbf24}
+.arrow-path.active-iodone{stroke:#34d399}
+.arrow-path.active-exit{stroke:#34d399}
+.token-circle{stroke-width:2;filter:drop-shadow(0 0 6px currentColor)}
+.token-text{
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  font-size:12px;font-weight:700;fill:#fff;text-anchor:middle;dominant-baseline:central;pointer-events:none;
+}
+.kernel-label{
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  font-size:10px;font-weight:700;fill:#f87171;text-anchor:middle;pointer-events:none;
+  animation:kernelPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes cpuPulse{0%,100%{opacity:.15}50%{opacity:.4}}
+@keyframes kernelPulse{0%,100%{opacity:.6}50%{opacity:1}}
+@keyframes dashFlow{to{stroke-dashoffset:-24}}
+.flash-overlay{stroke-dasharray:8 4;animation:dashFlow .6s linear infinite}
+
+/* Responsive */
+@media(max-width:1024px){
+  .main-container{flex-direction:column;overflow-y:auto;padding:8px}
+  .info-panel{width:100%;overflow:visible;flex-shrink:0}
+  .svg-wrap{min-height:260px;flex:none;aspect-ratio:5/3.5}
+  .kbd-hint{display:none}
+}
+@media(max-width:600px){
+  .mode-btn{padding:5px 10px;font-size:.68rem}
+  .algo-btn{padding:4px 8px;font-size:.62rem}
+  .controls{gap:6px;padding:6px}
+  .ctrl-btn{width:36px;height:36px;font-size:.95rem}
+  .ctrl-btn.primary{width:42px;height:42px;font-size:1.1rem}
+  .step-indicator{font-size:.74rem;min-width:58px}
+  .svg-wrap{aspect-ratio:5/4}
+  .card{padding:8px}
+}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>⚙️ Process Lifecycle Visualizer</h1>
+  <p>How OS processes move between states — interactive step-by-step</p>
+</div>
+<div class="mode-selector" id="modeBar"></div>
+<div class="algo-bar" id="algoBar">
+  <span class="algo-bar-label">Algorithm:</span>
+</div>
+<div class="main-container" id="mainWrap">
+  <div class="viz-panel">
+    <div class="svg-wrap" id="svgWrap">
+      <svg id="svgCanvas" viewBox="0 0 720 380" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="rgba(255,255,255,0.25)"/>
+          </marker>
+          <marker id="arrowhead-active" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="currentColor"/>
+          </marker>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="3" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+            <path d="M30 0L0 0 0 30" fill="none" stroke="#1a1e47" stroke-width=".4"/>
+          </pattern>
+        </defs>
+        <rect width="720" height="380" fill="url(#grid)" opacity=".4"/>
+        <g id="stateNodes"></g>
+        <g id="arrows"></g>
+        <g id="tokens"></g>
+      </svg>
+    </div>
+    <div class="controls">
+      <button class="ctrl-btn" onclick="resetScenario()" title="Reset (R)">⟲</button>
+      <button class="ctrl-btn" id="btnPrev" onclick="prevStep()" title="Previous (←)">◀</button>
+      <span class="step-indicator" id="stepInd">Step 0/0</span>
+      <button class="ctrl-btn primary" id="btnNext" onclick="nextStep()" title="Next (→/Space)">▶</button>
+      <button class="ctrl-btn" id="btnEnd" onclick="goToEnd()" title="End">⏭</button>
+    </div>
+    <div class="kbd-hint">
+      <span class="kbd">←</span> Prev <span class="kbd">→</span><span class="kbd">Space</span> Next
+      <span class="kbd">R</span> Reset <span class="kbd">1</span><span class="kbd">2</span><span class="kbd">3</span><span class="kbd">4</span> Modes · Click diagram to advance
+    </div>
+  </div>
+  <div class="info-panel">
+    <div class="card">
+      <h3><span class="icon">📖</span> What's Happening</h3>
+      <div class="step-description" id="descWhat">Press <strong style="color:#60a5fa">▶</strong> or <strong style="color:#60a5fa">→</strong> to begin.</div>
+      <div class="step-why" id="descWhy">Each step simulates an OS event that moves processes between states.</div>
+    </div>
+    <div class="card">
+      <h3><span class="icon">📊</span> Process States</h3>
+      <table class="resource-table">
+        <thead><tr><th>PID</th><th>State</th><th>Last Action</th></tr></thead>
+        <tbody id="procTableBody"></tbody>
+      </table>
+    </div>
+    <div class="card" style="flex:1;display:flex;flex-direction:column;min-height:80px">
+      <h3><span class="icon">📝</span> Event Log</h3>
+      <div class="log-container" id="eventLog"><div class="log-empty">Awaiting first event…</div></div>
+    </div>
+    <div class="card">
+      <h3><span class="icon">🔑</span> Legend</h3>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-swatch" style="background:#00e5ff"></div>New</div>
+        <div class="legend-item"><div class="legend-swatch" style="background:#a78bfa"></div>Ready</div>
+        <div class="legend-item"><div class="legend-swatch" style="background:#60a5fa"></div>Running</div>
+        <div class="legend-item"><div class="legend-swatch" style="background:#fbbf24"></div>Blocked</div>
+        <div class="legend-item"><div class="legend-swatch" style="background:#34d399"></div>Done</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+
+const COLORS = {
+  new: '#00e5ff',
+  ready: '#a78bfa',
+  running: '#60a5fa',
+  blocked: '#fbbf24',
+  terminated: '#34d399'
+};
+
+const PROCESS_COLORS = ['#00e5ff', '#f472b6', '#fbbf24'];
+
+// ═══════════════════════════════════════════════
+// STATE NODE GEOMETRY
+// ═══════════════════════════════════════════════
+
+const STATES = {
+  new:        { x: 65,  y: 110, w: 120, h: 70, label: 'NEW',     sub: 'Created' },
+  ready:      { x: 260, y: 80,  w: 140, h: 65, label: 'READY',   sub: 'Queue' },
+  running:    { x: 460, y: 80,  w: 110, h: 65, label: 'RUNNING', sub: 'CPU' },
+   blocked:    { x: 365, y: 290, w: 140, h: 65, label: 'BLOCKED', sub: 'I/O Wait' },
+  terminated: { x: 650, y: 110, w: 120, h: 70, label: 'DONE',    sub: 'Exited' }
+};
+
+const TR = 13;
+const TOKEN_GAP = 32;
+
+function getSlotPos(state, slotIndex, totalInState) {
+  const s = STATES[state];
+  const tokenY = s.y + 12;
+  if (totalInState <= 1) return { x: s.x, y: tokenY };
+  const totalWidth = (totalInState - 1) * TOKEN_GAP;
+  const startX = s.x - totalWidth / 2;
+  return { x: startX + slotIndex * TOKEN_GAP, y: tokenY };
+}
+
+// ═══════════════════════════════════════════════
+// ARROW GEOMETRY
+// Fixed: New→Ready now curves monotonically upward
+// ═══════════════════════════════════════════════
+
+function boxEdge(stateKey, side) {
+  const s = STATES[stateKey];
+  switch(side) {
+    case 'right':  return { x: s.x + s.w/2, y: s.y };
+    case 'left':   return { x: s.x - s.w/2, y: s.y };
+    case 'top':    return { x: s.x, y: s.y - s.h/2 };
+    case 'bottom': return { x: s.x, y: s.y + s.h/2 };
+    case 'top-right': return { x: s.x + s.w/2 - 10, y: s.y - s.h/2 };
+    case 'top-left':  return { x: s.x - s.w/2 + 10, y: s.y - s.h/2 };
+    case 'bottom-right': return { x: s.x + s.w/4, y: s.y + s.h/2 };
+    case 'bottom-left':  return { x: s.x - s.w/4, y: s.y + s.h/2 };
+    case 'left-top': return { x: s.x - s.w/2, y: s.y - 10 };
+    case 'right-bottom': return { x: s.x + s.w/2, y: s.y + 10 };
+  }
+}
+
+function buildArrows() {
+  // Admit: NEW right → READY left — monotonic upward arc (mirror of exit curve)
+  // Gradual rise at first, steeper towards READY end (strictly increasing like x²)
+  const admit_s = boxEdge('new', 'right');
+  const admit_e = boxEdge('ready', 'left');
+  const admit_cpx = admit_s.x + (admit_e.x - admit_s.x) * 0.4;
+  const admit_cpy = admit_s.y;
+
+  // Dispatch: READY right → RUNNING left
+  const disp_s = boxEdge('ready', 'right');
+  const disp_e = boxEdge('running', 'left');
+  const disp_cpx = (disp_s.x + disp_e.x) / 2;
+  const disp_cpy = disp_s.y - 30;
+
+  // Timeout: RUNNING top → READY top
+  const to_s = boxEdge('running', 'top-left');
+  const to_e = boxEdge('ready', 'top-right');
+  const to_cpx = (to_s.x + to_e.x) / 2;
+  const to_cpy = Math.min(to_s.y, to_e.y) - 50;
+
+   // I/O Request: RUNNING bottom → BLOCKED right
+   const ior_s = boxEdge('running', 'bottom');
+   const ior_e = boxEdge('blocked', 'right');
+   const ior_cp1x = ior_s.x + 35;
+   const ior_cp1y = ior_s.y + 60;
+   const ior_cp2x = ior_e.x + 35;
+   const ior_cp2y = ior_e.y - 40;
+
+   // I/O Done: BLOCKED left → READY bottom
+   const iod_s = boxEdge('blocked', 'left');
+   const iod_e = boxEdge('ready', 'bottom');
+   const iod_cp1x = iod_s.x - 50;
+   const iod_cp1y = iod_s.y - 50;
+   const iod_cp2x = iod_e.x - 30;
+   const iod_cp2y = iod_e.y + 60;
+
+  // Exit: RUNNING right → TERMINATED left
+  const ex_s = boxEdge('running', 'right');
+  const ex_e = boxEdge('terminated', 'left');
+  const ex_cpx = (ex_s.x + ex_e.x) / 2;
+  const ex_cpy = ex_s.y + 30;
+
+  return [
+    { id: 'admit',    label: 'Admit',    path: `M ${admit_s.x},${admit_s.y} Q ${admit_cpx},${admit_cpy} ${admit_e.x},${admit_e.y}` },
+    { id: 'dispatch', label: 'Dispatch', path: `M ${disp_s.x},${disp_s.y} Q ${disp_cpx},${disp_cpy} ${disp_e.x},${disp_e.y}` },
+    { id: 'timeout',  label: 'Timeout',  label2: 'Preempted', path: `M ${to_s.x},${to_s.y} Q ${to_cpx},${to_cpy} ${to_e.x},${to_e.y}` },
+    { id: 'ioreq',   label: 'I/O Req',  path: `M ${ior_s.x},${ior_s.y} C ${ior_cp1x},${ior_cp1y} ${ior_cp2x},${ior_cp2y} ${ior_e.x},${ior_e.y}` },
+    { id: 'iodone',  label: 'I/O Done', path: `M ${iod_s.x},${iod_s.y} C ${iod_cp1x},${iod_cp1y} ${iod_cp2x},${iod_cp2y} ${iod_e.x},${iod_e.y}` },
+    { id: 'exit',    label: 'Exit',     path: `M ${ex_s.x},${ex_s.y} Q ${ex_cpx},${ex_cpy} ${ex_e.x},${ex_e.y}` }
+  ];
+}
+
+const ARROWS = buildArrows();
+
+// ═══════════════════════════════════════════════
+// SCENARIOS
+// ═══════════════════════════════════════════════
+
+const SCENARIOS_BASE = [
+  {
+    name: 'Happy Path',
+    desc: 'A single process completes its full lifecycle',
+    processes: ['P1'],
+    steps: [
+      { what: 'Process P1 is created by the OS.', why: 'A user or system call requested a new process. The OS allocates a Process Control Block (PCB) and places P1 in the NEW state.', moves: [{ pid: 'P1', from: null, to: 'new' }], arrow: null, action: 'Created' },
+      { what: 'P1 is admitted to the Ready queue.', why: 'The OS has finished initializing P1\'s memory and resources. It\'s now eligible to run — it just needs to wait for the CPU.', moves: [{ pid: 'P1', from: 'new', to: 'ready' }], arrow: 'admit', action: 'Admitted' },
+      { what: 'The scheduler dispatches P1 to the CPU.', why: 'P1 is at the front of the Ready queue and the CPU is free. The dispatcher performs a context switch and P1 begins executing.', moves: [{ pid: 'P1', from: 'ready', to: 'running' }], arrow: 'dispatch', action: 'Dispatched' },
+      { what: 'P1 finishes execution and exits.', why: 'P1 has completed all its work. The OS deallocates its resources and marks it terminated.', moves: [{ pid: 'P1', from: 'running', to: 'terminated' }], arrow: 'exit', action: 'Exited' }
+    ]
+  },
+  {
+    name: 'Preemption',
+    desc: 'Two processes share the CPU via time slicing',
+    processes: ['P1', 'P2'],
+    steps: [
+      { what: 'P1 and P2 are both created.', why: 'The OS creates two processes. Both start in the NEW state.', moves: [{ pid: 'P1', from: null, to: 'new' }, { pid: 'P2', from: null, to: 'new' }], arrow: null, action: 'Created' },
+      { what: 'Both are admitted to the Ready queue.', why: 'Initialization complete. Both P1 and P2 enter the Ready queue, waiting for CPU time.', moves: [{ pid: 'P1', from: 'new', to: 'ready' }, { pid: 'P2', from: 'new', to: 'ready' }], arrow: 'admit', action: 'Admitted' },
+      { what: 'P1 is dispatched to the CPU.', why: 'P1 is first in the queue. The scheduler picks it and loads P1\'s registers into the CPU.', moves: [{ pid: 'P1', from: 'ready', to: 'running' }], arrow: 'dispatch', action: 'Dispatched' },
+      { what: 'Timer interrupt! P1 is preempted.', why: 'The hardware timer fires — P1 has used its time quantum. The OS saves P1\'s state and moves it back to Ready so no single process hogs the CPU.', moves: [{ pid: 'P1', from: 'running', to: 'ready' }], arrow: 'timeout', action: 'Preempted' },
+      { what: 'P2 is dispatched to the CPU.', why: 'P2 is now at the front of the Ready queue. The scheduler dispatches it — this is "time slicing" in action.', moves: [{ pid: 'P2', from: 'ready', to: 'running' }], arrow: 'dispatch', action: 'Dispatched' },
+      { what: 'P2 finishes execution.', why: 'P2 completes its work within its time slice and exits normally.', moves: [{ pid: 'P2', from: 'running', to: 'terminated' }], arrow: 'exit', action: 'Exited' },
+      { what: 'P1 is dispatched again.', why: 'With P2 done, P1 gets the CPU back. The dispatcher restores P1\'s saved state and resumes where it left off.', moves: [{ pid: 'P1', from: 'ready', to: 'running' }], arrow: 'dispatch', action: 'Dispatched' },
+      { what: 'P1 finishes execution.', why: 'P1 completes its remaining work and exits. Both processes finished — the CPU is idle.', moves: [{ pid: 'P1', from: 'running', to: 'terminated' }], arrow: 'exit', action: 'Exited' }
+    ]
+  },
+  {
+    name: 'I/O Blocking',
+    desc: 'A process waits for disk I/O and resumes',
+    processes: ['P1'],
+    steps: [
+      { what: 'P1 is created.', why: 'The OS allocates resources and creates process P1.', moves: [{ pid: 'P1', from: null, to: 'new' }], arrow: null, action: 'Created' },
+      { what: 'P1 is admitted to the Ready queue.', why: 'Initialization complete. P1 is ready to compete for CPU time.', moves: [{ pid: 'P1', from: 'new', to: 'ready' }], arrow: 'admit', action: 'Admitted' },
+      { what: 'P1 is dispatched to the CPU.', why: 'The scheduler picks P1 and begins executing it.', moves: [{ pid: 'P1', from: 'ready', to: 'running' }], arrow: 'dispatch', action: 'Dispatched' },
+      { what: 'P1 requests a disk read (I/O).', why: 'P1 needs data from the hard drive. The CPU traps into kernel mode to initiate the I/O operation, then P1 moves to Blocked to wait for the data.', moves: [{ pid: 'P1', from: 'running', to: 'blocked' }], arrow: 'ioreq', action: 'I/O Request', kernelMode: true },
+      { what: 'The kernel services the I/O request.', why: 'The CPU is now in kernel mode, running OS code to program the disk controller. The kernel sets up the DMA transfer and returns.', moves: [], arrow: null, action: 'Kernel I/O', kernelMode: true, logExtra: '(Kernel I/O servicing)' },
+      { what: 'I/O complete! P1 returns to Ready.', why: 'The disk controller signals an interrupt — the data is now in memory. The kernel handles the interrupt and moves P1 back to Ready.', moves: [{ pid: 'P1', from: 'blocked', to: 'ready' }], arrow: 'iodone', action: 'I/O Complete', kernelMode: false },
+      { what: 'P1 is dispatched to the CPU again.', why: 'P1 reaches the front of the Ready queue and gets the CPU. It resumes exactly where it left off.', moves: [{ pid: 'P1', from: 'ready', to: 'running' }], arrow: 'dispatch', action: 'Dispatched' },
+      { what: 'P1 finishes and exits.', why: 'With the I/O data available, P1 finishes its computation and terminates.', moves: [{ pid: 'P1', from: 'running', to: 'terminated' }], arrow: 'exit', action: 'Exited' }
+    ]
+  }
+];
+
+// ═══════════════════════════════════════════════
+// MODE 4: SCHEDULING ALGORITHMS
+// ═══════════════════════════════════════════════
+
+const ALGO_DEFS = [
+  {
+    id: 'rr', name: 'Round Robin',
+    desc: 'Preemptive time-slicing — each process gets a fixed quantum, then yields',
+    steps: [
+      { what: 'Three processes are created.', why: 'The OS spawns P1, P2, P3. Think of opening a browser, an editor, and a music player simultaneously.', moves: [{ pid: 'P1', from: null, to: 'new' }, { pid: 'P2', from: null, to: 'new' }, { pid: 'P3', from: null, to: 'new' }], arrow: null, action: 'Created' },
+      { what: 'All three enter the Ready queue.', why: 'Initialization done. All three line up for CPU access — only one can run at a time.', moves: [{ pid: 'P1', from: 'new', to: 'ready' }, { pid: 'P2', from: 'new', to: 'ready' }, { pid: 'P3', from: 'new', to: 'ready' }], arrow: 'admit', action: 'Admitted' },
+      { what: 'P1 is dispatched (Round 1).', why: 'Round Robin picks processes in FIFO order. P1 goes first.', moves: [{ pid: 'P1', from: 'ready', to: 'running' }], arrow: 'dispatch', action: 'Dispatched' },
+      { what: 'Timer interrupt! P1 is preempted.', why: 'P1\'s time quantum expires. It goes back to the end of Ready.', moves: [{ pid: 'P1', from: 'running', to: 'ready' }], arrow: 'timeout', action: 'Preempted' },
+      { what: 'P2 is dispatched (Round 1).', why: 'P2 is next in the queue. It gets its time slice.', moves: [{ pid: 'P2', from: 'ready', to: 'running' }], arrow: 'dispatch', action: 'Dispatched' },
+      { what: 'P2 requests disk I/O — moves to Blocked.', why: 'P2 needs to read a file. It voluntarily yields the CPU before its quantum expires.', moves: [{ pid: 'P2', from: 'running', to: 'blocked' }], arrow: 'ioreq', action: 'I/O Request', logExtra: '(Kernel I/O servicing not shown)' },
+      { what: 'P3 is dispatched (Round 1).', why: 'P3\'s turn. With P2 blocked, the queue is: P3, then P1.', moves: [{ pid: 'P3', from: 'ready', to: 'running' }], arrow: 'dispatch', action: 'Dispatched' },
+      { what: 'Timer interrupt! P3 is preempted.', why: 'P3\'s quantum expires. Back to Ready.', moves: [{ pid: 'P3', from: 'running', to: 'ready' }], arrow: 'timeout', action: 'Preempted' },
+      { what: 'P2\'s I/O completes — returns to Ready.', why: 'The disk signals done. P2 joins the back of the Ready queue.', moves: [{ pid: 'P2', from: 'blocked', to: 'ready' }], arrow: 'iodone', action: 'I/O Complete' },
+      { what: 'P1 is dispatched (Round 2).', why: 'P1 is at the front again. It resumes where it left off.', moves: [{ pid: 'P1', from: 'ready', to: 'running' }], arrow: 'dispatch', action: 'Dispatched' },
+      { what: 'P1 finishes and exits.', why: 'P1 completes its work this round.', moves: [{ pid: 'P1', from: 'running', to: 'terminated' }], arrow: 'exit', action: 'Exited' },
+      { what: 'P3 is dispatched (Round 2).', why: 'P3 gets the CPU again to continue.', moves: [{ pid: 'P3', from: 'ready', to: 'running' }], arrow: 'dispatch', action: 'Dispatched' },
+      { what: 'P3 finishes and exits.', why: 'P3 completes its remaining work.', moves: [{ pid: 'P3', from: 'running', to: 'terminated' }], arrow: 'exit', action: 'Exited' },
+      { what: 'P2 is dispatched (Round 2).', why: 'P2 finally resumes after its I/O wait.', moves: [{ pid: 'P2', from: 'ready', to: 'running' }], arrow: 'dispatch', action: 'Dispatched' },
+      { what: 'P2 finishes and exits. All done!', why: 'All three are done. Round Robin ensured fair CPU sharing.', moves: [{ pid: 'P2', from: 'running', to: 'terminated' }], arrow: 'exit', action: 'Exited' }
+    ]
+  },
+  {
+    id: 'fcfs', name: 'FCFS',
+    desc: 'First-Come First-Served — non-preemptive, processes run until they block or finish',
+    steps: [
+      { what: 'Three processes are created.', why: 'P1, P2, P3 are created in that order. Under FCFS, arrival order determines who runs first.', moves: [{ pid: 'P1', from: null, to: 'new' }, { pid: 'P2', from: null, to: 'new' }, { pid: 'P3', from: null, to: 'new' }], arrow: null, action: 'Created' },
+      { what: 'All three enter the Ready queue.', why: 'Queue order: P1, P2, P3. Under FCFS, there is no preemption — each process runs until it finishes or blocks.', moves: [{ pid: 'P1', from: 'new', to: 'ready' }, { pid: 'P2', from: 'new', to: 'ready' }, { pid: 'P3', from: 'new', to: 'ready' }], arrow: 'admit', action: 'Admitted' },
+      { what: 'P1 is dispatched.', why: 'P1 arrived first, so it gets the CPU. No timer will interrupt it — FCFS is non-preemptive.', moves: [{ pid: 'P1', from: 'ready', to: 'running' }], arrow: 'dispatch', action: 'Dispatched' },
+      { what: 'P1 requests disk I/O — moves to Blocked.', why: 'P1 voluntarily yields the CPU because it needs disk data. This is the only way a process gives up the CPU under FCFS (besides finishing).', moves: [{ pid: 'P1', from: 'running', to: 'blocked' }], arrow: 'ioreq', action: 'I/O Request', logExtra: '(Kernel I/O servicing not shown)' },
+      { what: 'P2 is dispatched.', why: 'P2 is next in arrival order. It gets the CPU and runs uninterrupted.', moves: [{ pid: 'P2', from: 'ready', to: 'running' }], arrow: 'dispatch', action: 'Dispatched' },
+      { what: 'P1\'s I/O completes — returns to Ready.', why: 'P1\'s disk data is ready. But P2 is still running and cannot be preempted, so P1 waits in Ready.', moves: [{ pid: 'P1', from: 'blocked', to: 'ready' }], arrow: 'iodone', action: 'I/O Complete' },
+      { what: 'P2 finishes and exits.', why: 'P2 ran to completion without interruption. This is the FCFS advantage: no context-switch overhead.', moves: [{ pid: 'P2', from: 'running', to: 'terminated' }], arrow: 'exit', action: 'Exited' },
+      { what: 'P3 is dispatched.', why: 'P3 arrived before P1 re-entered Ready, so P3 goes next. P1 must wait even longer — this is the "convoy effect" of FCFS.', moves: [{ pid: 'P3', from: 'ready', to: 'running' }], arrow: 'dispatch', action: 'Dispatched' },
+      { what: 'P3 finishes and exits.', why: 'P3 ran uninterrupted to completion.', moves: [{ pid: 'P3', from: 'running', to: 'terminated' }], arrow: 'exit', action: 'Exited' },
+      { what: 'P1 is finally dispatched again.', why: 'P1 has been waiting since its I/O finished. Under FCFS, it had to wait behind P2 and P3.', moves: [{ pid: 'P1', from: 'ready', to: 'running' }], arrow: 'dispatch', action: 'Dispatched' },
+      { what: 'P1 finishes and exits. All done!', why: 'Notice: P1 arrived first but finished last because of I/O + convoy effect.', moves: [{ pid: 'P1', from: 'running', to: 'terminated' }], arrow: 'exit', action: 'Exited' }
+    ]
+  },
+  {
+    id: 'priority', name: 'Priority (Preemptive)',
+    desc: 'Highest-priority process always runs — with preemption when a higher-priority process becomes ready',
+    steps: [
+      { what: 'Three processes created with priorities.', why: 'P1 (low priority), P2 (high priority), P3 (medium priority). A real OS might assign priority based on process type.', moves: [{ pid: 'P1', from: null, to: 'new' }, { pid: 'P2', from: null, to: 'new' }, { pid: 'P3', from: null, to: 'new' }], arrow: null, action: 'Created' },
+      { what: 'All three enter the Ready queue.', why: 'The scheduler will always pick the highest-priority process. P2 (high) will go first.', moves: [{ pid: 'P1', from: 'new', to: 'ready' }, { pid: 'P2', from: 'new', to: 'ready' }, { pid: 'P3', from: 'new', to: 'ready' }], arrow: 'admit', action: 'Admitted' },
+      { what: 'P2 (high priority) is dispatched.', why: 'Priority scheduling always picks the highest-priority ready process.', moves: [{ pid: 'P2', from: 'ready', to: 'running' }], arrow: 'dispatch', action: 'Dispatched' },
+      { what: 'P2 requests I/O — moves to Blocked.', why: 'Even high-priority processes must wait for I/O. P2 voluntarily blocks.', moves: [{ pid: 'P2', from: 'running', to: 'blocked' }], arrow: 'ioreq', action: 'I/O Request', logExtra: '(Kernel I/O servicing not shown)' },
+      { what: 'P3 (medium priority) is dispatched.', why: 'With P2 blocked, P3 is the highest-priority ready process.', moves: [{ pid: 'P3', from: 'ready', to: 'running' }], arrow: 'dispatch', action: 'Dispatched' },
+      { what: 'P2\'s I/O completes — P2 preempts P3!', why: 'P2 returns to Ready with higher priority than running P3. The OS immediately context-switches.', moves: [{ pid: 'P2', from: 'blocked', to: 'ready' }, { pid: 'P3', from: 'running', to: 'ready' }], arrow: 'iodone', action: 'Preempted' },
+      { what: 'P2 is dispatched again.', why: 'P2 has the highest priority and is ready, so it gets the CPU immediately.', moves: [{ pid: 'P2', from: 'ready', to: 'running' }], arrow: 'dispatch', action: 'Dispatched' },
+      { what: 'P2 finishes and exits.', why: 'The highest-priority process completes first. This is the strength of priority scheduling.', moves: [{ pid: 'P2', from: 'running', to: 'terminated' }], arrow: 'exit', action: 'Exited' },
+      { what: 'P3 (medium) is dispatched.', why: 'P3 resumes. P1 (low) must keep waiting — this is the risk of starvation.', moves: [{ pid: 'P3', from: 'ready', to: 'running' }], arrow: 'dispatch', action: 'Dispatched' },
+      { what: 'P3 finishes and exits.', why: 'Medium-priority process done.', moves: [{ pid: 'P3', from: 'running', to: 'terminated' }], arrow: 'exit', action: 'Exited' },
+      { what: 'P1 (low priority) is finally dispatched.', why: 'P1 ran last because it has the lowest priority. In a busy system, this could be starvation.', moves: [{ pid: 'P1', from: 'ready', to: 'running' }], arrow: 'dispatch', action: 'Dispatched' },
+      { what: 'P1 finishes and exits. All done!', why: 'Priority scheduling is efficient for urgent tasks but can starve low-priority processes. A common fix is "aging".', moves: [{ pid: 'P1', from: 'running', to: 'terminated' }], arrow: 'exit', action: 'Exited' }
+    ]
+  }
+];
+
+let SCENARIOS = [...SCENARIOS_BASE];
+let currentAlgo = 0;
+
+function getMode4Scenario() {
+  const algo = ALGO_DEFS[currentAlgo];
+  return { name: 'Multitasking', desc: algo.desc, processes: ['P1', 'P2', 'P3'], steps: algo.steps };
+}
+function rebuildScenarios() { SCENARIOS = [...SCENARIOS_BASE, getMode4Scenario()]; }
+rebuildScenarios();
+
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+
+let currentMode = 0;
+let currentStep = -1;
+let processStates = {};
+let processActions = {};
+let isKernelMode = false;
+
+// ═══════════════════════════════════════════════
+// SVG RENDERING
+// ═══════════════════════════════════════════════
+
+const svgNS = 'http://www.w3.org/2000/svg';
+
+function createSVGElement(tag, attrs) {
+  const el = document.createElementNS(svgNS, tag);
+  for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+  return el;
+}
+
+function drawStateNodes() {
+  const g = document.getElementById('stateNodes');
+  g.innerHTML = '';
+  for (const [key, s] of Object.entries(STATES)) {
+    const color = COLORS[key];
+
+    const rect = createSVGElement('rect', {
+      x: s.x - s.w/2, y: s.y - s.h/2,
+      width: s.w, height: s.h,
+      rx: 12, ry: 12,
+      fill: 'rgba(15,19,54,0.9)',
+      stroke: color,
+      'stroke-width': key === 'running' ? 2 : 1.2,
+      'stroke-opacity': key === 'running' ? 0.7 : 0.35,
+      class: 'state-node'
+    });
+    g.appendChild(rect);
+
+    if (key === 'running') {
+      const glow = createSVGElement('rect', {
+        x: s.x - s.w/2 - 6, y: s.y - s.h/2 - 6,
+        width: s.w + 12, height: s.h + 12,
+        rx: 16, ry: 16,
+        fill: 'none', stroke: color,
+        'stroke-width': 1, opacity: 0.1,
+        id: 'cpuGlow'
+      });
+      g.appendChild(glow);
+    }
+
+    // Bumped font sizes for better mobile readability
+    const labelSize = key === 'running' ? '16' : '15';
+    const label = createSVGElement('text', {
+      x: s.x, y: s.y - 10,
+      class: 'state-label',
+      'font-size': labelSize,
+      fill: color
+    });
+    label.textContent = s.label;
+    g.appendChild(label);
+
+    const sub = createSVGElement('text', {
+      x: s.x, y: s.y + 8,
+      class: 'state-sublabel',
+      'font-size': '13'
+    });
+    sub.textContent = s.sub;
+    g.appendChild(sub);
+  }
+}
+
+function drawArrows() {
+  const g = document.getElementById('arrows');
+  g.innerHTML = '';
+  for (const a of ARROWS) {
+    const path = createSVGElement('path', {
+      d: a.path,
+      class: 'arrow-path',
+      id: 'arrow-' + a.id,
+      'marker-end': 'url(#arrowhead)'
+    });
+    g.appendChild(path);
+
+    const tempPath = createSVGElement('path', { d: a.path });
+    g.appendChild(tempPath);
+    const midLen = tempPath.getTotalLength() / 2;
+    const midPt = tempPath.getPointAtLength(midLen);
+    g.removeChild(tempPath);
+
+    let offsetY = -10, offsetX = 0;
+    if (a.id === 'ioreq')  { offsetX = 28; offsetY = -6; }
+    if (a.id === 'iodone') { offsetX = -34; offsetY = -10; }
+    if (a.id === 'exit')   { offsetY = 16; }
+    if (a.id === 'timeout'){ offsetY = -8; }
+    if (a.id === 'admit')  { offsetX = 8; offsetY = 16; }
+    if (a.id === 'dispatch'){ offsetY = -8; }
+
+    if (a.label2) {
+      const text1 = createSVGElement('text', {
+        x: midPt.x + offsetX, y: midPt.y + offsetY - 6,
+        class: 'arrow-label', 'text-anchor': 'middle', 'font-size': '12'
+      });
+      text1.textContent = a.label;
+      g.appendChild(text1);
+
+      const text2 = createSVGElement('text', {
+        x: midPt.x + offsetX, y: midPt.y + offsetY + 6,
+        class: 'arrow-label', 'text-anchor': 'middle', 'font-size': '11'
+      });
+      text2.textContent = '/ ' + a.label2;
+      g.appendChild(text2);
+    } else {
+      const text = createSVGElement('text', {
+        x: midPt.x + offsetX, y: midPt.y + offsetY,
+        class: 'arrow-label', 'text-anchor': 'middle', 'font-size': '12'
+      });
+      text.textContent = a.label;
+      g.appendChild(text);
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════
+// DYNAMIC RENDERING
+// ═══════════════════════════════════════════════
+
+function renderTokens() {
+  const g = document.getElementById('tokens');
+  g.innerHTML = '';
+  const scenario = SCENARIOS[currentMode];
+
+  const stateGroups = {};
+  for (const pid of scenario.processes) {
+    const st = processStates[pid];
+    if (!st) continue;
+    if (!stateGroups[st]) stateGroups[st] = [];
+    stateGroups[st].push(pid);
+  }
+
+  for (const pid of scenario.processes) {
+    const st = processStates[pid];
+    if (!st) continue;
+    const group = stateGroups[st];
+    const idx = group.indexOf(pid);
+    const pos = getSlotPos(st, idx, group.length);
+    const color = PROCESS_COLORS[scenario.processes.indexOf(pid) % PROCESS_COLORS.length];
+
+    const tokenG = createSVGElement('g', { class: 'process-token', id: 'token-' + pid });
+
+    const shadow = createSVGElement('circle', {
+      cx: pos.x, cy: pos.y, r: TR + 2,
+      fill: color, opacity: 0.12,
+      filter: 'url(#glow)'
+    });
+    tokenG.appendChild(shadow);
+
+    const circle = createSVGElement('circle', {
+      cx: pos.x, cy: pos.y, r: TR,
+      fill: 'rgba(10,14,39,0.85)',
+      stroke: color, 'stroke-width': 2,
+      class: 'token-circle',
+      style: `color:${color}`
+    });
+    tokenG.appendChild(circle);
+
+    const text = createSVGElement('text', {
+      x: pos.x, y: pos.y,
+      class: 'token-text'
+    });
+    text.textContent = pid;
+    tokenG.appendChild(text);
+
+    g.appendChild(tokenG);
+  }
+
+  const cpuGlow = document.getElementById('cpuGlow');
+  if (cpuGlow) {
+    const hasRunning = Object.values(processStates).includes('running');
+    cpuGlow.style.animation = hasRunning ? 'cpuPulse 1.5s ease-in-out infinite' : 'none';
+    cpuGlow.style.opacity = hasRunning ? '0.15' : '0.05';
+  }
+
+  // Kernel mode indicator
+  const existingKernel = document.getElementById('kernelIndicator');
+  if (existingKernel) existingKernel.remove();
+  const existingKernelBorder = document.getElementById('kernelBorder');
+  if (existingKernelBorder) existingKernelBorder.remove();
+
+  if (isKernelMode) {
+    const rs = STATES.running;
+    const kernelBorder = createSVGElement('rect', {
+      id: 'kernelBorder',
+      x: rs.x - rs.w/2, y: rs.y - rs.h/2,
+      width: rs.w, height: rs.h,
+      rx: 12, ry: 12,
+      fill: 'rgba(255,82,82,0.06)',
+      stroke: '#ff5252',
+      'stroke-width': 1.5,
+      'stroke-opacity': 0.5,
+      'stroke-dasharray': '4 3'
+    });
+    g.appendChild(kernelBorder);
+
+    const kernelLabel = createSVGElement('text', {
+      id: 'kernelIndicator',
+      x: rs.x, y: rs.y + 4,
+      class: 'kernel-label'
+    });
+    kernelLabel.textContent = '⚙ KERNEL MODE';
+    g.appendChild(kernelLabel);
+  }
+}
+
+function highlightArrow(arrowId) {
+  document.querySelectorAll('.arrow-path').forEach(p => {
+    p.classList.remove('active', 'active-admit', 'active-dispatch', 'active-timeout', 'active-ioreq', 'active-iodone', 'active-exit', 'flash-overlay');
+    p.setAttribute('marker-end', 'url(#arrowhead)');
+  });
+  if (!arrowId) return;
+  const el = document.getElementById('arrow-' + arrowId);
+  if (el) {
+    el.classList.add('active', 'active-' + arrowId, 'flash-overlay');
+    el.setAttribute('marker-end', 'url(#arrowhead-active)');
+    setTimeout(() => el.classList.remove('flash-overlay'), 800);
+  }
+}
+
+function updateDescription(step) {
+  const descWhat = document.getElementById('descWhat');
+  const descWhy = document.getElementById('descWhy');
+  if (!step) {
+    descWhat.textContent = 'Press \u25B6 or \u2192 to begin.';
+    descWhy.textContent = 'Each step simulates an OS event that moves processes between states.';
+    return;
+  }
+  descWhat.textContent = step.what;
+  descWhy.textContent = step.why;
+}
+
+function updateTable() {
+  const tbody = document.getElementById('procTableBody');
+  const scenario = SCENARIOS[currentMode];
+  tbody.innerHTML = '';
+  for (const pid of scenario.processes) {
+    const st = processStates[pid];
+    if (!st) continue;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="font-weight:600;color:${PROCESS_COLORS[scenario.processes.indexOf(pid) % PROCESS_COLORS.length]}">${pid}</td>
+      <td><span class="status-dot ${st}"></span>${st.charAt(0).toUpperCase() + st.slice(1)}</td>
+      <td style="color:#8888aa">${processActions[pid] || '\u2014'}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+}
+
+function addLogEntry(stepNum, text) {
+  const log = document.getElementById('eventLog');
+  if (log.querySelector('.log-empty')) log.innerHTML = '';
+  const div = document.createElement('div');
+  div.className = 'log-entry';
+  div.innerHTML = `<span class="log-step">[Step ${stepNum}]</span> ${text}`;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+
+function clearLog() {
+  document.getElementById('eventLog').innerHTML = '<div class="log-empty">Awaiting first event\u2026</div>';
+}
+
+function updateControls() {
+  const scenario = SCENARIOS[currentMode];
+  const total = scenario.steps.length;
+  document.getElementById('stepInd').textContent = currentStep < 0 ? `Step 0/${total}` : `Step ${currentStep + 1}/${total}`;
+  document.getElementById('btnPrev').disabled = currentStep < 0;
+  document.getElementById('btnNext').disabled = currentStep >= total - 1;
+  document.getElementById('btnEnd').disabled = currentStep >= total - 1;
+}
+
+// ═══════════════════════════════════════════════
+// STEP ENGINE
+// ═══════════════════════════════════════════════
+
+function applyStep(stepIndex) {
+  const scenario = SCENARIOS[currentMode];
+  const step = scenario.steps[stepIndex];
+  for (const move of step.moves) {
+    processStates[move.pid] = move.to;
+    processActions[move.pid] = step.action;
+  }
+  isKernelMode = !!step.kernelMode;
+  highlightArrow(step.arrow);
+  renderTokens();
+  updateDescription(step);
+  updateTable();
+  const movedPids = step.moves.length > 0 ? step.moves.map(m => m.pid).join(', ') + ': ' : '';
+  let logText = `${movedPids}${step.what}`;
+  if (step.logExtra) logText += ' ' + step.logExtra;
+  addLogEntry(stepIndex + 1, logText);
+}
+
+function nextStep() {
+  const scenario = SCENARIOS[currentMode];
+  if (currentStep >= scenario.steps.length - 1) return;
+  currentStep++;
+  applyStep(currentStep);
+  updateControls();
+}
+
+function prevStep() {
+  if (currentStep < 0) return;
+  currentStep--;
+  rebuildState();
+  updateControls();
+}
+
+function goToEnd() {
+  const scenario = SCENARIOS[currentMode];
+  while (currentStep < scenario.steps.length - 1) {
+    currentStep++;
+    applyStep(currentStep);
+  }
+  updateControls();
+}
+
+function rebuildState() {
+  const scenario = SCENARIOS[currentMode];
+  processStates = {};
+  processActions = {};
+  isKernelMode = false;
+  clearLog();
+  if (currentStep < 0) {
+    highlightArrow(null);
+    renderTokens();
+    updateDescription(null);
+    updateTable();
+    return;
+  }
+  for (let i = 0; i <= currentStep; i++) {
+    const step = scenario.steps[i];
+    for (const move of step.moves) {
+      processStates[move.pid] = move.to;
+      processActions[move.pid] = step.action;
+    }
+    if (i === currentStep) isKernelMode = !!step.kernelMode;
+    const movedPids = step.moves.length > 0 ? step.moves.map(m => m.pid).join(', ') + ': ' : '';
+    let logText = `${movedPids}${step.what}`;
+    if (step.logExtra) logText += ' ' + step.logExtra;
+    addLogEntry(i + 1, logText);
+  }
+  const step = scenario.steps[currentStep];
+  highlightArrow(step.arrow);
+  renderTokens();
+  updateDescription(step);
+  updateTable();
+}
+
+function resetScenario() {
+  currentStep = -1;
+  processStates = {};
+  processActions = {};
+  isKernelMode = false;
+  highlightArrow(null);
+  clearLog();
+  renderTokens();
+  updateDescription(null);
+  updateTable();
+  updateControls();
+}
+
+function loadMode(index) {
+  currentMode = index;
+  resetScenario();
+  document.querySelectorAll('.mode-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', i === index);
+  });
+  const algoBar = document.getElementById('algoBar');
+  if (index === 3) {
+    algoBar.classList.add('visible');
+  } else {
+    algoBar.classList.remove('visible');
+  }
+}
+
+function loadAlgo(index) {
+  currentAlgo = index;
+  rebuildScenarios();
+  resetScenario();
+  document.querySelectorAll('.algo-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', i === index);
+  });
+}
+
+// ═══════════════════════════════════════════════
+// MODE BAR & ALGO BAR
+// ═══════════════════════════════════════════════
+
+function renderModeBar() {
+  const bar = document.getElementById('modeBar');
+  bar.innerHTML = '';
+  const names = ['Happy Path', 'Preemption', 'I/O Blocking', 'Multitasking'];
+  names.forEach((name, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'mode-btn' + (i === 0 ? ' active' : '');
+    btn.innerHTML = `<span class="mode-num">${i+1}</span>${name}`;
+    btn.onclick = () => loadMode(i);
+    bar.appendChild(btn);
+  });
+}
+
+function renderAlgoBar() {
+  const bar = document.getElementById('algoBar');
+  ALGO_DEFS.forEach((algo, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'algo-btn' + (i === 0 ? ' active' : '');
+    btn.textContent = algo.name;
+    btn.title = algo.desc;
+    btn.onclick = () => loadAlgo(i);
+    bar.appendChild(btn);
+  });
+}
+
+// ═══════════════════════════════════════════════
+// KEYBOARD & TOUCH
+// ═══════════════════════════════════════════════
+
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  switch(e.key) {
+    case 'ArrowRight': case ' ': e.preventDefault(); nextStep(); break;
+    case 'ArrowLeft': e.preventDefault(); prevStep(); break;
+    case 'r': case 'R': resetScenario(); break;
+    case 'End': e.preventDefault(); goToEnd(); break;
+    case 'Home': e.preventDefault(); resetScenario(); break;
+    case '1': loadMode(0); break;
+    case '2': loadMode(1); break;
+    case '3': loadMode(2); break;
+    case '4': loadMode(3); break;
+  }
+});
+
+document.getElementById('svgWrap').addEventListener('click', e => {
+  if (!e.target.closest('button')) nextStep();
+});
+
+let touchX = 0;
+document.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; }, { passive: true });
+document.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - touchX;
+  if (Math.abs(dx) > 50) { dx < 0 ? nextStep() : prevStep(); }
+}, { passive: true });
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+
+// Expose to global scope for inline onclick handlers
+window.nextStep = nextStep;
+window.prevStep = prevStep;
+window.goToEnd = goToEnd;
+window.resetScenario = resetScenario;
+
+drawStateNodes();
+drawArrows();
+renderModeBar();
+renderAlgoBar();
+resetScenario();
+updateControls();
+
+})();
+</script>
+</body>
+</html>

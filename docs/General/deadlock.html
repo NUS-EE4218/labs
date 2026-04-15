@@ -1,0 +1,2174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deadlock Visualizer</title>
+<style>
+/* ============ RESET & BASE ============ */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: #0a0e27;
+  color: #e0e0e0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============ HEADER ============ */
+.header {
+  text-align: center;
+  padding: 12px 16px 8px;
+  background: linear-gradient(135deg, #0a0e27, #1a1e47);
+  border-bottom: 2px solid #2a2e57;
+  flex-shrink: 0;
+}
+.header h1 {
+  font-size: 1.5rem;
+  background: linear-gradient(90deg, #60a5fa, #a78bfa, #f472b6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 2px;
+}
+.header p {
+  color: #8888aa;
+  font-size: 0.8rem;
+}
+
+/* ============ TOP BAR (mode + size selectors) ============ */
+.topbar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #0d1130;
+  border-bottom: 1px solid #2a2e57;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+.seg-group {
+  display: flex;
+  border: 2px solid #2a2e57;
+  border-radius: 20px;
+  overflow: hidden;
+}
+.seg-btn {
+  padding: 6px 16px;
+  background: transparent;
+  color: #888;
+  font-size: 0.78rem;
+  cursor: pointer;
+  border: none;
+  font-weight: 600;
+  transition: all 0.25s;
+  white-space: nowrap;
+}
+.seg-btn:hover {
+  color: #ccc;
+  background: rgba(255, 255, 255, 0.04);
+}
+.seg-btn.active {
+  color: #60a5fa;
+  background: rgba(96, 165, 250, 0.14);
+}
+.seg-btn.active.mode-prev {
+  color: #34d399;
+  background: rgba(52, 211, 153, 0.12);
+}
+.seg-btn.active.mode-avoid {
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.12);
+}
+.topbar-sep {
+  width: 1px;
+  background: #2a2e57;
+  height: 20px;
+  align-self: center;
+}
+.size-group {
+  display: flex;
+  border: 2px solid #2a2e57;
+  border-radius: 14px;
+  overflow: hidden;
+}
+.size-btn {
+  padding: 5px 12px;
+  background: transparent;
+  color: #666;
+  font-size: 0.72rem;
+  cursor: pointer;
+  border: none;
+  font-weight: 700;
+  transition: all 0.25s;
+}
+.size-btn:hover {
+  color: #aaa;
+  background: rgba(255, 255, 255, 0.03);
+}
+.size-btn.active {
+  color: #f472b6;
+  background: rgba(244, 114, 182, 0.12);
+}
+
+/* ============ MAIN LAYOUT ============ */
+.main-container {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  max-width: 1500px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 10px;
+  gap: 10px;
+}
+.viz-panel {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.info-panel {
+  width: 320px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: #2a2e57 transparent;
+}
+.info-panel::-webkit-scrollbar { width: 5px; }
+.info-panel::-webkit-scrollbar-thumb { background: #2a2e57; border-radius: 3px; }
+
+/* ============ SVG WRAP ============ */
+.svg-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  background: linear-gradient(145deg, #0d1130, #111540);
+  border: 1px solid #2a2e57;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.svg-wrap svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ============ CODE PANELS ============ */
+.code-panels {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+.code-card {
+  flex: 1;
+  min-width: 0;
+  background: #0b0f24;
+  border: 1px solid #2a2e57;
+  border-radius: 8px;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  max-height: 160px;
+}
+.code-card h4 {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 3px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.code-card h4.t-a { color: #60a5fa; }
+.code-card h4.t-b { color: #a78bfa; }
+.code-card h4.t-c { color: #f472b6; }
+
+.code-block {
+  font-family: 'Fira Code', 'Cascadia Code', 'JetBrains Mono', 'Consolas', monospace;
+  font-size: 0.72rem;
+  line-height: 1.15;
+  white-space: pre;
+  overflow: auto;
+  flex: 1;
+  scrollbar-width: thin;
+  scrollbar-color: #2a2e57 transparent;
+  color: #5a5a7a;
+  scroll-behavior: smooth;
+}
+.code-block::-webkit-scrollbar { width: 3px; height: 3px; }
+.code-block::-webkit-scrollbar-thumb { background: #2a2e57; border-radius: 2px; }
+
+.code-line {
+  display: block;
+  padding: 1px 5px;
+  border-radius: 2px;
+  transition: background 0.2s, color 0.2s;
+  border-left: 2px solid transparent;
+  /* KEY: no extra margin or padding between lines */
+  margin: 0;
+}
+.code-line.hl-a   { background: rgba(96,165,250,.13); color: #93c5fd; border-left-color: #60a5fa; }
+.code-line.hl-b   { background: rgba(167,139,250,.13); color: #c4b5fd; border-left-color: #a78bfa; }
+.code-line.hl-c   { background: rgba(244,114,182,.13); color: #f9a8d4; border-left-color: #f472b6; }
+.code-line.hl-err { background: rgba(248,113,113,.13); color: #fca5a5; border-left-color: #f87171; }
+.code-line.hl-blk { background: rgba(251,191,36,.1); color: #fcd34d; border-left-color: #fbbf24; }
+.code-line.hl-ok  { background: rgba(52,211,153,.09); color: #6ee7b7; border-left-color: #34d399; }
+
+/* Syntax colors inside code */
+.code-line .kw  { color: #c084fc; }
+.code-line .fn  { color: #60a5fa; }
+.code-line .cm  { color: #3d3d5a; font-style: italic; }
+.code-line .vr  { color: #f0abfc; }
+.code-line .op  { color: #f87171; }
+
+/* ============ CONTROLS ============ */
+.controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: #0d1130;
+  border-radius: 8px;
+  border: 1px solid #2a2e57;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+.ctrl-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 2px solid #3a3e67;
+  background: rgba(255, 255, 255, 0.02);
+  color: #bbb;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ctrl-btn:hover:not(:disabled) {
+  border-color: #60a5fa;
+  color: #60a5fa;
+  background: rgba(96, 165, 250, 0.08);
+  transform: scale(1.05);
+}
+.ctrl-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+.ctrl-btn.primary {
+  width: 44px;
+  height: 44px;
+  border-color: #60a5fa;
+  color: #60a5fa;
+  font-size: 1.15rem;
+}
+.step-indicator {
+  font-size: 0.8rem;
+  color: #8888aa;
+  min-width: 60px;
+  text-align: center;
+  font-weight: 600;
+}
+.kbd-hint {
+  text-align: center;
+  margin-top: 4px;
+  font-size: 0.6rem;
+  color: #3a3a5a;
+  flex-shrink: 0;
+}
+.kbd {
+  display: inline-block;
+  padding: 0 4px;
+  background: #1a1e47;
+  border: 1px solid #2a2e57;
+  border-radius: 2px;
+  font-family: monospace;
+  font-size: 0.6rem;
+  color: #555;
+  margin: 0 1px;
+}
+
+/* ============ INFO CARDS ============ */
+.card {
+  background: linear-gradient(145deg, #0d1130, #111540);
+  border: 1px solid #2a2e57;
+  border-radius: 8px;
+  padding: 10px;
+}
+.card h3 {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #60a5fa;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.card h3 .icon { font-size: 0.85rem; }
+
+/* Step description */
+.step-desc {
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: #ccc;
+  min-height: 28px;
+}
+.hl   { color: #60a5fa; font-weight: 600; }
+.hl-r { color: #f87171; font-weight: 600; }
+.hl-g { color: #34d399; font-weight: 600; }
+.hl-y { color: #fbbf24; font-weight: 600; }
+.hl-v { color: #c084fc; font-weight: 600; }
+
+/* State table */
+.state-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.72rem;
+}
+.state-table th {
+  text-align: left;
+  padding: 3px 5px;
+  color: #8888aa;
+  border-bottom: 1px solid #2a2e57;
+  font-weight: 600;
+}
+.state-table td {
+  padding: 3px 5px;
+  border-bottom: 1px solid rgba(42, 46, 87, 0.35);
+}
+.dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 3px;
+}
+.dot.free    { background: #34d399; }
+.dot.held    { background: #f87171; }
+.dot.waiting { background: #fbbf24; }
+
+/* Coffman conditions */
+.coffman-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+.coffman-item {
+  padding: 4px 6px;
+  background: rgba(42, 46, 87, 0.2);
+  border-radius: 4px;
+  font-size: 0.65rem;
+  border-left: 2px solid #3a3e67;
+  transition: all 0.25s;
+  line-height: 1.25;
+}
+.coffman-item.active {
+  border-left-color: #f87171;
+  background: rgba(248, 113, 113, 0.08);
+  color: #f87171;
+}
+.coffman-item.broken {
+  border-left-color: #34d399;
+  background: rgba(52, 211, 153, 0.05);
+  color: #34d399;
+  text-decoration: line-through;
+}
+.coffman-item b {
+  display: block;
+  font-size: 0.66rem;
+}
+
+/* Event log */
+.log-box {
+  max-height: 130px;
+  overflow-y: auto;
+  flex: 1;
+  scrollbar-width: thin;
+  scrollbar-color: #2a2e57 transparent;
+}
+.log-box::-webkit-scrollbar { width: 3px; }
+.log-box::-webkit-scrollbar-thumb { background: #2a2e57; border-radius: 2px; }
+.log-entry {
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(42, 46, 87, 0.25);
+  font-size: 0.68rem;
+  color: #555;
+  display: flex;
+  gap: 5px;
+}
+.log-entry.active { color: #ccc; font-weight: 500; }
+.log-entry.error  { color: #f87171; }
+.log-entry.success { color: #34d399; }
+.log-step {
+  color: #60a5fa;
+  font-weight: 700;
+  min-width: 14px;
+}
+
+/* ============ OVERLAY BANNERS ============ */
+.overlay-banner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 8px 24px;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  opacity: 0;
+  transition: opacity 0.4s;
+  pointer-events: none;
+  z-index: 10;
+  text-transform: uppercase;
+  text-align: center;
+}
+.deadlock-banner {
+  background: rgba(220, 38, 38, 0.92);
+  color: #fff;
+  box-shadow: 0 0 30px rgba(220, 38, 38, 0.4);
+}
+.success-banner {
+  background: rgba(5, 150, 105, 0.92);
+  color: #fff;
+  box-shadow: 0 0 30px rgba(5, 150, 105, 0.4);
+}
+.overlay-banner.visible { opacity: 1; }
+
+/* ============ ANIMATIONS ============ */
+@keyframes pulseRed {
+  0%, 100% { filter: drop-shadow(0 0 3px rgba(248,113,113,.3)); }
+  50% { filter: drop-shadow(0 0 12px rgba(248,113,113,.7)); }
+}
+@keyframes pulseGreen {
+  0%, 100% { filter: drop-shadow(0 0 3px rgba(52,211,153,.3)); }
+  50% { filter: drop-shadow(0 0 10px rgba(52,211,153,.6)); }
+}
+@keyframes dashMove { to { stroke-dashoffset: -20; } }
+.anim-dead  { animation: pulseRed 1.3s ease-in-out infinite; }
+.anim-ok    { animation: pulseGreen 1.3s ease-in-out infinite; }
+.anim-dash  { animation: dashMove 0.8s linear infinite; }
+
+/* ============ DESKTOP (>1024px) ============ */
+@media (min-width: 1025px) {
+  .svg-wrap {
+    /* Let it grow but cap it so it doesn't get absurdly tall */
+    max-height: 400px;
+  }
+  .code-card {
+    max-height: 180px;
+  }
+  .info-panel {
+    width: 330px;
+  }
+}
+
+/* ============ TABLET / SMALL DESKTOP ============ */
+@media (max-width: 1024px) {
+  .main-container {
+    flex-direction: column;
+    overflow-y: auto;
+    padding: 6px;
+  }
+  .info-panel {
+    width: 100%;
+    overflow: visible;
+    flex-shrink: 0;
+  }
+  .svg-wrap {
+    min-height: 240px;
+    flex: none;
+    aspect-ratio: 5 / 3.2;
+  }
+  .kbd-hint { display: none; }
+  .code-card { max-height: 120px; }
+}
+
+/* ============ PHONE ============ */
+@media (max-width: 600px) {
+  .header { padding: 8px 10px 5px; }
+  .header h1 { font-size: 1.05rem; }
+  .header p { font-size: 0.62rem; }
+  .topbar { gap: 4px; padding: 5px 6px; }
+  .seg-btn { padding: 4px 10px; font-size: 0.66rem; }
+  .size-btn { padding: 3px 8px; font-size: 0.6rem; }
+  .controls { gap: 5px; padding: 5px; }
+  .ctrl-btn { width: 32px; height: 32px; font-size: 0.85rem; }
+  .ctrl-btn.primary { width: 38px; height: 38px; font-size: 1rem; }
+  .step-indicator { font-size: 0.7rem; min-width: 44px; }
+  .svg-wrap { aspect-ratio: 1 / 0.78; }
+  .code-panels { flex-direction: column; }
+  .code-card { max-height: 80px; }
+  .code-block { font-size: 0.62rem; }
+  .card { padding: 7px; }
+  .coffman-grid { grid-template-columns: 1fr; }
+  .step-desc { font-size: 0.76rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>⚙️ Deadlock Visualizer</h1>
+  <p>Step-by-step deadlock, prevention &amp; avoidance — with C code</p>
+</div>
+
+<div class="topbar">
+  <div class="seg-group" id="modeGroup">
+    <button class="seg-btn active" data-m="deadlock" onclick="setMode('deadlock')">💀 Deadlock</button>
+    <button class="seg-btn" data-m="prevention" onclick="setMode('prevention')">🛡️ Prevention</button>
+    <button class="seg-btn" data-m="avoidance" onclick="setMode('avoidance')">🔮 Avoidance</button>
+  </div>
+  <div class="topbar-sep"></div>
+  <div class="size-group" id="sizeGroup">
+    <button class="size-btn active" data-s="2" onclick="setSz(2)">2×2</button>
+    <button class="size-btn" data-s="3" onclick="setSz(3)">3×3</button>
+  </div>
+</div>
+
+<div class="main-container">
+  <div class="viz-panel">
+
+    <!-- SVG DIAGRAM -->
+    <div class="svg-wrap" id="svgWrap">
+      <svg id="mainSvg" viewBox="0 0 460 320" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrBlue" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto">
+            <polygon points="0 0,7 2.5,0 5" fill="#60a5fa"/>
+          </marker>
+          <marker id="arrRed" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto">
+            <polygon points="0 0,7 2.5,0 5" fill="#f87171"/>
+          </marker>
+          <marker id="arrYellow" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto">
+            <polygon points="0 0,7 2.5,0 5" fill="#fbbf24"/>
+          </marker>
+          <marker id="arrGreen" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto">
+            <polygon points="0 0,7 2.5,0 5" fill="#34d399"/>
+          </marker>
+
+          <linearGradient id="gradPA"><stop offset="0%" stop-color="#3b82f6" stop-opacity=".25"/><stop offset="100%" stop-color="#6366f1" stop-opacity=".07"/></linearGradient>
+          <linearGradient id="gradPB"><stop offset="0%" stop-color="#8b5cf6" stop-opacity=".25"/><stop offset="100%" stop-color="#a855f7" stop-opacity=".07"/></linearGradient>
+          <linearGradient id="gradPC"><stop offset="0%" stop-color="#ec4899" stop-opacity=".25"/><stop offset="100%" stop-color="#f43f5e" stop-opacity=".07"/></linearGradient>
+          <linearGradient id="gradR1"><stop offset="0%" stop-color="#f59e0b" stop-opacity=".22"/><stop offset="100%" stop-color="#f97316" stop-opacity=".06"/></linearGradient>
+          <linearGradient id="gradR2"><stop offset="0%" stop-color="#10b981" stop-opacity=".22"/><stop offset="100%" stop-color="#14b8a6" stop-opacity=".06"/></linearGradient>
+          <linearGradient id="gradR3"><stop offset="0%" stop-color="#06b6d4" stop-opacity=".22"/><stop offset="100%" stop-color="#0ea5e9" stop-opacity=".06"/></linearGradient>
+
+          <pattern id="gridPat" width="28" height="28" patternUnits="userSpaceOnUse">
+            <path d="M28 0L0 0 0 28" fill="none" stroke="#1a1e47" stroke-width=".35"/>
+          </pattern>
+        </defs>
+        <rect id="bgRect" width="460" height="320" fill="url(#gridPat)" opacity=".3"/>
+        <g id="layerArrows"></g>
+        <g id="layerEntities"></g>
+        <g id="layerLabels"></g>
+      </svg>
+      <div class="overlay-banner deadlock-banner" id="bannerDead">⚠ DEADLOCK</div>
+      <div class="overlay-banner success-banner" id="bannerOk">✓ COMPLETED</div>
+    </div>
+
+    <!-- CODE PANELS (dynamically filled) -->
+    <div class="code-panels" id="codePanels"></div>
+
+    <!-- CONTROLS -->
+    <div class="controls">
+      <button class="ctrl-btn" onclick="doReset()" title="Reset (R)">⟲</button>
+      <button class="ctrl-btn" id="btnPrev" onclick="doPrev()" title="Previous (←)">◀</button>
+      <span class="step-indicator" id="stepIndicator">0 / 0</span>
+      <button class="ctrl-btn primary" id="btnNext" onclick="doNext()" title="Next (→ / Space)">▶</button>
+      <button class="ctrl-btn" id="btnEnd" onclick="doEnd()" title="End">⏭</button>
+    </div>
+    <div class="kbd-hint">
+      <span class="kbd">←</span><span class="kbd">→</span><span class="kbd">Space</span> navigate
+      <span class="kbd">R</span> reset
+      <span class="kbd">1</span><span class="kbd">2</span><span class="kbd">3</span> mode
+      <span class="kbd">Q</span><span class="kbd">W</span> size
+      · click diagram to advance
+    </div>
+  </div>
+
+  <!-- INFO PANEL -->
+  <div class="info-panel">
+    <div class="card">
+      <h3><span class="icon">📖</span> Step Description</h3>
+      <div class="step-desc" id="descBox">Press <span class="hl">▶</span> or <span class="hl">→</span> to begin.</div>
+    </div>
+
+    <div class="card">
+      <h3><span class="icon">📊</span> Allocation State</h3>
+      <table class="state-table">
+        <thead><tr><th>Entity</th><th>Holds</th><th>Wants</th><th>Status</th></tr></thead>
+        <tbody id="stateBody"></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span class="icon">🔒</span> Coffman Conditions</h3>
+      <div class="coffman-grid">
+        <div class="coffman-item" id="coff-mx"><b>1. Mutual Exclusion</b>One process per resource</div>
+        <div class="coffman-item" id="coff-hw"><b>2. Hold &amp; Wait</b>Hold one, wait another</div>
+        <div class="coffman-item" id="coff-np"><b>3. No Preemption</b>Can't forcibly take</div>
+        <div class="coffman-item" id="coff-cw"><b>4. Circular Wait</b>Circular dependency</div>
+      </div>
+    </div>
+
+    <div class="card" style="flex:1; display:flex; flex-direction:column; min-height:60px;">
+      <h3><span class="icon">📝</span> Event Log</h3>
+      <div class="log-box" id="logBox"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ================================================================
+// SVG HELPERS
+// ================================================================
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+function svgEl(tag, attrs, parent) {
+  const el = document.createElementNS(SVG_NS, tag);
+  for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+  if (parent) parent.appendChild(el);
+  return el;
+}
+
+function svgText(x, y, str, fill, fontSize, extraAttrs, parent) {
+  const t = svgEl('text', {
+    x, y,
+    'text-anchor': 'middle',
+    'dominant-baseline': 'middle',
+    fill,
+    'font-size': fontSize,
+    'font-family': "'Segoe UI', system-ui, sans-serif",
+    ...(extraAttrs || {})
+  }, parent);
+  t.textContent = str;
+  return t;
+}
+
+function borderCircle(cx, cy, r, targetX, targetY) {
+  const angle = Math.atan2(targetY - cy, targetX - cx);
+  return { x: cx + Math.cos(angle) * r, y: cy + Math.sin(angle) * r };
+}
+
+function borderRect(cx, cy, hw, hh, targetX, targetY) {
+  const dx = targetX - cx;
+  const dy = targetY - cy;
+  const tanA = Math.abs(dy / (dx || 1e-9));
+  let bx, by;
+  if (tanA <= hh / hw) {
+    bx = hw * Math.sign(dx || 1);
+    by = bx * dy / (dx || 1e-9);
+  } else {
+    by = hh * Math.sign(dy || 1);
+    bx = by * dx / (dy || 1e-9);
+  }
+  return { x: cx + bx, y: cy + by };
+}
+
+function drawArrow(parentG, fromPos, toPos, color, markerUrl, dashArray, animated, bulge) {
+  const s = fromPos.r
+    ? borderCircle(fromPos.x, fromPos.y, fromPos.r, toPos.x, toPos.y)
+    : borderRect(fromPos.x, fromPos.y, fromPos.hw, fromPos.hh, toPos.x, toPos.y);
+  const e = toPos.r
+    ? borderCircle(toPos.x, toPos.y, toPos.r, fromPos.x, fromPos.y)
+    : borderRect(toPos.x, toPos.y, toPos.hw, toPos.hh, fromPos.x, fromPos.y);
+
+  const dx = e.x - s.x, dy = e.y - s.y;
+  const dist = Math.hypot(dx, dy);
+  const perpX = -dy / dist, perpY = dx / dist;
+  const b = (bulge || 1) * Math.min(dist * 0.18, 28);
+  const mx = (s.x + e.x) / 2 + perpX * b;
+  const my = (s.y + e.y) / 2 + perpY * b;
+
+  const path = svgEl('path', {
+    d: `M${s.x.toFixed(1)},${s.y.toFixed(1)} Q${mx.toFixed(1)},${my.toFixed(1)} ${e.x.toFixed(1)},${e.y.toFixed(1)}`,
+    fill: 'none',
+    stroke: color,
+    'stroke-width': '2.2',
+    'stroke-dasharray': dashArray || 'none',
+    'marker-end': markerUrl,
+    opacity: '.78'
+  }, parentG);
+
+  if (animated) path.classList.add('anim-dash');
+}
+
+// ================================================================
+// LAYOUT POSITIONS
+// ================================================================
+const LAYOUT_2x2 = {
+  P1: { x: 105, y: 95,  r: 38 },
+  P2: { x: 355, y: 225, r: 38 },
+  R1: { x: 355, y: 95,  hw: 44, hh: 28 },
+  R2: { x: 105, y: 225, hw: 44, hh: 28 }
+};
+
+const LAYOUT_3x3 = {
+  P1: { x: 110, y: 60,  r: 34 },
+  P2: { x: 380, y: 175, r: 34 },
+  P3: { x: 110, y: 290, r: 34 },
+  R1: { x: 330, y: 60,  hw: 40, hh: 26 },
+  R2: { x: 330, y: 290, hw: 40, hh: 26 },
+  R3: { x: 60,  y: 175, hw: 40, hh: 26 }
+};
+
+// Visual config
+const PROC_COLORS  = { P1: '#3b82f6', P2: '#8b5cf6', P3: '#ec4899' };
+const RES_COLORS   = { R1: '#f59e0b', R2: '#10b981', R3: '#06b6d4' };
+const PROC_GRADS   = { P1: 'url(#gradPA)', P2: 'url(#gradPB)', P3: 'url(#gradPC)' };
+const RES_GRADS    = { R1: 'url(#gradR1)', R2: 'url(#gradR2)', R3: 'url(#gradR3)' };
+const PROC_NAMES   = { P1: 'Proc A', P2: 'Proc B', P3: 'Proc C' };
+const PROC_ICONS   = { P1: '🖥️', P2: '💻', P3: '📱' };
+const RES_ICONS    = { R1: '🔒', R2: '🔑', R3: '💾' };
+
+// Arrow type configs
+const ARROW_STYLES = {
+  hold:   { color: '#60a5fa', marker: 'url(#arrBlue)' },
+  wait:   { color: '#f87171', marker: 'url(#arrRed)',    dash: '7 4', anim: true },
+  denied: { color: '#fbbf24', marker: 'url(#arrYellow)', dash: '4 5', anim: true },
+  grant:  { color: '#34d399', marker: 'url(#arrGreen)' }
+};
+
+function curveSide(fromKey, toKey, layout) {
+  const f = layout[fromKey], t = layout[toKey];
+  const keys = Object.keys(layout);
+  const cx = keys.reduce((s, k) => s + layout[k].x, 0) / keys.length;
+  const cy = keys.reduce((s, k) => s + layout[k].y, 0) / keys.length;
+  return ((f.x - cx) * (t.y - cy) - (f.y - cy) * (t.x - cx)) >= 0 ? 1 : -1;
+}
+
+// ================================================================
+// CODE TEMPLATES (compact, no blank lines, inline comments)
+// ================================================================
+const CODE_TEMPLATES = {
+  deadlock: {
+    2: {
+      P1: [
+        { h: '<span class="cm">// Thread A</span>' },
+        { h: '<span class="fn">lock</span>(&<span class="vr">R1</span>);' },
+        { h: '<span class="cm">// ... work ...</span>' },
+        { h: '<span class="fn">lock</span>(&<span class="vr">R2</span>); <span class="cm">// BLOCK</span>' },
+        { h: '<span class="cm">// never reaches here</span>' }
+      ],
+      P2: [
+        { h: '<span class="cm">// Thread B</span>' },
+        { h: '<span class="fn">lock</span>(&<span class="vr">R2</span>);' },
+        { h: '<span class="cm">// ... work ...</span>' },
+        { h: '<span class="fn">lock</span>(&<span class="vr">R1</span>); <span class="cm">// BLOCK</span>' },
+        { h: '<span class="cm">// never reaches here</span>' }
+      ]
+    },
+    3: {
+      P1: [
+        { h: '<span class="cm">// Thread A</span>' },
+        { h: '<span class="fn">lock</span>(&<span class="vr">R1</span>);' },
+        { h: '<span class="fn">lock</span>(&<span class="vr">R2</span>); <span class="cm">// BLOCK</span>' },
+        { h: '<span class="cm">// stuck forever</span>' }
+      ],
+      P2: [
+        { h: '<span class="cm">// Thread B</span>' },
+        { h: '<span class="fn">lock</span>(&<span class="vr">R2</span>);' },
+        { h: '<span class="fn">lock</span>(&<span class="vr">R3</span>); <span class="cm">// BLOCK</span>' },
+        { h: '<span class="cm">// stuck forever</span>' }
+      ],
+      P3: [
+        { h: '<span class="cm">// Thread C</span>' },
+        { h: '<span class="fn">lock</span>(&<span class="vr">R3</span>);' },
+        { h: '<span class="fn">lock</span>(&<span class="vr">R1</span>); <span class="cm">// BLOCK</span>' },
+        { h: '<span class="cm">// stuck forever</span>' }
+      ]
+    }
+  },
+  prevention: {
+    2: {
+      P1: [
+        { h: '<span class="cm">// A (ordered: R1→R2)</span>' },
+        { h: '<span class="fn">lock</span>(&<span class="vr">R1</span>); <span class="cm">// low first</span>' },
+        { h: '<span class="fn">lock</span>(&<span class="vr">R2</span>);' },
+        { h: '<span class="cm">// critical section</span>' },
+        { h: '<span class="fn">unlock</span>(&<span class="vr">R2</span>);' },
+        { h: '<span class="fn">unlock</span>(&<span class="vr">R1</span>);' }
+      ],
+      P2: [
+        { h: '<span class="cm">// B (ordered: R1→R2)</span>' },
+        { h: '<span class="fn">lock</span>(&<span class="vr">R1</span>); <span class="cm">// low first!</span>' },
+        { h: '<span class="fn">lock</span>(&<span class="vr">R2</span>);' },
+        { h: '<span class="cm">// critical section</span>' },
+        { h: '<span class="fn">unlock</span>(&<span class="vr">R2</span>);' },
+        { h: '<span class="fn">unlock</span>(&<span class="vr">R1</span>);' }
+      ]
+    },
+    3: {
+      P1: [
+        { h: '<span class="cm">// A (R1→R2)</span>' },
+        { h: '<span class="fn">lock</span>(&<span class="vr">R1</span>);' },
+        { h: '<span class="fn">lock</span>(&<span class="vr">R2</span>);' },
+        { h: '<span class="cm">// work</span>' },
+        { h: '<span class="fn">unlock</span>(R2,R1);' }
+      ],
+      P2: [
+        { h: '<span class="cm">// B (R2→R3)</span>' },
+        { h: '<span class="fn">lock</span>(&<span class="vr">R2</span>);' },
+        { h: '<span class="fn">lock</span>(&<span class="vr">R3</span>);' },
+        { h: '<span class="cm">// work</span>' },
+        { h: '<span class="fn">unlock</span>(R3,R2);' }
+      ],
+      P3: [
+        { h: '<span class="cm">// C needs R3,R1 → order: R1 first!</span>' },
+        { h: '<span class="fn">lock</span>(&<span class="vr">R1</span>); <span class="cm">// order!</span>' },
+        { h: '<span class="fn">lock</span>(&<span class="vr">R3</span>);' },
+        { h: '<span class="cm">// work</span>' },
+        { h: '<span class="fn">unlock</span>(R3,R1);' }
+      ]
+    }
+  },
+  avoidance: {
+    2: {
+      P1: [
+        { h: '<span class="cm">// A (banker)</span>' },
+        { h: '<span class="fn">request</span>(<span class="vr">R1</span>); <span class="cm">// safe?</span>' },
+        { h: '<span class="fn">request</span>(<span class="vr">R2</span>); <span class="cm">// safe?</span>' },
+        { h: '<span class="cm">// work</span>' },
+        { h: '<span class="fn">release_all</span>();' }
+      ],
+      P2: [
+        { h: '<span class="cm">// B (banker)</span>' },
+        { h: '<span class="fn">request</span>(<span class="vr">R2</span>); <span class="cm">// safe?</span>' },
+        { h: '<span class="fn">request</span>(<span class="vr">R1</span>); <span class="cm">// safe?</span>' },
+        { h: '<span class="cm">// work</span>' },
+        { h: '<span class="fn">release_all</span>();' }
+      ]
+    },
+    3: {
+      P1: [
+        { h: '<span class="cm">// A (banker)</span>' },
+        { h: '<span class="fn">request</span>(<span class="vr">R1</span>);' },
+        { h: '<span class="fn">request</span>(<span class="vr">R2</span>);' },
+        { h: '<span class="cm">// work</span>' },
+        { h: '<span class="fn">release_all</span>();' }
+      ],
+      P2: [
+        { h: '<span class="cm">// B (banker)</span>' },
+        { h: '<span class="fn">request</span>(<span class="vr">R2</span>);' },
+        { h: '<span class="fn">request</span>(<span class="vr">R3</span>);' },
+        { h: '<span class="cm">// work</span>' },
+        { h: '<span class="fn">release_all</span>();' }
+      ],
+      P3: [
+        { h: '<span class="cm">// C (banker)</span>' },
+        { h: '<span class="fn">request</span>(<span class="vr">R3</span>); <span class="cm">//denied!</span>' },
+        { h: '<span class="fn">request</span>(<span class="vr">R3</span>); <span class="cm">//retry</span>' },
+        { h: '<span class="fn">request</span>(<span class="vr">R1</span>);' },
+        { h: '<span class="fn">release_all</span>();' }
+      ]
+    }
+  }
+};
+
+// ================================================================
+// SCENARIO STEP DATA
+// ================================================================
+// Each step: {
+//   d:       description HTML,
+//   holds:   { P1: ['R1'], P2: [], ... },
+//   wants:   { P1: null, P2: 'R1', ... },
+//   arrows:  [ { f: 'R1', t: 'P1', type: 'hold', b: 1 }, ... ],
+//   status:  { P1: 'Running', R1: 'Held:A', ... },
+//   co:      ['mx','hw','np','cw'],   // active coffman conditions
+//   cb:      ['cw'],                   // broken coffman conditions (prevention)
+//   dead:    false,
+//   ok:      false,
+//   bk:      null | 'safe' | 'unsafe', // banker state (avoidance only)
+//   hl:      { P1: [{l:1, c:'hl-a'}], P2: [...], ... },  // code highlights
+//   log:     'Log text'
+// }
+
+const SCENARIOS = {
+  deadlock: {},
+  prevention: {},
+  avoidance: {}
+};
+
+// ================================================================
+// DEADLOCK 2×2
+// ================================================================
+SCENARIOS.deadlock[2] = [
+  {
+    d: 'Two threads, two resources. <span class="hl">Thread A</span> locks R1 then R2. <span class="hl-v">Thread B</span> locks R2 then R1. <em>Opposite order → deadlock risk!</em>',
+    holds: { P1: [], P2: [] },
+    wants: { P1: null, P2: null },
+    arrows: [],
+    status: { P1: 'Idle', P2: 'Idle', R1: 'Free', R2: 'Free' },
+    co: [], dead: false, ok: false,
+    hl: { P1: [], P2: [] },
+    log: 'Init. A: R1→R2, B: R2→R1 (opposite order).'
+  },
+  {
+    d: '<span class="hl">Thread A</span> executes <code>lock(&R1)</code>. R1 is free → <span class="hl-g">acquired</span>.<br>☑ <em>Mutual Exclusion</em>: only A can use R1 now.',
+    holds: { P1: ['R1'], P2: [] },
+    wants: { P1: null, P2: null },
+    arrows: [{ f: 'R1', t: 'P1', type: 'hold', b: 1 }],
+    status: { P1: 'Running', P2: 'Idle', R1: 'Held: A', R2: 'Free' },
+    co: ['mx'], dead: false, ok: false,
+    hl: { P1: [{ l: 1, c: 'hl-a' }], P2: [] },
+    log: 'A: lock(R1) → acquired ✓'
+  },
+  {
+    d: '<span class="hl-v">Thread B</span> executes <code>lock(&R2)</code>. R2 is free → <span class="hl-g">acquired</span>.<br>Now each thread holds one resource.',
+    holds: { P1: ['R1'], P2: ['R2'] },
+    wants: { P1: null, P2: null },
+    arrows: [
+      { f: 'R1', t: 'P1', type: 'hold', b: 1 },
+      { f: 'R2', t: 'P2', type: 'hold', b: -1 }
+    ],
+    status: { P1: 'Running', P2: 'Running', R1: 'Held: A', R2: 'Held: B' },
+    co: ['mx'], dead: false, ok: false,
+    hl: { P1: [{ l: 1, c: 'hl-ok' }], P2: [{ l: 1, c: 'hl-b' }] },
+    log: 'B: lock(R2) → acquired ✓'
+  },
+  {
+    d: '<span class="hl">Thread A</span> executes <code>lock(&R2)</code> — but R2 is held by B!<br>A <span class="hl-r">blocks</span>, still holding R1.<br><br>☑ <em>Hold & Wait</em>: A holds R1 while waiting for R2.',
+    holds: { P1: ['R1'], P2: ['R2'] },
+    wants: { P1: 'R2', P2: null },
+    arrows: [
+      { f: 'R1', t: 'P1', type: 'hold', b: 1 },
+      { f: 'R2', t: 'P2', type: 'hold', b: -1 },
+      { f: 'P1', t: 'R2', type: 'wait', b: 1 }
+    ],
+    status: { P1: 'Blocked', P2: 'Running', R1: 'Held: A', R2: 'Held: B' },
+    co: ['mx', 'hw'], dead: false, ok: false,
+    hl: {
+      P1: [{ l: 1, c: 'hl-ok' }, { l: 3, c: 'hl-blk' }],
+      P2: [{ l: 1, c: 'hl-ok' }]
+    },
+    log: 'A: lock(R2) → BLOCKED (held by B)'
+  },
+  {
+    d: '<span class="hl-v">Thread B</span> executes <code>lock(&R1)</code> — but R1 is held by A!<br>B <span class="hl-r">blocks</span>, still holding R2.<br><br>☑ <em>No Preemption</em>: neither can forcibly take the other\'s resource.',
+    holds: { P1: ['R1'], P2: ['R2'] },
+    wants: { P1: 'R2', P2: 'R1' },
+    arrows: [
+      { f: 'R1', t: 'P1', type: 'hold', b: 1 },
+      { f: 'R2', t: 'P2', type: 'hold', b: -1 },
+      { f: 'P1', t: 'R2', type: 'wait', b: 1 },
+      { f: 'P2', t: 'R1', type: 'wait', b: -1 }
+    ],
+    status: { P1: 'Blocked', P2: 'Blocked', R1: 'Held: A', R2: 'Held: B' },
+    co: ['mx', 'hw', 'np'], dead: false, ok: false,
+    hl: {
+      P1: [{ l: 3, c: 'hl-blk' }],
+      P2: [{ l: 1, c: 'hl-ok' }, { l: 3, c: 'hl-blk' }]
+    },
+    log: 'B: lock(R1) → BLOCKED (held by A)'
+  },
+  {
+    d: '<span class="hl-r">💀 DEADLOCK!</span><br><br>A→R2→B→R1→A — <strong>circular wait</strong>.<br>All four Coffman conditions are met. Both threads are stuck on their <code>lock()</code> call forever. The program hangs.',
+    holds: { P1: ['R1'], P2: ['R2'] },
+    wants: { P1: 'R2', P2: 'R1' },
+    arrows: [
+      { f: 'R1', t: 'P1', type: 'hold', b: 1 },
+      { f: 'R2', t: 'P2', type: 'hold', b: -1 },
+      { f: 'P1', t: 'R2', type: 'wait', b: 1 },
+      { f: 'P2', t: 'R1', type: 'wait', b: -1 }
+    ],
+    status: { P1: 'DEADLOCKED', P2: 'DEADLOCKED', R1: '🔒 Locked: A', R2: '🔒 Locked: B' },
+    co: ['mx', 'hw', 'np', 'cw'], dead: true, ok: false,
+    hl: {
+      P1: [{ l: 3, c: 'hl-err' }],
+      P2: [{ l: 3, c: 'hl-err' }]
+    },
+    log: '💀 DEADLOCK — circular wait: A→R2→B→R1→A'
+  }
+];
+
+// ================================================================
+// DEADLOCK 3×3
+// ================================================================
+SCENARIOS.deadlock[3] = [
+  {
+    d: 'Three threads, three resources. A: R1→R2, B: R2→R3, C: R3→R1.<br>Each locks in a different cyclic order — setting up a 3-way deadlock.',
+    holds: { P1: [], P2: [], P3: [] },
+    wants: { P1: null, P2: null, P3: null },
+    arrows: [],
+    status: { P1: 'Idle', P2: 'Idle', P3: 'Idle', R1: 'Free', R2: 'Free', R3: 'Free' },
+    co: [], dead: false, ok: false,
+    hl: { P1: [], P2: [], P3: [] },
+    log: '3-way deadlock setup: A→R1,R2  B→R2,R3  C→R3,R1'
+  },
+  {
+    d: '<span class="hl">A</span> locks R1. ☑ Mutual Exclusion.',
+    holds: { P1: ['R1'], P2: [], P3: [] },
+    wants: { P1: null, P2: null, P3: null },
+    arrows: [{ f: 'R1', t: 'P1', type: 'hold', b: 1 }],
+    status: { P1: 'Running', P2: 'Idle', P3: 'Idle', R1: 'Held: A', R2: 'Free', R3: 'Free' },
+    co: ['mx'], dead: false, ok: false,
+    hl: { P1: [{ l: 1, c: 'hl-a' }], P2: [], P3: [] },
+    log: 'A: lock(R1) ✓'
+  },
+  {
+    d: '<span class="hl-v">B</span> locks R2.',
+    holds: { P1: ['R1'], P2: ['R2'], P3: [] },
+    wants: { P1: null, P2: null, P3: null },
+    arrows: [
+      { f: 'R1', t: 'P1', type: 'hold', b: 1 },
+      { f: 'R2', t: 'P2', type: 'hold', b: 1 }
+    ],
+    status: { P1: 'Running', P2: 'Running', P3: 'Idle', R1: 'Held: A', R2: 'Held: B', R3: 'Free' },
+    co: ['mx'], dead: false, ok: false,
+    hl: { P1: [{ l: 1, c: 'hl-ok' }], P2: [{ l: 1, c: 'hl-b' }], P3: [] },
+    log: 'B: lock(R2) ✓'
+  },
+  {
+    d: 'C locks R3. Now each thread holds exactly one resource.',
+    holds: { P1: ['R1'], P2: ['R2'], P3: ['R3'] },
+    wants: { P1: null, P2: null, P3: null },
+    arrows: [
+      { f: 'R1', t: 'P1', type: 'hold', b: 1 },
+      { f: 'R2', t: 'P2', type: 'hold', b: 1 },
+      { f: 'R3', t: 'P3', type: 'hold', b: 1 }
+    ],
+    status: { P1: 'Running', P2: 'Running', P3: 'Running', R1: 'Held: A', R2: 'Held: B', R3: 'Held: C' },
+    co: ['mx'], dead: false, ok: false,
+    hl: { P1: [{ l: 1, c: 'hl-ok' }], P2: [{ l: 1, c: 'hl-ok' }], P3: [{ l: 1, c: 'hl-c' }] },
+    log: 'C: lock(R3) ✓ — all resources allocated'
+  },
+  {
+    d: '<span class="hl">A</span> tries <code>lock(&R2)</code> — held by B → <span class="hl-r">blocks</span>.<br>☑ Hold & Wait.',
+    holds: { P1: ['R1'], P2: ['R2'], P3: ['R3'] },
+    wants: { P1: 'R2', P2: null, P3: null },
+    arrows: [
+      { f: 'R1', t: 'P1', type: 'hold', b: 1 },
+      { f: 'R2', t: 'P2', type: 'hold', b: 1 },
+      { f: 'R3', t: 'P3', type: 'hold', b: 1 },
+      { f: 'P1', t: 'R2', type: 'wait', b: -1 }
+    ],
+    status: { P1: 'Blocked', P2: 'Running', P3: 'Running', R1: 'Held: A', R2: 'Held: B', R3: 'Held: C' },
+    co: ['mx', 'hw'], dead: false, ok: false,
+    hl: {
+      P1: [{ l: 1, c: 'hl-ok' }, { l: 2, c: 'hl-blk' }],
+      P2: [{ l: 1, c: 'hl-ok' }],
+      P3: [{ l: 1, c: 'hl-ok' }]
+    },
+    log: 'A: lock(R2) → BLOCKED (held by B)'
+  },
+  {
+    d: '<span class="hl-v">B</span> tries <code>lock(&R3)</code> — held by C → <span class="hl-r">blocks</span>.<br>☑ No Preemption.',
+    holds: { P1: ['R1'], P2: ['R2'], P3: ['R3'] },
+    wants: { P1: 'R2', P2: 'R3', P3: null },
+    arrows: [
+      { f: 'R1', t: 'P1', type: 'hold', b: 1 },
+      { f: 'R2', t: 'P2', type: 'hold', b: 1 },
+      { f: 'R3', t: 'P3', type: 'hold', b: 1 },
+      { f: 'P1', t: 'R2', type: 'wait', b: -1 },
+      { f: 'P2', t: 'R3', type: 'wait', b: -1 }
+    ],
+    status: { P1: 'Blocked', P2: 'Blocked', P3: 'Running', R1: 'Held: A', R2: 'Held: B', R3: 'Held: C' },
+    co: ['mx', 'hw', 'np'], dead: false, ok: false,
+    hl: {
+      P1: [{ l: 2, c: 'hl-blk' }],
+      P2: [{ l: 1, c: 'hl-ok' }, { l: 2, c: 'hl-blk' }],
+      P3: [{ l: 1, c: 'hl-ok' }]
+    },
+    log: 'B: lock(R3) → BLOCKED (held by C)'
+  },
+  {
+    d: 'C tries <code>lock(&R1)</code> — held by A → <span class="hl-r">blocks</span>.<br>The circle closes: A→R2→B→R3→C→R1→A.',
+    holds: { P1: ['R1'], P2: ['R2'], P3: ['R3'] },
+    wants: { P1: 'R2', P2: 'R3', P3: 'R1' },
+    arrows: [
+      { f: 'R1', t: 'P1', type: 'hold', b: 1 },
+      { f: 'R2', t: 'P2', type: 'hold', b: 1 },
+      { f: 'R3', t: 'P3', type: 'hold', b: 1 },
+      { f: 'P1', t: 'R2', type: 'wait', b: -1 },
+      { f: 'P2', t: 'R3', type: 'wait', b: -1 },
+      { f: 'P3', t: 'R1', type: 'wait', b: -1 }
+    ],
+    status: { P1: 'Blocked', P2: 'Blocked', P3: 'Blocked', R1: 'Held: A', R2: 'Held: B', R3: 'Held: C' },
+    co: ['mx', 'hw', 'np'], dead: false, ok: false,
+    hl: {
+      P1: [{ l: 2, c: 'hl-blk' }],
+      P2: [{ l: 2, c: 'hl-blk' }],
+      P3: [{ l: 1, c: 'hl-ok' }, { l: 2, c: 'hl-blk' }]
+    },
+    log: 'C: lock(R1) → BLOCKED (held by A)'
+  },
+  {
+    d: '<span class="hl-r">💀 DEADLOCK!</span><br><br>3-way circular wait: <strong>A→R2→B→R3→C→R1→A</strong>.<br>All four Coffman conditions met. All threads stuck forever.',
+    holds: { P1: ['R1'], P2: ['R2'], P3: ['R3'] },
+    wants: { P1: 'R2', P2: 'R3', P3: 'R1' },
+    arrows: [
+      { f: 'R1', t: 'P1', type: 'hold', b: 1 },
+      { f: 'R2', t: 'P2', type: 'hold', b: 1 },
+      { f: 'R3', t: 'P3', type: 'hold', b: 1 },
+      { f: 'P1', t: 'R2', type: 'wait', b: -1 },
+      { f: 'P2', t: 'R3', type: 'wait', b: -1 },
+      { f: 'P3', t: 'R1', type: 'wait', b: -1 }
+    ],
+    status: { P1: 'DEADLOCKED', P2: 'DEADLOCKED', P3: 'DEADLOCKED', R1: '🔒 Locked', R2: '🔒 Locked', R3: '🔒 Locked' },
+    co: ['mx', 'hw', 'np', 'cw'], dead: true, ok: false,
+    hl: {
+      P1: [{ l: 2, c: 'hl-err' }],
+      P2: [{ l: 2, c: 'hl-err' }],
+      P3: [{ l: 2, c: 'hl-err' }]
+    },
+    log: '💀 3-way DEADLOCK! A→R2→B→R3→C→R1→A'
+  }
+];
+
+// ================================================================
+// PREVENTION 2×2
+// ================================================================
+SCENARIOS.prevention[2] = [
+  {
+    d: '<span class="hl-g">Prevention via Resource Ordering</span>: both threads must lock in order <strong>R1 → R2</strong>.<br>This makes circular wait structurally impossible.',
+    holds: { P1: [], P2: [] },
+    wants: { P1: null, P2: null },
+    arrows: [],
+    status: { P1: 'Idle', P2: 'Idle', R1: 'Free', R2: 'Free' },
+    co: [], cb: ['cw'], dead: false, ok: false,
+    hl: { P1: [{ l: 0, c: 'hl-ok' }], P2: [{ l: 0, c: 'hl-ok' }] },
+    log: 'Rule: always lock R1 before R2.'
+  },
+  {
+    d: '<span class="hl">A</span>: <code>lock(&R1)</code> — lowest needed, free → <span class="hl-g">acquired</span>.',
+    holds: { P1: ['R1'], P2: [] },
+    wants: { P1: null, P2: null },
+    arrows: [{ f: 'R1', t: 'P1', type: 'hold', b: 1 }],
+    status: { P1: 'Running', P2: 'Idle', R1: 'Held: A', R2: 'Free' },
+    co: ['mx'], cb: ['cw'], dead: false, ok: false,
+    hl: { P1: [{ l: 1, c: 'hl-a' }], P2: [] },
+    log: 'A: lock(R1) ✓'
+  },
+  {
+    d: '<span class="hl-v">B</span> also needs R2, but must lock <code>R1</code> first (order rule!).<br>R1 is held by A → <span class="hl-y">B waits</span>.<br><br>B holds <em>nothing</em> — no Hold & Wait condition!',
+    holds: { P1: ['R1'], P2: [] },
+    wants: { P1: null, P2: 'R1' },
+    arrows: [
+      { f: 'R1', t: 'P1', type: 'hold', b: 1 },
+      { f: 'P2', t: 'R1', type: 'wait', b: -1 }
+    ],
+    status: { P1: 'Running', P2: 'Waiting', R1: 'Held: A', R2: 'Free' },
+    co: ['mx'], cb: ['cw'], dead: false, ok: false,
+    hl: { P1: [{ l: 1, c: 'hl-ok' }], P2: [{ l: 1, c: 'hl-blk' }] },
+    log: 'B: lock(R1) → waits (A holds it). No cycle possible.'
+  },
+  {
+    d: '<span class="hl">A</span>: <code>lock(&R2)</code> — free → <span class="hl-g">acquired</span>. A now holds both R1 and R2.',
+    holds: { P1: ['R1', 'R2'], P2: [] },
+    wants: { P1: null, P2: 'R1' },
+    arrows: [
+      { f: 'R1', t: 'P1', type: 'hold', b: 1 },
+      { f: 'R2', t: 'P1', type: 'hold', b: -1 },
+      { f: 'P2', t: 'R1', type: 'wait', b: -1 }
+    ],
+    status: { P1: 'Running', P2: 'Waiting', R1: 'Held: A', R2: 'Held: A' },
+    co: ['mx'], cb: ['cw'], dead: false, ok: false,
+    hl: {
+      P1: [{ l: 1, c: 'hl-ok' }, { l: 2, c: 'hl-a' }],
+      P2: [{ l: 1, c: 'hl-blk' }]
+    },
+    log: 'A: lock(R2) ✓ — holds both resources'
+  },
+  {
+    d: '<span class="hl">A</span> finishes work. <code>unlock(R2); unlock(R1);</code><br>B wakes up and acquires R1.',
+    holds: { P1: [], P2: ['R1'] },
+    wants: { P1: null, P2: null },
+    arrows: [{ f: 'R1', t: 'P2', type: 'hold', b: -1 }],
+    status: { P1: 'Done ✓', P2: 'Running', R1: 'Held: B', R2: 'Free' },
+    co: [], cb: ['cw'], dead: false, ok: false,
+    hl: {
+      P1: [{ l: 4, c: 'hl-ok' }, { l: 5, c: 'hl-ok' }],
+      P2: [{ l: 1, c: 'hl-b' }]
+    },
+    log: 'A done, unlocks all. B wakes → lock(R1) ✓'
+  },
+  {
+    d: '<span class="hl-v">B</span>: <code>lock(&R2)</code> — free → <span class="hl-g">acquired</span>. B now holds both.',
+    holds: { P1: [], P2: ['R1', 'R2'] },
+    wants: { P1: null, P2: null },
+    arrows: [
+      { f: 'R1', t: 'P2', type: 'hold', b: -1 },
+      { f: 'R2', t: 'P2', type: 'hold', b: 1 }
+    ],
+    status: { P1: 'Done ✓', P2: 'Running', R1: 'Held: B', R2: 'Held: B' },
+    co: [], cb: ['cw'], dead: false, ok: false,
+    hl: {
+      P1: [{ l: 5, c: 'hl-ok' }],
+      P2: [{ l: 1, c: 'hl-ok' }, { l: 2, c: 'hl-b' }]
+    },
+    log: 'B: lock(R2) ✓ — holds both resources'
+  },
+  {
+    d: '<span class="hl-g">✅ Both threads completed successfully!</span><br><br>Ordered locking broke the <em>circular wait</em> condition. Trade-off: B had to wait even though R2 was free (it needed R1 first).',
+    holds: { P1: [], P2: [] },
+    wants: { P1: null, P2: null },
+    arrows: [],
+    status: { P1: 'Done ✓', P2: 'Done ✓', R1: 'Free', R2: 'Free' },
+    co: [], cb: ['cw'], dead: false, ok: true,
+    hl: {
+      P1: [{ l: 1, c: 'hl-ok' }, { l: 2, c: 'hl-ok' }, { l: 4, c: 'hl-ok' }, { l: 5, c: 'hl-ok' }],
+      P2: [{ l: 1, c: 'hl-ok' }, { l: 2, c: 'hl-ok' }, { l: 4, c: 'hl-ok' }, { l: 5, c: 'hl-ok' }]
+    },
+    log: '✅ Both done! Deadlock prevented via ordering.'
+  }
+];
+
+// ================================================================
+// PREVENTION 3×3
+// ================================================================
+SCENARIOS.prevention[3] = [
+  {
+    d: '<span class="hl-g">Prevention</span>: global order R1 < R2 < R3.<br>C needs R3+R1 but must lock R1 first (lower number).',
+    holds: { P1: [], P2: [], P3: [] },
+    wants: { P1: null, P2: null, P3: null },
+    arrows: [],
+    status: { P1: 'Idle', P2: 'Idle', P3: 'Idle', R1: 'Free', R2: 'Free', R3: 'Free' },
+    co: [], cb: ['cw'], dead: false, ok: false,
+    hl: { P1: [{ l: 0, c: 'hl-ok' }], P2: [{ l: 0, c: 'hl-ok' }], P3: [{ l: 0, c: 'hl-ok' }] },
+    log: 'Order rule: R1 < R2 < R3.'
+  },
+  {
+    d: '<span class="hl">A</span> locks R1.',
+    holds: { P1: ['R1'], P2: [], P3: [] },
+    wants: { P1: null, P2: null, P3: null },
+    arrows: [{ f: 'R1', t: 'P1', type: 'hold', b: 1 }],
+    status: { P1: 'Running', P2: 'Idle', P3: 'Idle', R1: 'Held: A', R2: 'Free', R3: 'Free' },
+    co: ['mx'], cb: ['cw'], dead: false, ok: false,
+    hl: { P1: [{ l: 1, c: 'hl-a' }], P2: [], P3: [] },
+    log: 'A: lock(R1) ✓'
+  },
+  {
+    d: '<span class="hl-v">B</span> locks R2.',
+    holds: { P1: ['R1'], P2: ['R2'], P3: [] },
+    wants: { P1: null, P2: null, P3: null },
+    arrows: [
+      { f: 'R1', t: 'P1', type: 'hold', b: 1 },
+      { f: 'R2', t: 'P2', type: 'hold', b: 1 }
+    ],
+    status: { P1: 'Running', P2: 'Running', P3: 'Idle', R1: 'Held: A', R2: 'Held: B', R3: 'Free' },
+    co: ['mx'], cb: ['cw'], dead: false, ok: false,
+    hl: { P1: [{ l: 1, c: 'hl-ok' }], P2: [{ l: 1, c: 'hl-b' }], P3: [] },
+    log: 'B: lock(R2) ✓'
+  },
+  {
+    d: 'C needs R3+R1. Order rule forces C to request <span class="hl-y">R1 first</span>.<br>R1 held by A → <span class="hl-y">C waits</span>, holding nothing.',
+    holds: { P1: ['R1'], P2: ['R2'], P3: [] },
+    wants: { P1: null, P2: null, P3: 'R1' },
+    arrows: [
+      { f: 'R1', t: 'P1', type: 'hold', b: 1 },
+      { f: 'R2', t: 'P2', type: 'hold', b: 1 },
+      { f: 'P3', t: 'R1', type: 'wait', b: -1 }
+    ],
+    status: { P1: 'Running', P2: 'Running', P3: 'Waiting', R1: 'Held: A', R2: 'Held: B', R3: 'Free' },
+    co: ['mx'], cb: ['cw'], dead: false, ok: false,
+    hl: { P1: [{ l: 1, c: 'hl-ok' }], P2: [{ l: 1, c: 'hl-ok' }], P3: [{ l: 1, c: 'hl-blk' }] },
+    log: 'C: must get R1 first (order!) → waits.'
+  },
+  {
+    d: '<span class="hl">A</span> tries R2 — held by B → <span class="hl-y">waits</span>.<br>But no cycle! A(holds R1) waits for higher-numbered R2. Safe.',
+    holds: { P1: ['R1'], P2: ['R2'], P3: [] },
+    wants: { P1: 'R2', P2: null, P3: 'R1' },
+    arrows: [
+      { f: 'R1', t: 'P1', type: 'hold', b: 1 },
+      { f: 'R2', t: 'P2', type: 'hold', b: 1 },
+      { f: 'P3', t: 'R1', type: 'wait', b: -1 },
+      { f: 'P1', t: 'R2', type: 'wait', b: 1 }
+    ],
+    status: { P1: 'Waiting', P2: 'Running', P3: 'Waiting', R1: 'Held: A', R2: 'Held: B', R3: 'Free' },
+    co: ['mx', 'hw'], cb: ['cw'], dead: false, ok: false,
+    hl: {
+      P1: [{ l: 1, c: 'hl-ok' }, { l: 2, c: 'hl-blk' }],
+      P2: [{ l: 1, c: 'hl-ok' }],
+      P3: [{ l: 1, c: 'hl-blk' }]
+    },
+    log: 'A: lock(R2) → waits. No cycle possible!'
+  },
+  {
+    d: '<span class="hl-v">B</span> locks R3 (free), finishes, releases R2 + R3.<br>A wakes and gets R2.',
+    holds: { P1: ['R1', 'R2'], P2: [], P3: [] },
+    wants: { P1: null, P2: null, P3: 'R1' },
+    arrows: [
+      { f: 'R1', t: 'P1', type: 'hold', b: 1 },
+      { f: 'R2', t: 'P1', type: 'hold', b: -1 },
+      { f: 'P3', t: 'R1', type: 'wait', b: -1 }
+    ],
+    status: { P1: 'Running', P2: 'Done ✓', P3: 'Waiting', R1: 'Held: A', R2: 'Held: A', R3: 'Free' },
+    co: ['mx'], cb: ['cw'], dead: false, ok: false,
+    hl: {
+      P1: [{ l: 1, c: 'hl-ok' }, { l: 2, c: 'hl-a' }],
+      P2: [{ l: 4, c: 'hl-ok' }],
+      P3: [{ l: 1, c: 'hl-blk' }]
+    },
+    log: 'B: done, releases all. A gets R2.'
+  },
+  {
+    d: '<span class="hl">A</span> finishes, releases R1 + R2. C wakes and gets R1.',
+    holds: { P1: [], P2: [], P3: ['R1'] },
+    wants: { P1: null, P2: null, P3: null },
+    arrows: [{ f: 'R1', t: 'P3', type: 'hold', b: 1 }],
+    status: { P1: 'Done ✓', P2: 'Done ✓', P3: 'Running', R1: 'Held: C', R2: 'Free', R3: 'Free' },
+    co: [], cb: ['cw'], dead: false, ok: false,
+    hl: {
+      P1: [{ l: 4, c: 'hl-ok' }],
+      P2: [{ l: 4, c: 'hl-ok' }],
+      P3: [{ l: 1, c: 'hl-c' }]
+    },
+    log: 'A done. C wakes → lock(R1) ✓'
+  },
+  {
+    d: 'C locks R3 (free). Holds R1 + R3, finishes.',
+    holds: { P1: [], P2: [], P3: ['R1', 'R3'] },
+    wants: { P1: null, P2: null, P3: null },
+    arrows: [
+      { f: 'R1', t: 'P3', type: 'hold', b: 1 },
+      { f: 'R3', t: 'P3', type: 'hold', b: -1 }
+    ],
+    status: { P1: 'Done ✓', P2: 'Done ✓', P3: 'Running', R1: 'Held: C', R2: 'Free', R3: 'Held: C' },
+    co: [], cb: ['cw'], dead: false, ok: false,
+    hl: {
+      P1: [{ l: 4, c: 'hl-ok' }],
+      P2: [{ l: 4, c: 'hl-ok' }],
+      P3: [{ l: 1, c: 'hl-ok' }, { l: 2, c: 'hl-c' }]
+    },
+    log: 'C: lock(R3) ✓ — holds R1+R3'
+  },
+  {
+    d: '<span class="hl-g">✅ All three completed!</span><br><br>Resource ordering prevented circular wait. Trade-off: C waited for R1 even though R3 was free.',
+    holds: { P1: [], P2: [], P3: [] },
+    wants: { P1: null, P2: null, P3: null },
+    arrows: [],
+    status: { P1: 'Done ✓', P2: 'Done ✓', P3: 'Done ✓', R1: 'Free', R2: 'Free', R3: 'Free' },
+    co: [], cb: ['cw'], dead: false, ok: true,
+    hl: {
+      P1: [{ l: 4, c: 'hl-ok' }],
+      P2: [{ l: 4, c: 'hl-ok' }],
+      P3: [{ l: 4, c: 'hl-ok' }]
+    },
+    log: '✅ All done! Prevention worked.'
+  }
+];
+
+// ================================================================
+// AVOIDANCE 2×2
+// ================================================================
+SCENARIOS.avoidance[2] = [
+  {
+    d: '<span class="hl-y">Banker\'s Algorithm</span> active. Each <code>request()</code> is checked: "Will granting this keep the system in a <strong>safe state</strong>?"<br><br>A needs R1,R2. B needs R2,R1.',
+    holds: { P1: [], P2: [] },
+    wants: { P1: null, P2: null },
+    arrows: [],
+    status: { P1: 'Idle', P2: 'Idle', R1: 'Free', R2: 'Free' },
+    co: [], dead: false, ok: false, bk: 'safe',
+    hl: { P1: [{ l: 0, c: 'hl-ok' }], P2: [{ l: 0, c: 'hl-ok' }] },
+    log: "Banker's algorithm monitoring all requests."
+  },
+  {
+    d: '<span class="hl">A</span>: <code>request(R1)</code>.<br><span class="hl-y">Safety check</span>: if A gets R1, B can still get R2 (free) then R1 after A finishes.<br><span class="hl-g">✅ SAFE → Granted.</span>',
+    holds: { P1: ['R1'], P2: [] },
+    wants: { P1: null, P2: null },
+    arrows: [{ f: 'R1', t: 'P1', type: 'hold', b: 1 }],
+    status: { P1: 'Running', P2: 'Idle', R1: 'Held: A', R2: 'Free' },
+    co: ['mx'], dead: false, ok: false, bk: 'safe',
+    hl: { P1: [{ l: 1, c: 'hl-a' }], P2: [] },
+    log: 'Banker: A→R1 — safe ✅ Granted.'
+  },
+  {
+    d: '<span class="hl-v">B</span>: <code>request(R2)</code>.<br><span class="hl-y">Safety check</span>: if B gets R2 → A holds R1, needs R2 (B has it). B holds R2, needs R1 (A has it). <em>Neither can finish!</em><br><span class="hl-r">⚠ UNSAFE → Denied!</span> B must wait.',
+    holds: { P1: ['R1'], P2: [] },
+    wants: { P1: null, P2: 'R2' },
+    arrows: [
+      { f: 'R1', t: 'P1', type: 'hold', b: 1 },
+      { f: 'P2', t: 'R2', type: 'denied', b: -1 }
+    ],
+    status: { P1: 'Running', P2: 'Denied', R1: 'Held: A', R2: 'Guarded' },
+    co: ['mx'], dead: false, ok: false, bk: 'unsafe',
+    hl: { P1: [{ l: 1, c: 'hl-ok' }], P2: [{ l: 1, c: 'hl-err' }] },
+    log: 'Banker: B→R2 — UNSAFE ⚠ Denied!'
+  },
+  {
+    d: '<span class="hl">A</span>: <code>request(R2)</code>.<br><span class="hl-y">Safety check</span>: A gets both → finishes → releases all → B can proceed.<br><span class="hl-g">✅ SAFE → Granted.</span>',
+    holds: { P1: ['R1', 'R2'], P2: [] },
+    wants: { P1: null, P2: 'R2' },
+    arrows: [
+      { f: 'R1', t: 'P1', type: 'hold', b: 1 },
+      { f: 'R2', t: 'P1', type: 'hold', b: -1 }
+    ],
+    status: { P1: 'Running', P2: 'Waiting', R1: 'Held: A', R2: 'Held: A' },
+    co: ['mx'], dead: false, ok: false, bk: 'safe',
+    hl: {
+      P1: [{ l: 1, c: 'hl-ok' }, { l: 2, c: 'hl-a' }],
+      P2: [{ l: 1, c: 'hl-blk' }]
+    },
+    log: 'Banker: A→R2 — safe ✅ Granted.'
+  },
+  {
+    d: '<span class="hl">A</span> finishes. <code>release_all()</code>.<br>B\'s earlier request is re-evaluated → R2 is now free → <span class="hl-g">granted</span>.',
+    holds: { P1: [], P2: ['R2'] },
+    wants: { P1: null, P2: null },
+    arrows: [{ f: 'R2', t: 'P2', type: 'hold', b: -1 }],
+    status: { P1: 'Done ✓', P2: 'Running', R1: 'Free', R2: 'Held: B' },
+    co: [], dead: false, ok: false, bk: 'safe',
+    hl: {
+      P1: [{ l: 4, c: 'hl-ok' }],
+      P2: [{ l: 1, c: 'hl-b' }]
+    },
+    log: 'A done, releases all. B gets R2.'
+  },
+  {
+    d: '<span class="hl-v">B</span>: <code>request(R1)</code> — free.<br><span class="hl-y">Safety check</span>: B has both → can finish.<br><span class="hl-g">✅ SAFE → Granted.</span>',
+    holds: { P1: [], P2: ['R2', 'R1'] },
+    wants: { P1: null, P2: null },
+    arrows: [
+      { f: 'R2', t: 'P2', type: 'hold', b: -1 },
+      { f: 'R1', t: 'P2', type: 'hold', b: 1 }
+    ],
+    status: { P1: 'Done ✓', P2: 'Running', R1: 'Held: B', R2: 'Held: B' },
+    co: [], dead: false, ok: false, bk: 'safe',
+    hl: {
+      P1: [{ l: 4, c: 'hl-ok' }],
+      P2: [{ l: 1, c: 'hl-ok' }, { l: 2, c: 'hl-b' }]
+    },
+    log: 'Banker: B→R1 — safe ✅ Granted.'
+  },
+  {
+    d: '<span class="hl-g">✅ Both completed!</span><br><br>The Banker denied B\'s early R2 request (step 3) because it would have led to an unsafe state. More flexible than prevention but requires knowing max needs upfront.',
+    holds: { P1: [], P2: [] },
+    wants: { P1: null, P2: null },
+    arrows: [],
+    status: { P1: 'Done ✓', P2: 'Done ✓', R1: 'Free', R2: 'Free' },
+    co: [], dead: false, ok: true, bk: 'safe',
+    hl: {
+      P1: [{ l: 4, c: 'hl-ok' }],
+      P2: [{ l: 4, c: 'hl-ok' }]
+    },
+    log: '✅ Both done! Deadlock avoided via Banker\'s.'
+  }
+];
+
+// ================================================================
+// AVOIDANCE 3×3
+// ================================================================
+SCENARIOS.avoidance[3] = [
+  {
+    d: '<span class="hl-y">Banker\'s Algorithm</span>: A needs R1,R2. B needs R2,R3. C needs R3,R1.<br>Each request is safety-checked before granting.',
+    holds: { P1: [], P2: [], P3: [] },
+    wants: { P1: null, P2: null, P3: null },
+    arrows: [],
+    status: { P1: 'Idle', P2: 'Idle', P3: 'Idle', R1: 'Free', R2: 'Free', R3: 'Free' },
+    co: [], dead: false, ok: false, bk: 'safe',
+    hl: { P1: [{ l: 0, c: 'hl-ok' }], P2: [{ l: 0, c: 'hl-ok' }], P3: [{ l: 0, c: 'hl-ok' }] },
+    log: "Banker's active. 3 threads, 3 resources."
+  },
+  {
+    d: '<span class="hl">A</span>: request(R1). <span class="hl-g">✅ Safe → Granted.</span>',
+    holds: { P1: ['R1'], P2: [], P3: [] },
+    wants: { P1: null, P2: null, P3: null },
+    arrows: [{ f: 'R1', t: 'P1', type: 'hold', b: 1 }],
+    status: { P1: 'Running', P2: 'Idle', P3: 'Idle', R1: 'Held: A', R2: 'Free', R3: 'Free' },
+    co: ['mx'], dead: false, ok: false, bk: 'safe',
+    hl: { P1: [{ l: 1, c: 'hl-a' }], P2: [], P3: [] },
+    log: 'Banker: A→R1 ✅ Safe.'
+  },
+  {
+    d: '<span class="hl-v">B</span>: request(R2). <span class="hl-g">✅ Safe → Granted.</span>',
+    holds: { P1: ['R1'], P2: ['R2'], P3: [] },
+    wants: { P1: null, P2: null, P3: null },
+    arrows: [
+      { f: 'R1', t: 'P1', type: 'hold', b: 1 },
+      { f: 'R2', t: 'P2', type: 'hold', b: 1 }
+    ],
+    status: { P1: 'Running', P2: 'Running', P3: 'Idle', R1: 'Held: A', R2: 'Held: B', R3: 'Free' },
+    co: ['mx'], dead: false, ok: false, bk: 'safe',
+    hl: { P1: [{ l: 1, c: 'hl-ok' }], P2: [{ l: 1, c: 'hl-b' }], P3: [] },
+    log: 'Banker: B→R2 ✅ Safe.'
+  },
+  {
+    d: 'C: request(R3).<br><span class="hl-y">Safety check</span>: if C gets R3 → A(R1)→R2(B), B(R2)→R3(C), C(R3)→R1(A). <em>3-way cycle! Nobody can finish.</em><br><span class="hl-r">⚠ UNSAFE → Denied!</span>',
+    holds: { P1: ['R1'], P2: ['R2'], P3: [] },
+    wants: { P1: null, P2: null, P3: 'R3' },
+    arrows: [
+      { f: 'R1', t: 'P1', type: 'hold', b: 1 },
+      { f: 'R2', t: 'P2', type: 'hold', b: 1 },
+      { f: 'P3', t: 'R3', type: 'denied', b: -1 }
+    ],
+    status: { P1: 'Running', P2: 'Running', P3: 'Denied', R1: 'Held: A', R2: 'Held: B', R3: 'Guarded' },
+    co: ['mx'], dead: false, ok: false, bk: 'unsafe',
+    hl: {
+      P1: [{ l: 1, c: 'hl-ok' }],
+      P2: [{ l: 1, c: 'hl-ok' }],
+      P3: [{ l: 1, c: 'hl-err' }]
+    },
+    log: 'Banker: C→R3 ⚠ UNSAFE! Denied.'
+  },
+  {
+    d: '<span class="hl-v">B</span>: request(R3).<br><span class="hl-y">Safety check</span>: B gets R2+R3 → B finishes → frees R2,R3 → A gets R2, finishes → C gets R3,R1.<br><span class="hl-g">✅ Safe → Granted.</span>',
+    holds: { P1: ['R1'], P2: ['R2', 'R3'], P3: [] },
+    wants: { P1: null, P2: null, P3: 'R3' },
+    arrows: [
+      { f: 'R1', t: 'P1', type: 'hold', b: 1 },
+      { f: 'R2', t: 'P2', type: 'hold', b: 1 },
+      { f: 'R3', t: 'P2', type: 'hold', b: -1 }
+    ],
+    status: { P1: 'Running', P2: 'Running', P3: 'Waiting', R1: 'Held: A', R2: 'Held: B', R3: 'Held: B' },
+    co: ['mx'], dead: false, ok: false, bk: 'safe',
+    hl: {
+      P1: [{ l: 1, c: 'hl-ok' }],
+      P2: [{ l: 1, c: 'hl-ok' }, { l: 2, c: 'hl-b' }],
+      P3: [{ l: 1, c: 'hl-blk' }]
+    },
+    log: 'Banker: B→R3 ✅ Safe. B has R2+R3.'
+  },
+  {
+    d: '<span class="hl-v">B</span> finishes, releases R2 + R3.<br><span class="hl">A</span>: request(R2) → free, safe → granted. A has R1+R2.',
+    holds: { P1: ['R1', 'R2'], P2: [], P3: [] },
+    wants: { P1: null, P2: null, P3: 'R3' },
+    arrows: [
+      { f: 'R1', t: 'P1', type: 'hold', b: 1 },
+      { f: 'R2', t: 'P1', type: 'hold', b: -1 }
+    ],
+    status: { P1: 'Running', P2: 'Done ✓', P3: 'Waiting', R1: 'Held: A', R2: 'Held: A', R3: 'Free' },
+    co: ['mx'], dead: false, ok: false, bk: 'safe',
+    hl: {
+      P1: [{ l: 1, c: 'hl-ok' }, { l: 2, c: 'hl-a' }],
+      P2: [{ l: 4, c: 'hl-ok' }],
+      P3: [{ l: 1, c: 'hl-blk' }]
+    },
+    log: 'B done. Banker: A→R2 ✅ Safe.'
+  },
+  {
+    d: '<span class="hl">A</span> finishes, releases all.<br>C retries request(R3) → now safe! <span class="hl-g">✅ Granted.</span>',
+    holds: { P1: [], P2: [], P3: ['R3'] },
+    wants: { P1: null, P2: null, P3: null },
+    arrows: [{ f: 'R3', t: 'P3', type: 'hold', b: 1 }],
+    status: { P1: 'Done ✓', P2: 'Done ✓', P3: 'Running', R1: 'Free', R2: 'Free', R3: 'Held: C' },
+    co: [], dead: false, ok: false, bk: 'safe',
+    hl: {
+      P1: [{ l: 4, c: 'hl-ok' }],
+      P2: [{ l: 4, c: 'hl-ok' }],
+      P3: [{ l: 2, c: 'hl-c' }]
+    },
+    log: 'A done. C retries R3 → ✅ Safe. Granted.'
+  },
+  {
+    d: 'C: request(R1) → free, safe → <span class="hl-g">granted</span>. C has R3+R1.',
+    holds: { P1: [], P2: [], P3: ['R3', 'R1'] },
+    wants: { P1: null, P2: null, P3: null },
+    arrows: [
+      { f: 'R3', t: 'P3', type: 'hold', b: 1 },
+      { f: 'R1', t: 'P3', type: 'hold', b: -1 }
+    ],
+    status: { P1: 'Done ✓', P2: 'Done ✓', P3: 'Running', R1: 'Held: C', R2: 'Free', R3: 'Held: C' },
+    co: [], dead: false, ok: false, bk: 'safe',
+    hl: {
+      P1: [{ l: 4, c: 'hl-ok' }],
+      P2: [{ l: 4, c: 'hl-ok' }],
+      P3: [{ l: 2, c: 'hl-ok' }, { l: 3, c: 'hl-c' }]
+    },
+    log: 'Banker: C→R1 ✅ Safe. C has R3+R1.'
+  },
+  {
+    d: '<span class="hl-g">✅ All three completed!</span><br><br>The Banker denied C\'s early R3 request (step 4) because it would have created an unsafe state leading to a potential 3-way deadlock. More flexible than ordering but requires knowing maximum resource needs in advance.',
+    holds: { P1: [], P2: [], P3: [] },
+    wants: { P1: null, P2: null, P3: null },
+    arrows: [],
+    status: { P1: 'Done ✓', P2: 'Done ✓', P3: 'Done ✓', R1: 'Free', R2: 'Free', R3: 'Free' },
+    co: [], dead: false, ok: true, bk: 'safe',
+    hl: {
+      P1: [{ l: 4, c: 'hl-ok' }],
+      P2: [{ l: 4, c: 'hl-ok' }],
+      P3: [{ l: 4, c: 'hl-ok' }]
+    },
+    log: '✅ All done! Deadlock avoided via Banker\'s algorithm.'
+  }
+];
+
+// ================================================================
+// APPLICATION STATE
+// ================================================================
+let currentMode = 'deadlock';
+let currentSize = 2;
+let currentStep = 0;
+
+// ================================================================
+// ACCESSORS
+// ================================================================
+function getSteps() {
+  return SCENARIOS[currentMode][currentSize];
+}
+
+function getLayout() {
+  return currentSize === 2 ? LAYOUT_2x2 : LAYOUT_3x3;
+}
+
+function getCodeTemplate() {
+  return CODE_TEMPLATES[currentMode][currentSize];
+}
+
+function getProcessKeys() {
+  return currentSize === 2 ? ['P1', 'P2'] : ['P1', 'P2', 'P3'];
+}
+
+function getResourceKeys() {
+  return currentSize === 2 ? ['R1', 'R2'] : ['R1', 'R2', 'R3'];
+}
+
+// ================================================================
+// UPDATE SVG VIEWBOX
+// ================================================================
+function updateViewBox() {
+  const svg = document.getElementById('mainSvg');
+  const bg = document.getElementById('bgRect');
+  if (currentSize === 2) {
+    svg.setAttribute('viewBox', '0 0 460 320');
+    bg.setAttribute('width', '460');
+    bg.setAttribute('height', '320');
+  } else {
+    svg.setAttribute('viewBox', '0 0 460 360');
+    bg.setAttribute('width', '460');
+    bg.setAttribute('height', '360');
+  }
+}
+
+// ================================================================
+// RENDER CODE PANELS
+// ================================================================
+function renderCodePanels() {
+  const step = getSteps()[currentStep];
+  const codeTemplate = getCodeTemplate();
+  const procs = getProcessKeys();
+  const container = document.getElementById('codePanels');
+
+  const headerClasses = ['t-a', 't-b', 't-c'];
+  const headerLabels = ['🖥️ Thread A', '💻 Thread B', '📱 Thread C'];
+
+  container.innerHTML = '';
+
+  procs.forEach((procKey, index) => {
+    const lines = codeTemplate[procKey];
+    if (!lines) return;
+
+    // Build highlight map: lineIndex -> cssClass
+    const highlightMap = {};
+    if (step.hl && step.hl[procKey]) {
+      step.hl[procKey].forEach(h => {
+        highlightMap[h.l] = h.c;
+      });
+    }
+
+    // Create card
+    const card = document.createElement('div');
+    card.className = 'code-card';
+
+    // Header
+    const header = document.createElement('h4');
+    header.className = headerClasses[index];
+    header.textContent = headerLabels[index];
+    card.appendChild(header);
+
+    // Code block
+    const block = document.createElement('div');
+    block.className = 'code-block';
+    block.id = 'codeBlock_' + procKey;
+
+    // Render each line
+    const lineElements = lines.map((line, lineIdx) => {
+      const hlClass = highlightMap[lineIdx] || '';
+      return `<span class="code-line ${hlClass}" id="codeLine_${procKey}_${lineIdx}">${line.h}</span>`;
+    });
+    block.innerHTML = lineElements.join('');
+
+    card.appendChild(block);
+    container.appendChild(card);
+
+    // Auto-scroll to first highlighted line after DOM update
+    requestAnimationFrame(() => {
+      const highlights = step.hl && step.hl[procKey] ? step.hl[procKey] : [];
+      if (highlights.length > 0) {
+        const targetLine = document.getElementById(
+          'codeLine_' + procKey + '_' + highlights[0].l
+        );
+        if (targetLine && block.scrollHeight > block.clientHeight) {
+          // Scroll so the highlighted line is roughly centered
+          const lineTop = targetLine.offsetTop;
+          const blockHeight = block.clientHeight;
+          const scrollTarget = lineTop - blockHeight / 3;
+          block.scrollTop = Math.max(0, scrollTarget);
+        }
+      }
+    });
+  });
+}
+
+// ================================================================
+// RENDER SVG DIAGRAM
+// ================================================================
+function renderSVG() {
+  const step = getSteps()[currentStep];
+  const layout = getLayout();
+  const procs = getProcessKeys();
+  const resources = getResourceKeys();
+
+  const layerArrows = document.getElementById('layerArrows');
+  const layerEntities = document.getElementById('layerEntities');
+  const layerLabels = document.getElementById('layerLabels');
+  layerArrows.innerHTML = '';
+  layerEntities.innerHTML = '';
+  layerLabels.innerHTML = '';
+
+  // --- Font sizes based on layout ---
+  const isSmall = currentSize === 3;
+  const procNameSize = isSmall ? '10px' : '11.5px';
+  const procIconSize = isSmall ? '14px' : '16px';
+  const resNameSize = isSmall ? '10.5px' : '11.5px';
+  const resIconSize = isSmall ? '13px' : '15px';
+  const badgeTextSize = '7px';
+  const statusTextSize = '7.5px';
+
+  // --- Draw arrows ---
+  step.arrows.forEach(arrow => {
+    const style = ARROW_STYLES[arrow.type];
+    const side = arrow.b || curveSide(arrow.f, arrow.t, layout);
+    drawArrow(
+      layerArrows,
+      layout[arrow.f],
+      layout[arrow.t],
+      style.color,
+      style.marker,
+      style.dash,
+      style.anim,
+      side
+    );
+  });
+
+  // --- Draw processes ---
+  procs.forEach(procKey => {
+    const pos = layout[procKey];
+    const statusText = step.status[procKey] || '';
+    const isDead = step.dead;
+    const isOk = step.ok;
+
+    // Circle
+    const strokeColor = isDead ? '#f87171' : isOk ? '#34d399' : PROC_COLORS[procKey];
+    const circle = svgEl('circle', {
+      cx: pos.x,
+      cy: pos.y,
+      r: pos.r,
+      fill: PROC_GRADS[procKey],
+      stroke: strokeColor,
+      'stroke-width': '2.2'
+    }, layerEntities);
+
+    if (isDead) circle.classList.add('anim-dead');
+    if (isOk) circle.classList.add('anim-ok');
+
+    // Name
+    svgText(pos.x, pos.y - (isSmall ? 8 : 10), PROC_NAMES[procKey], '#fff', procNameSize,
+      { 'font-weight': '700' }, layerEntities);
+
+    // Icon
+    svgText(pos.x, pos.y + (isSmall ? 9 : 11), PROC_ICONS[procKey], '#fff', procIconSize,
+      {}, layerEntities);
+
+    // Status badge below circle
+    if (statusText && statusText !== 'Idle') {
+      const badgeColor = statusText.match(/DEAD/i) ? '#f87171'
+        : statusText.match(/Block|Wait|Denied/i) ? '#fbbf24'
+        : statusText.match(/Done/) ? '#34d399'
+        : '#888';
+
+      const badgeY = pos.y + pos.r + 4;
+      svgEl('rect', {
+        x: pos.x - 28,
+        y: badgeY,
+        width: 56,
+        height: 13,
+        rx: '4',
+        fill: 'rgba(10, 14, 39, 0.88)',
+        stroke: badgeColor,
+        'stroke-width': '0.7'
+      }, layerEntities);
+
+      svgText(pos.x, badgeY + 6.5, statusText, badgeColor, statusTextSize,
+        { 'font-weight': '600' }, layerEntities);
+    }
+  });
+
+  // --- Draw resources ---
+  resources.forEach(resKey => {
+    const pos = layout[resKey];
+    const isHeld = procs.some(p => step.holds[p] && step.holds[p].includes(resKey));
+    const statusText = step.status[resKey] || '';
+
+    const strokeColor = (step.dead && isHeld) ? '#f87171' : RES_COLORS[resKey];
+    const rect = svgEl('rect', {
+      x: pos.x - pos.hw,
+      y: pos.y - pos.hh,
+      width: pos.hw * 2,
+      height: pos.hh * 2,
+      rx: '9',
+      fill: RES_GRADS[resKey],
+      stroke: strokeColor,
+      'stroke-width': '2.2'
+    }, layerEntities);
+
+    if (step.dead && isHeld) rect.classList.add('anim-dead');
+
+    // Name
+    svgText(pos.x, pos.y - (isSmall ? 6 : 7), resKey, '#fff', resNameSize,
+      { 'font-weight': '700' }, layerEntities);
+
+    // Icon
+    svgText(pos.x, pos.y + (isSmall ? 8 : 9), RES_ICONS[resKey], '#ccc', resIconSize,
+      {}, layerEntities);
+
+    // Availability dot
+    svgEl('circle', {
+      cx: pos.x + pos.hw - 5,
+      cy: pos.y - pos.hh + 5,
+      r: '4',
+      fill: isHeld ? '#f87171' : '#34d399'
+    }, layerEntities);
+
+    // Status badge below resource
+    if (statusText && statusText !== 'Free') {
+      const badgeY = pos.y + pos.hh + 3;
+      svgEl('rect', {
+        x: pos.x - 26,
+        y: badgeY,
+        width: 52,
+        height: 12,
+        rx: '3',
+        fill: 'rgba(10, 14, 39, 0.85)',
+        stroke: strokeColor,
+        'stroke-width': '0.6'
+      }, layerEntities);
+
+      svgText(pos.x, badgeY + 6, statusText, strokeColor, badgeTextSize,
+        { 'font-weight': '600' }, layerEntities);
+    }
+  });
+
+  // --- Deadlock cycle label ---
+  if (step.dead) {
+    const centerY = currentSize === 2 ? 165 : 185;
+    const cycleText = currentSize === 2
+      ? 'A → R2 → B → R1 → A'
+      : 'A → R2 → B → R3 → C → R1 → A';
+
+    svgEl('rect', {
+      x: 130,
+      y: centerY - 10,
+      width: 200,
+      height: 24,
+      rx: '6',
+      fill: 'rgba(248, 113, 113, 0.1)',
+      stroke: '#f87171',
+      'stroke-width': '0.8',
+      opacity: '0.9'
+    }, layerLabels);
+
+    svgText(230, centerY + 2, cycleText, '#f87171', '9px',
+      { 'font-weight': '700' }, layerLabels);
+  }
+
+  // --- Banker's safe/unsafe badge ---
+  if (step.bk) {
+    const isSafe = step.bk === 'safe';
+    const badgeX = 230;
+    const badgeY = currentSize === 2 ? 14 : 14;
+
+    svgEl('rect', {
+      x: badgeX - 58,
+      y: badgeY - 10,
+      width: 116,
+      height: 22,
+      rx: '11',
+      fill: isSafe ? 'rgba(52, 211, 153, 0.08)' : 'rgba(251, 191, 36, 0.08)',
+      stroke: isSafe ? '#34d399' : '#fbbf24',
+      'stroke-width': '1.2'
+    }, layerLabels);
+
+    svgText(badgeX, badgeY + 1,
+      isSafe ? '✅ SAFE STATE' : '⚠️ UNSAFE STATE',
+      isSafe ? '#34d399' : '#fbbf24',
+      '8px',
+      { 'font-weight': '700' },
+      layerLabels
+    );
+  }
+
+  // --- Mode title at bottom ---
+  const titles = {
+    deadlock: 'Deadlock Scenario',
+    prevention: 'Prevention: Resource Ordering',
+    avoidance: "Avoidance: Banker's Algorithm"
+  };
+  const titleY = currentSize === 2 ? 310 : 352;
+  svgText(230, titleY, titles[currentMode], '#444', '8px',
+    { 'font-weight': '600' }, layerLabels);
+}
+
+// ================================================================
+// RENDER UI PANELS (description, table, coffman, log)
+// ================================================================
+function renderUI() {
+  const steps = getSteps();
+  const step = steps[currentStep];
+  const procs = getProcessKeys();
+  const resources = getResourceKeys();
+
+  // --- Description ---
+  document.getElementById('descBox').innerHTML = step.d;
+
+  // --- Banners ---
+  document.getElementById('bannerDead').classList.toggle('visible', !!step.dead);
+  document.getElementById('bannerOk').classList.toggle('visible', !!step.ok);
+
+  // --- Step indicator ---
+  const totalSteps = steps.length - 1;
+  document.getElementById('stepIndicator').textContent = `Step ${currentStep} / ${totalSteps}`;
+  document.getElementById('btnPrev').disabled = currentStep <= 0;
+  document.getElementById('btnNext').disabled = currentStep >= totalSteps;
+  document.getElementById('btnEnd').disabled = currentStep >= totalSteps;
+
+  // --- State table ---
+  let tableHTML = '';
+
+  procs.forEach(procKey => {
+    const holds = step.holds[procKey] ? step.holds[procKey].join(', ') : '—';
+    const wants = step.wants[procKey] || '—';
+    const status = step.status[procKey] || 'Idle';
+
+    const dotClass = status.match(/DEAD|Lock/i) ? 'held'
+      : status.match(/Block|Wait|Denied/i) ? 'waiting'
+      : 'free';
+
+    tableHTML += `<tr>
+      <td>${PROC_NAMES[procKey]}</td>
+      <td>${holds}</td>
+      <td>${wants}</td>
+      <td><span class="dot ${dotClass}"></span>${status}</td>
+    </tr>`;
+  });
+
+  resources.forEach(resKey => {
+    const status = step.status[resKey] || 'Free';
+    const dotClass = status.match(/Held|Lock|Guard|🔒/) ? 'held' : 'free';
+    const availText = status === 'Free' ? 'Available' : 'In Use';
+
+    tableHTML += `<tr>
+      <td>${resKey}</td>
+      <td colspan="2">${status}</td>
+      <td><span class="dot ${dotClass}"></span>${availText}</td>
+    </tr>`;
+  });
+
+  document.getElementById('stateBody').innerHTML = tableHTML;
+
+  // --- Coffman conditions ---
+  const coffmanMap = {
+    mx: 'coff-mx',
+    hw: 'coff-hw',
+    np: 'coff-np',
+    cw: 'coff-cw'
+  };
+
+  for (const [condKey, elemId] of Object.entries(coffmanMap)) {
+    const elem = document.getElementById(elemId);
+    elem.classList.remove('active', 'broken');
+
+    if (step.co && step.co.includes(condKey)) {
+      elem.classList.add('active');
+    }
+    if (step.cb && step.cb.includes(condKey)) {
+      elem.classList.add('broken');
+    }
+  }
+
+  // --- Event log ---
+  const logContainer = document.getElementById('logBox');
+  logContainer.innerHTML = '';
+
+  for (let i = 0; i <= currentStep; i++) {
+    const s = steps[i];
+    const entry = document.createElement('div');
+
+    let entryClass = 'log-entry';
+    if (i === currentStep) entryClass += ' active';
+    if (s.dead) entryClass += ' error';
+    if (s.ok) entryClass += ' success';
+    entry.className = entryClass;
+
+    entry.innerHTML = `<span class="log-step">${i}</span><span>${s.log}</span>`;
+    logContainer.appendChild(entry);
+  }
+
+  logContainer.scrollTop = logContainer.scrollHeight;
+}
+
+// ================================================================
+// MASTER RENDER
+// ================================================================
+function renderAll() {
+  updateViewBox();
+  renderSVG();
+  renderCodePanels();
+  renderUI();
+}
+
+// ================================================================
+// NAVIGATION
+// ================================================================
+function doNext() {
+  const maxStep = getSteps().length - 1;
+  if (currentStep < maxStep) {
+    currentStep++;
+    renderAll();
+  }
+}
+
+function doPrev() {
+  if (currentStep > 0) {
+    currentStep--;
+    renderAll();
+  }
+}
+
+function doEnd() {
+  currentStep = getSteps().length - 1;
+  renderAll();
+}
+
+function doReset() {
+  currentStep = 0;
+  renderAll();
+}
+
+// ================================================================
+// MODE & SIZE SWITCHING
+// ================================================================
+function setMode(mode) {
+  currentMode = mode;
+  currentStep = 0;
+
+  // Update button states
+  document.querySelectorAll('#modeGroup .seg-btn').forEach(btn => {
+    btn.classList.remove('active', 'mode-prev', 'mode-avoid');
+    if (btn.dataset.m === mode) {
+      btn.classList.add('active');
+      if (mode === 'prevention') btn.classList.add('mode-prev');
+      if (mode === 'avoidance') btn.classList.add('mode-avoid');
+    }
+  });
+
+  renderAll();
+}
+
+function setSz(size) {
+  currentSize = size;
+  currentStep = 0;
+
+  // Update button states
+  document.querySelectorAll('#sizeGroup .size-btn').forEach(btn => {
+    btn.classList.remove('active');
+    if (parseInt(btn.dataset.s) === size) {
+      btn.classList.add('active');
+    }
+  });
+
+  renderAll();
+}
+
+// ================================================================
+// KEYBOARD HANDLER
+// ================================================================
+document.addEventListener('keydown', function(e) {
+  switch (e.key) {
+    case 'ArrowRight':
+    case ' ':
+      e.preventDefault();
+      doNext();
+      break;
+    case 'ArrowLeft':
+      e.preventDefault();
+      doPrev();
+      break;
+    case 'r':
+    case 'R':
+      doReset();
+      break;
+    case 'End':
+      e.preventDefault();
+      doEnd();
+      break;
+    case 'Home':
+      e.preventDefault();
+      doReset();
+      break;
+    case '1':
+      setMode('deadlock');
+      break;
+    case '2':
+      setMode('prevention');
+      break;
+    case '3':
+      setMode('avoidance');
+      break;
+    case 'q':
+    case 'Q':
+      setSz(2);
+      break;
+    case 'w':
+    case 'W':
+      setSz(3);
+      break;
+  }
+});
+
+// ================================================================
+// CLICK ON SVG TO ADVANCE
+// ================================================================
+document.getElementById('svgWrap').addEventListener('click', function(e) {
+  // Don't advance if clicking a button inside the wrap
+  if (!e.target.closest('button')) {
+    doNext();
+  }
+});
+
+// ================================================================
+// TOUCH SWIPE SUPPORT
+// ================================================================
+let touchStartX = 0;
+
+document.addEventListener('touchstart', function(e) {
+  touchStartX = e.touches[0].clientX;
+}, { passive: true });
+
+document.addEventListener('touchend', function(e) {
+  const deltaX = e.changedTouches[0].clientX - touchStartX;
+  if (Math.abs(deltaX) > 50) {
+    if (deltaX < 0) {
+      doNext();   // swipe left = next
+    } else {
+      doPrev();   // swipe right = prev
+    }
+  }
+}, { passive: true });
+
+// ================================================================
+// INITIAL RENDER
+// ================================================================
+renderAll();
+</script>
+</body>
+</html>
