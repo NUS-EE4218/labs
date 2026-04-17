@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenCL Interactive Demo</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; }
+        *, *::before, *::after { box-sizing: border-box; }
+        body { margin: 0; background: #0f1117; font-family: 'DM Sans', sans-serif; color: #e8eaf0; }
+
+        :root {
+            --bg: #0f1117;
+            --bgCard: #1a1d27;
+            --bgCode: #141620;
+            --text: #e8eaf0;
+            --textDim: #8b90a0;
+            --border: #2a2d3a;
+            --blue: #4a9eff;
+            --green: #34d399;
+            --amber: #f59e0b;
+            --purple: #a78bfa;
+            --red: #f87171;
+            --cyan: #22d3ee;
+            --pink: #f472b6;
+        }
+
+        h1 { font-size: 26px; font-weight: 700; margin: 0 0 4px; letter-spacing: -0.5px; text-align: center; }
+        h1 span { color: var(--blue); }
+        .subtitle { color: var(--textDim); font-size: 13px; margin: 0; text-align: center; }
+
+        .tabs { display: flex; justify-content: center; gap: 2px; margin: 16px 0; overflow-x: auto; padding: 0 4px; }
+        .tab-btn {
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: var(--textDim);
+            padding: 10px 16px;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            border-radius: 8px 8px 0 0;
+            transition: all .15s;
+            white-space: nowrap;
+            min-height: 44px;
+        }
+        .tab-btn.active {
+            background: #4a9eff22;
+            border-bottom: 3px solid var(--blue);
+            color: var(--blue);
+            font-weight: 700;
+        }
+        .tab-btn span { margin-right: 4px; }
+
+        .content { padding: 0 24px; max-width: 1200px; margin: 0 auto; }
+        .flex-row { display: flex; gap: 16px; align-items: flex-start; }
+        .flex-col { display: block; }
+
+        .code-panel {
+            background: var(--bgCode);
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            font-family: 'JetBrains Mono', monospace;
+            width: 380px;
+            min-width: 280px;
+            flex-shrink: 0;
+        }
+        .code-panel.fullwidth { width: 100%; }
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 14px;
+            border-bottom: 1px solid var(--border);
+            background: var(--bgCard);
+        }
+        .code-title {
+            color: var(--textDim);
+            font-size: 11px;
+            font-weight: 600;
+            font-family: 'DM Sans', sans-serif;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .code-body { padding: 6px 0; overflow-x: auto; max-height: 420px; overflow-y: auto; }
+        .code-line {
+            display: flex;
+            padding: 1px 10px 1px 0;
+            transition: background .2s, border-color .2s;
+            border-left: 3px solid transparent;
+        }
+        .code-line.hl { background: #4a9eff18; border-left: 3px solid var(--blue); }
+        .line-num {
+            color: var(--textDim);
+            width: 28px;
+            text-align: right;
+            margin-right: 8px;
+            font-size: 11px;
+            line-height: 18px;
+            -webkit-user-select: none;
+            user-select: none;
+            flex-shrink: 0;
+        }
+        .line-text {
+            font-size: 11px;
+            line-height: 18px;
+            color: var(--text);
+            white-space: pre;
+        }
+
+        .tab-content { flex: 1; min-width: 0; }
+        .svg-container { width: 100%; max-width: 620px; display: block; margin: 0 auto; }
+
+        .btn-group {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 10px 0;
+            font-family: 'DM Sans', sans-serif;
+        }
+        .btn {
+            background: var(--blue);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            min-width: 44px;
+            min-height: 44px;
+            transition: background .15s, opacity .15s;
+        }
+        .btn:disabled {
+            background: var(--border);
+            color: var(--textDim);
+            cursor: default;
+            opacity: 0.5;
+        }
+        .step-label { color: var(--textDim); font-size: 13px; min-width: 80px; text-align: center; }
+
+        .desc-box {
+            background: var(--bgCard);
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-top: 8px;
+            color: var(--text);
+            font-size: 13px;
+            line-height: 1.6;
+            min-height: 44px;
+            border: 1px solid var(--border);
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 8px;
+            font-family: 'DM Sans', sans-serif;
+            flex-wrap: wrap;
+        }
+        .control-label { color: var(--textDim); font-size: 13px; }
+        input[type="range"] { width: 120px; accent-color: var(--blue); height: 6px; }
+        input[type="range"]::-webkit-slider-thumb { width: 22px; height: 22px; }
+        .control-val { color: var(--blue); font-size: 14px; font-weight: 600; min-width: 50px; }
+
+        .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .device-buttons { display: flex; gap: 8px; justify-content: center; margin-bottom: 10px; flex-wrap: wrap; }
+        .device-btn {
+            background: var(--bgCard);
+            border: 2px solid var(--border);
+            color: var(--textDim);
+            border-radius: 8px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            min-height: 44px;
+            transition: all .15s;
+        }
+        .device-btn.active { border-color: var(--green); color: var(--green); background: #34d39915; }
+
+        .ndrange-grid {
+            display: inline-grid;
+            grid-template-columns: repeat(16, 32px);
+            gap: 2px;
+            padding: 4px;
+        }
+        .ndrange-cell {
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            background: var(--bgCard);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            color: var(--textDim);
+            cursor: pointer;
+            transition: background .2s, border .2s;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .cell-info {
+            background: var(--bgCard);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 14px;
+            margin-top: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--text);
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .kw-pragma { color: var(--amber); }
+        .kw-type { color: var(--purple); }
+        .kw-func { color: var(--blue); }
+        .kw-num { color: var(--green); }
+
+        @media (max-width: 767px) {
+            h1 { font-size: 20px; }
+            .subtitle { font-size: 11px; }
+            .content { padding: 10px 6px; }
+            .flex-row { display: block; }
+            .code-panel { width: 100%; }
+            .tab-content { margin-top: 10px; }
+            .tab-btn { padding: 10px 10px; font-size: 11px; }
+            input[type="range"]::-webkit-slider-thumb { width: 28px; height: 28px; }
+            .grid-container { grid-template-columns: 1fr; }
+            .ndrange-grid { grid-template-columns: repeat(8, 40px); }
+            .ndrange-cell { width: 40px; height: 40px; }
+        }
+
+        button:focus-visible {
+            outline: 2px solid var(--blue);
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <div style="text-align: center; margin-bottom: 16px;">
+            <h1>OpenCL <span>Interactive</span> Demo</h1>
+            <p class="subtitle">From FPGA to portable parallel computing · ← → step · 1-5 tabs</p>
+        </div>
+
+        <div class="tabs" id="tabs">
+            <button class="tab-btn active" data-tab="0"><span>◉</span> Platform</button>
+            <button class="tab-btn" data-tab="1"><span>▦</span> Memory</button>
+            <button class="tab-btn" data-tab="2"><span>⊞</span> NDRange</button>
+            <button class="tab-btn" data-tab="3"><span>▶</span> Timeline</button>
+            <button class="tab-btn" data-tab="4"><span>⇄</span> Comparison</button>
+        </div>
+
+        <div class="flex-row">
+            <div class="code-panel" id="codePanel">
+                <div class="code-header">
+                    <div class="code-title" id="codeTitle">Host Setup</div>
+                </div>
+                <div class="code-body" id="codeBody"></div>
+            </div>
+            <div class="tab-content" id="tabContent"></div>
+        </div>
+    </div>
+
+    <script>
+        const C = {
+            bg: "#0f1117", bgCard: "#1a1d27", bgCode: "#141620",
+            text: "#e8eaf0", textDim: "#8b90a0", border: "#2a2d3a",
+            blue: "#4a9eff", green: "#34d399", amber: "#f59e0b",
+            purple: "#a78bfa", red: "#f87171", cyan: "#22d3ee", pink: "#f472b6",
+            wg: ["#4a9eff33","#34d39933","#f59e0b33","#a78bfa33","#f8717133","#22d3ee33"],
+            wgBorder: ["#4a9eff","#34d399","#f59e0b","#a78bfa","#f87171","#22d3ee"],
+        };
+
+        const CODE = {
+            platform: ["cl_platform_id platform;","clGetPlatformIDs(1, &platform, NULL);","cl_device_id device;","clGetDeviceIDs(platform,","    CL_DEVICE_TYPE_GPU, 1, &device, NULL);","cl_context ctx = clCreateContext(","    NULL, 1, &device, NULL, NULL, NULL);"],
+            kernel: ["__kernel void vec_add(","    __global const float* A,","    __global const float* B,","    __global float* C) {","  int i = get_global_id(0);","  C[i] = A[i] + B[i];","}"],
+            memory: ["__kernel void vec_add(","    __global const float* A,","    __global const float* B,","    __global float* C,","    __local float* scratch) {","  int gid = get_global_id(0);","  int lid = get_local_id(0);","  scratch[lid] = A[gid];","  barrier(CLK_LOCAL_MEM_FENCE);","  C[gid] = scratch[lid] + B[gid];","}"],
+            host: ["cl_mem bufA = clCreateBuffer(ctx,","    CL_MEM_READ_ONLY, size, NULL, NULL);","cl_mem bufB = clCreateBuffer(ctx,","    CL_MEM_READ_ONLY, size, NULL, NULL);","cl_mem bufC = clCreateBuffer(ctx,","    CL_MEM_WRITE_ONLY, size, NULL, NULL);","clEnqueueWriteBuffer(queue, bufA,","    CL_TRUE, 0, size, hostA, 0, NULL, NULL);","clEnqueueWriteBuffer(queue, bufB,","    CL_TRUE, 0, size, hostB, 0, NULL, NULL);","clEnqueueNDRangeKernel(queue, kernel,","    1, NULL, &glob, &loc, 0, NULL, NULL);","clEnqueueReadBuffer(queue, bufC,","    CL_TRUE, 0, size, hostC, 0, NULL, NULL);"],
+            hls: ["void vec_add(float A[N],","    float B[N], float C[N]) {","  #pragma HLS INTERFACE m_axi port=A","  #pragma HLS INTERFACE m_axi port=B","  #pragma HLS INTERFACE m_axi port=C","  for (int i = 0; i < N; i++) {","    #pragma HLS PIPELINE II=1","    C[i] = A[i] + B[i];","  }","}"],
+        };
+
+        const DEVICES = [
+            { label: "GPU", icon: "⊞", desc: "Massively parallel cores", color: C.green, pe: "CUDA Core / Stream Proc." },
+            { label: "FPGA", icon: "◈", desc: "Reconfigurable fabric (Kria)", color: C.amber, pe: "Datapath / Pipeline Stage" },
+            { label: "CPU", icon: "▣", desc: "Multi-core processor", color: C.purple, pe: "ALU / SIMD Lane" },
+        ];
+
+        const PLATFORM_STEPS = [
+            { desc: "OpenCL defines a <b>Platform Model</b> — a host CPU connected to compute devices via a bus (PCIe for GPU, AXI for FPGA).", hl: [0,1], showCU: false, showPE: false, hlPE: false },
+            { desc: "The host queries devices using <code>clGetDeviceIDs</code>. Like scanning for your Kria board, but device-agnostic.", hl: [2,3,4], showCU: false, showPE: false, hlPE: false },
+            { desc: "A <b>Context</b> groups devices so they can share memory objects and command queues.", hl: [5,6], showCU: false, showPE: false, hlPE: false },
+            { desc: "Each device has <b>Compute Units</b> (CUs). On GPU: streaming multiprocessors. On Kria: your replicated pipelines.", hl: [], showCU: true, showPE: false, hlPE: false },
+            { desc: "Each CU has <b>Processing Elements</b> (PEs) — the smallest execution units that run your kernel code.", hl: [], showCU: true, showPE: true, hlPE: false },
+            { desc: "<b>What is a PE?</b> On GPU: a CUDA core. On FPGA: one synthesized datapath. On CPU: an ALU / SIMD lane. Each PE executes one work-item.", hl: [], showCU: true, showPE: true, hlPE: true },
+            { desc: "Key idea: the <b>same code</b> targets GPU, FPGA, or CPU. Toggle device type above — the hierarchy is identical. <b>Portability.</b>", hl: [], showCU: true, showPE: true, hlPE: false },
+        ];
+
+        const MEM_STEPS = [
+            { desc: "OpenCL defines a <b>Memory Model</b> with four device regions plus host memory. On your FPGA, you managed BRAM vs DDR manually — OpenCL standardizes these.", hl: [], show: 0 },
+            { desc: "<b>Host Memory</b> — CPU RAM where your application data lives. On Kria: PS-side DDR.", hl: [], show: 1 },
+            { desc: "<b>Global Memory</b> — device RAM accessible by <i>all</i> work-items. Largest but slowest. FPGA: PL DDR via AXI.", hl: [0,1,2,3], show: 2 },
+            { desc: "<b>Constant Memory</b> — read-only cached global memory. FPGA: ROM or constant LUTs.", hl: [1,2], show: 3 },
+            { desc: "<b>Local Memory</b> — shared scratchpad within a work-group, very fast. FPGA: BRAM per CU.", hl: [4,7,8], show: 4 },
+            { desc: "<b>Private Memory</b> — per work-item registers. FPGA: flip-flops. Fastest, smallest.", hl: [5,6,9,10], show: 5 },
+            { desc: "Data flows: Host → Global → Local → Private, then results return. On FPGA you'd wire DMA + AXI + BRAM manually.", hl: [], show: 6 },
+        ];
+
+        const WG_OPTIONS = [[2,2],[4,2],[4,4],[8,4]];
+        const ND_STEPS = [
+            { desc: "This is the <b>NDRange</b> — the global work-space. Each cell is one <b>work-item</b>.", showGroups: false, hlGroup: -1, hlCell: false },
+            { desc: "The runtime divides work into <b>work-groups</b>. Each group runs on one Compute Unit.", showGroups: true, hlGroup: -1, hlCell: false },
+            { desc: "Colored regions show distinct work-groups — each is a unit of scheduling.", showGroups: true, hlGroup: 0, hlCell: false },
+            { desc: "Inside a work-group, each work-item has a <b>local ID</b>. Click any cell to see its IDs.", showGroups: true, hlGroup: 0, hlCell: true },
+            { desc: "<code>get_global_id(0)</code> = column; <code>get_local_id</code> = position within group.", showGroups: true, hlGroup: -1, hlCell: true },
+        ];
+
+        const TL_PHASES = [
+            { label: "CreateBuffer", fullLabel: "clCreateBuffer", color: C.purple },
+            { label: "WriteBuffer", fullLabel: "clEnqueueWriteBuffer", color: C.amber },
+            { label: "NDRangeKernel", fullLabel: "clEnqueueNDRangeKernel", color: C.green },
+            { label: "ReadBuffer", fullLabel: "clEnqueueReadBuffer", color: C.cyan },
+        ];
+        const TL_STEPS = [
+            { phase: -1, desc: "The host orchestrates execution through a <b>command queue</b>. The diagram shows host ↔ device data flow." },
+            { phase: 0, desc: "Allocate memory buffers on the device — analogous to BRAM or DDR interfaces on FPGA." },
+            { phase: 1, desc: "Transfer input data from host to device. Data blocks move across the bus — like DMA writes on Kria." },
+            { phase: 2, desc: "Launch the kernel! Work-groups execute on CUs in parallel. More CUs = faster." },
+            { phase: 3, desc: "Read results back from device to host — the DMA read-back step." },
+            { phase: 4, desc: "Done! allocate → write → execute → read. On FPGA you wired each step; OpenCL automates it." },
+        ];
+
+        const CMP_STEPS = [
+            { desc: "<b>Define the computation:</b> OpenCL kernel vs HLS C function.", oclHl: [0,1,2,3,4,5,6], hlsHl: [0,1,7,8,9] },
+            { desc: "<b>Interfaces:</b> OpenCL uses <code>__global</code> pointers; HLS uses <code>#pragma</code> for AXI.", oclHl: [1,2,3], hlsHl: [2,3,4] },
+            { desc: "<b>Parallelism:</b> OpenCL launches work-items via <code>get_global_id</code>; HLS pipelines a loop.", oclHl: [4,5], hlsHl: [5,6,7] },
+            { desc: "<b>Deployment:</b> OpenCL compiles at runtime. HLS synthesizes a bitstream for one FPGA.", oclHl: [], hlsHl: [] },
+            { desc: "<b>Trade-off:</b> OpenCL = portable. FPGA/HLS = fine-grained timing/resource/IO control.", oclHl: [], hlsHl: [] },
+        ];
+
+        const TABS = [
+            { label: "Platform", short: "Plat", icon: "◉" },
+            { label: "Memory", short: "Mem", icon: "▦" },
+            { label: "NDRange", short: "NDR", icon: "⊞" },
+            { label: "Timeline", short: "Time", icon: "▶" },
+            { label: "Comparison", short: "Cmp", icon: "⇄" },
+        ];
+        const MAX_STEPS = [PLATFORM_STEPS.length-1, MEM_STEPS.length-1, ND_STEPS.length-1, TL_STEPS.length-1, CMP_STEPS.length-1];
+
+        let state = {
+            tab: 0,
+            mobile: window.innerWidth < 768,
+            steps: [0,0,0,0,0],
+            device: 0,
+            wgIdx: 1,
+            selCell: null,
+            cus: 4,
+            codeCollapsed: false
+        };
+
+        function highlightC(line) {
+            let h = line.replace(/&/g,"&").replace(/</g,"<").replace(/>/g,">");
+            h = h.replace(/(#pragma\s+HLS\s+\w+)/g, `<span class="kw-pragma">$1</span>`);
+            h = h.replace(/\b(__kernel|__global|__local|__constant|void|float|int|const|for|NULL|CL_\w+)\b/g, `<span class="kw-type">$1</span>`);
+            h = h.replace(/\b(clGet\w+|clCreate\w+|clEnqueue\w+|get_global_id|get_local_id|get_group_id|barrier|CLK_LOCAL_MEM_FENCE)\b/g, `<span class="kw-func">$1</span>`);
+            h = h.replace(/\b(\d+)\b/g, `<span class="kw-num">$1</span>`);
+            return h;
+        }
+
+        function renderCodePanel(lines, hl, title) {
+            document.getElementById('codeTitle').textContent = title;
+            const body = document.getElementById('codeBody');
+            body.innerHTML = lines.map((l, i) => `
+                <div class="code-line ${hl.includes(i) ? 'hl' : ''}">
+                    <span class="line-num">${i+1}</span>
+                    <span class="line-text">${highlightC(l)}</span>
+                </div>
+            `).join('');
+        }
+
+        function render() {
+            const tab = state.tab;
+            const currentStep = state.steps[tab];
+
+            let codeInfo;
+            if (tab===0) codeInfo = { lines: CODE.platform, title: "Host Setup", hl: PLATFORM_STEPS[currentStep]?.hl||[] };
+            if (tab===1) codeInfo = { lines: CODE.memory, title: "Memory Kernel", hl: MEM_STEPS[currentStep]?.hl||[] };
+            if (tab===2) { const h=[[0,1,2,3],[0,1,2,3],[0,1,2,3],[4],[4,5]]; codeInfo = { lines: CODE.kernel, title: "Kernel", hl: h[currentStep]||[] }; }
+            if (tab===3) { const p=TL_STEPS[currentStep]?.phase??-1; const m={[-1]:[],0:[0,1,2,3,4,5],1:[6,7,8,9],2:[10,11],3:[12,13],4:Array.from({length:14},(_,i)=>i)}; codeInfo = { lines: CODE.host, title: "Host Code", hl: m[p]||[] }; }
+
+            if (tab === 4) {
+                document.getElementById('codePanel').style.display = 'none';
+            } else {
+                document.getElementById('codePanel').style.display = 'block';
+                renderCodePanel(codeInfo.lines, codeInfo.hl, codeInfo.title);
+            }
+
+            document.querySelectorAll('.tab-btn').forEach((b, i) => {
+                b.classList.toggle('active', i === tab);
+            });
+
+            let content = '';
+            switch(tab) {
+                case 0: content = renderPlatformTab(); break;
+                case 1: content = renderMemoryTab(); break;
+                case 2: content = renderNDRangeTab(); break;
+                case 3: content = renderTimelineTab(); break;
+                case 4: content = renderComparisonTab(); break;
+            }
+            document.getElementById('tabContent').innerHTML = content;
+            attachEventListeners();
+        }
+
+        function renderPlatformTab() {
+            const step = state.steps[0];
+            const s = PLATFORM_STEPS[step];
+            const d = DEVICES[state.device];
+            const mobile = state.mobile;
+
+            const vw = mobile ? 360 : 620;
+            const vh = mobile ? (s.showCU ? 420 : 220) : (s.hlPE ? 320 : 280);
+            const hx = mobile ? 90 : 30, hy = mobile ? 20 : 70, hw = mobile ? 180 : 140, hh = mobile ? 70 : 90;
+            const dx = mobile ? 40 : 360, dy = mobile ? (hh + 60) : 30;
+            const dw = mobile ? 280 : 230, dh = mobile ? (s.showCU ? 250 : 90) : (s.hlPE ? 260 : 230);
+            const arrX1 = mobile ? hx + hw / 2 : hx + hw;
+            const arrY1 = mobile ? hy + hh : hy + hh / 2;
+            const arrX2 = mobile ? dx + dw / 2 : dx;
+            const arrY2 = mobile ? dy : dy + dh / 2;
+
+            let cus = '';
+            if (s.showCU) {
+                for (let r = 0; r < 2; r++) {
+                    for (let c = 0; c < 2; c++) {
+                        const cuW = mobile ? 120 : 95, cuH = 60;
+                        const cuGapX = mobile ? 10 : 8, cuGapY = 8;
+                        const bx = dx + 10 + c * (cuW + cuGapX);
+                        const by = dy + 42 + r * (cuH + cuGapY);
+                        let pes = '';
+                        if (s.showPE) {
+                            for (let p = 0; p < 3; p++) {
+                                const peW = mobile ? 30 : 24, peH = mobile ? 32 : 30;
+                                const peGap = mobile ? 6 : 4;
+                                const peStartX = bx + (cuW - 3*peW - 2*peGap) / 2;
+                                const px = peStartX + p * (peW + peGap), py = by + 20;
+                                const isHL = s.hlPE && p === 0 && r === 0 && c === 0;
+                                pes += `
+                                    <rect x="${px}" y="${py}" width="${peW}" height="${peH}" rx="4"
+                                        fill="${isHL ? d.color+'44' : d.color+'22'}" stroke="${isHL ? d.color : d.color+'88'}" stroke-width="${isHL ? 2 : 1}" />
+                                    <text x="${px+peW/2}" y="${py+14}" text-anchor="middle" fill="${isHL ? d.color : C.textDim}" font-size="8" font-weight="600" font-family="'DM Sans',sans-serif">PE</text>
+                                    <text x="${px+peW/2}" y="${py+24}" text-anchor="middle" fill="${isHL ? d.color : C.textDim}" font-size="7" font-family="'JetBrains Mono',monospace">${p}</text>
+                                `;
+                            }
+                        } else {
+                            for (let p = 0; p < 3; p++) {
+                                const peW = mobile ? 30 : 24, peGap = mobile ? 6 : 4;
+                                const peStartX = bx + (cuW - 3*peW - 2*peGap) / 2;
+                                const px = peStartX + p * (peW + peGap), py = by + 20;
+                                pes += `<rect x="${px}" y="${py}" width="${peW}" height="30" rx="4" fill="${d.color}15" stroke="${d.color}44" stroke-width="0.5" />`;
+                            }
+                        }
+                        cus += `
+                            <rect x="${bx}" y="${by}" width="${cuW}" height="${cuH}" rx="6" fill="${C.bgCode}" stroke="${C.border}" stroke-width="1.5" />
+                            <text x="${bx+cuW/2}" y="${by+14}" text-anchor="middle" fill="${C.textDim}" font-size="9" font-weight="600" font-family="'DM Sans',sans-serif">CU ${r*2+c}</text>
+                            ${pes}
+                        `;
+                    }
+                }
+            }
+
+            let callout = '';
+            if (s.hlPE) {
+                const calloutY = dy + dh + 4;
+                callout = `
+                    <rect x="${dx}" y="${calloutY}" width="${dw}" height="22" rx="4" fill="${d.color}18" stroke="${d.color}" stroke-width="1" />
+                    <text x="${dx+dw/2}" y="${calloutY+15}" text-anchor="middle" fill="${d.color}" font-size="9" font-weight="600" font-family="'DM Sans',sans-serif">PE = ${d.pe}</text>
+                `;
+            }
+
+            const deviceButtons = DEVICES.map((dv, i) =>
+                `<button class="device-btn ${state.device===i?'active':''}" onclick="setDevice(${i})">${dv.icon} ${dv.label}</button>`
+            ).join('');
+
+            return `
+                <div class="device-buttons">${deviceButtons}</div>
+                <svg viewBox="0 0 ${vw} ${vh}" class="svg-container">
+                    <defs>
+                        <marker id="arrBlue" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="${C.blue}"/></marker>
+                        <filter id="shadow"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.3"/></filter>
+                    </defs>
+                    <rect x="${hx}" y="${hy}" width="${hw}" height="${hh}" rx="10" fill="${C.bgCard}" stroke="${C.purple}" stroke-width="2" filter="url(#shadow)" />
+                    <text x="${hx+hw/2}" y="${hy + (mobile ? 22 : 28)}" text-anchor="middle" fill="${C.purple}" font-size="${mobile ? 12 : 13}" font-weight="700" font-family="'DM Sans',sans-serif">HOST (CPU)</text>
+                    <text x="${hx+hw/2}" y="${hy + (mobile ? 38 : 46)}" text-anchor="middle" fill="${C.textDim}" font-size="${mobile ? 9 : 10}" font-family="'DM Sans',sans-serif">Your application</text>
+                    ${!mobile ? `<text x="${hx+hw/2}" y="${hy+62}" text-anchor="middle" fill="${C.textDim}" font-size="9" font-family="'JetBrains Mono',monospace">cmd queue</text>` : ''}
+                    <line x1="${arrX1}" y1="${arrY1}" x2="${arrX2}" y2="${arrY2}" stroke="${C.blue}" stroke-width="2" marker-end="url(#arrBlue)" stroke-dasharray="${s.showCU ? 'none' : '6 3'}" />
+                    <text x="${(arrX1+arrX2)/2 + (mobile ? 30 : 0)}" y="${(arrY1+arrY2)/2 - 6}" text-anchor="middle" fill="${C.textDim}" font-size="8" font-family="'DM Sans',sans-serif">PCIe / AXI</text>
+                    <rect x="${dx}" y="${dy}" width="${dw}" height="${dh}" rx="10" fill="${C.bgCard}" stroke="${d.color}" stroke-width="2" filter="url(#shadow)" />
+                    <text x="${dx+dw/2}" y="${dy+18}" text-anchor="middle" fill="${d.color}" font-size="${mobile ? 11 : 12}" font-weight="700" font-family="'DM Sans',sans-serif">${d.icon} DEVICE (${d.label})</text>
+                    <text x="${dx+dw/2}" y="${dy+32}" text-anchor="middle" fill="${C.textDim}" font-size="8" font-family="'DM Sans',sans-serif">${d.desc}</text>
+                    ${cus}
+                    ${callout}
+                </svg>
+                <div class="desc-box">${s.desc}</div>
+                <div class="btn-group">
+                    <button class="btn" onclick="prevStep()" ${step===0?'disabled':''}>← Prev</button>
+                    <span class="step-label">Step ${step+1} / ${MAX_STEPS[0]+1}</span>
+                    <button class="btn" onclick="nextStep()" ${step===MAX_STEPS[0]?'disabled':''}>Next →</button>
+                </div>
+            `;
+        }
+
+        function renderMemoryTab() {
+            const step = state.steps[1];
+            const s = MEM_STEPS[step];
+            const show = s.show;
+            const mobile = state.mobile;
+
+            const vw = mobile ? 340 : 620;
+            const vh = mobile ? 440 : 340;
+            const hX = 10, hY = 10;
+            const hW = mobile ? 100 : 140;
+            const hH = mobile ? 130 : vh - 20;
+            const dX = mobile ? 120 : hW + 50;
+            const dY = mobile ? 10 : 10;
+            const dW = vw - dX - 10;
+            const dH = mobile ? 420 : vh - 20;
+            const gX = dX + 8, gY = dY + 28, gW = dW - 16, gH = 80;
+            // Constant memory centered inside global memory
+            const cW = mobile ? 80 : 120;
+            const cH = mobile ? 50 : 40;
+            const cX = gX + (gW - cW) / 2;
+            const cY = gY + (gH - cH) / 2;
+            const cuY = gY + gH + 12;
+            const cuX = dX + 8;
+            const cuW = dW - 16;
+            const cuH = mobile ? 180 : 190;
+            const lX = cuX + 6, lY = cuY + 20;
+            const lW = cuW - 12;
+            const lH = mobile ? 44 : 42;
+            
+            // PE positions inside CU for private memory
+            const peY = lY + lH + 12;
+            const peW = mobile ? 80 : 100;
+            const peH = mobile ? 70 : 80;
+            const peGap = mobile ? 8 : 12;
+            const peStartX = cuX + (cuW - 3 * peW - 2 * peGap) / 2;
+            
+            // Private memory inside each PE
+            const pW = mobile ? 36 : 44;
+            const pH = mobile ? 45 : 55;
+            const pGap = mobile ? 2 : 4;
+            
+            const arrMidX = mobile ? (hX + hW + dX) / 2 : hX + hW + 25;
+
+            let hostBlocks = '';
+            if (show >= 1) {
+                ["hostA[]","hostB[]","hostC[]"].forEach((b,i) => {
+                    hostBlocks += `
+                        <rect x="${hX+8}" y="${hY+30+i*26}" width="${hW-16}" height="20" rx="4" fill="${C.purple}18" stroke="${C.purple}55" stroke-width="1" />
+                        <text x="${hX+hW/2}" y="${hY+44+i*26}" text-anchor="middle" fill="${C.purple}" font-size="8" font-family="'JetBrains Mono',monospace">${b}</text>
+                    `;
+                });
+            }
+
+            let constantInner = '';
+            if (show >=3) {
+                constantInner = `
+                    <rect x="${cX+6}" y="${cY+30}" width="${cW-12}" height="16" rx="3" fill="${C.cyan}18" stroke="${C.cyan}44" stroke-width="1" />
+                    <text x="${cX+cW/2}" y="${cY+42}" text-anchor="middle" fill="${C.cyan}" font-size="7" font-family="'JetBrains Mono',monospace">coefficients</text>
+                    <text x="${cX+cW/2}" y="${cY+cH-6}" text-anchor="middle" fill="${C.textDim}" font-size="6" font-family="'DM Sans',sans-serif">FPGA: ROM/LUT</text>
+                `;
+            }
+
+            let localInner = '';
+            if (show >=4) {
+                localInner = `
+                    <rect x="${lX+lW-56}" y="${lY+6}" width="50" height="14" rx="3" fill="${C.amber}18" stroke="${C.amber}44" stroke-width="1" />
+                    <text x="${lX+lW-31}" y="${lY+17}" text-anchor="middle" fill="${C.amber}" font-size="7" font-family="'JetBrains Mono',monospace">scratch[]</text>
+                    <text x="${lX+6}" y="${lY+lH-4}" fill="${C.textDim}" font-size="6" font-family="'DM Sans',sans-serif">FPGA: BRAM</text>
+                `;
+            }
+
+            let peBlocks = '';
+            if (show >=4) {
+                for (let i = 0; i < 3; i++) {
+                    const pex = peStartX + i * (peW + peGap);
+                    
+                    // Private memory inside this PE
+                    let privateInner = '';
+                    if (show >=5) {
+                        const px = pex + (peW - pW) / 2;
+                        const py = peY + 20;
+                        privateInner = `
+                            <rect x="${px}" y="${py}" width="${pW}" height="${pH}" rx="4" fill="${C.pink}0c" stroke="${C.pink}" stroke-width="1.5" />
+                            <text x="${px+pW/2}" y="${py+12}" text-anchor="middle" fill="${C.pink}" font-size="7" font-weight="700" font-family="'DM Sans',sans-serif">PRIVATE</text>
+                            <text x="${px+pW/2}" y="${py+24}" text-anchor="middle" fill="${C.textDim}" font-size="7" font-family="'JetBrains Mono',monospace">WI ${i}</text>
+                            <text x="${px+pW/2}" y="${py+pH-4}" text-anchor="middle" fill="${C.textDim}" font-size="5" font-family="'DM Sans',sans-serif">${mobile?"FFs":"Registers"}</text>
+                        `;
+                    }
+                    
+                    peBlocks += `
+                        <rect x="${pex}" y="${peY}" width="${peW}" height="${peH}" rx="6" fill="${C.bgCard}" stroke="${C.border}" stroke-width="1" />
+                        <text x="${pex+peW/2}" y="${peY+12}" text-anchor="middle" fill="${C.textDim}" font-size="7" font-weight="600" font-family="'DM Sans',sans-serif">PE ${i}</text>
+                        ${privateInner}
+                    `;
+                }
+            }
+
+            let arrows = '';
+            if (show >=6) {
+                arrows = `
+                    <line x1="${hX+hW}" y1="${hY+40}" x2="${gX}" y2="${gY+16}" stroke="${C.purple}" stroke-width="2" />
+                    <text x="${arrMidX}" y="${hY+30}" text-anchor="middle" fill="${C.purple}" font-size="7" font-weight="600" font-family="'DM Sans',sans-serif">WriteBuffer</text>
+                    <line x1="${gX}" y1="${gY+gH-8}" x2="${hX+hW}" y2="${hY+hH-10}" stroke="${C.cyan}" stroke-width="2" />
+                    <text x="${arrMidX}" y="${hY+hH}" text-anchor="middle" fill="${C.cyan}" font-size="7" font-weight="600" font-family="'DM Sans',sans-serif">ReadBuffer</text>
+                `;
+            }
+
+            return `
+                <svg viewBox="0 0 ${vw} ${vh}" class="svg-container">
+                    <defs>
+                        <marker id="arrPurple" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="${C.purple}"/></marker>
+                        <marker id="arrAmber" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="${C.amber}"/></marker>
+                        <marker id="arrPink" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="${C.pink}"/></marker>
+                        <marker id="arrCyan" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="${C.cyan}"/></marker>
+                    </defs>
+                    <rect x="${hX}" y="${hY}" width="${hW}" height="${hH}" rx="8" fill="${C.purple}0c" stroke="${C.purple}" stroke-width="${show>=1?2:1}" style="opacity: ${show>=1?1:0.12}" />
+                    <text x="${hX+6}" y="${hY+13}" fill="${C.purple}" font-size="${mobile ? 8 : 10}" font-weight="700" font-family="'DM Sans',sans-serif">HOST MEM</text>
+                    <text x="${hX+6}" y="${hY+23}" fill="${C.textDim}" font-size="${mobile ? 6 : 8}" font-family="'DM Sans',sans-serif">CPU RAM</text>
+                    ${hostBlocks}
+                    ${show >=1 ? `<text x="${hX+hW/2}" y="${hY+hH-6}" text-anchor="middle" fill="${C.textDim}" font-size="6" font-family="'DM Sans',sans-serif">FPGA: PS DDR</text>` : ''}
+                    <rect x="${dX}" y="${dY}" width="${dW}" height="${dH}" rx="10" fill="${C.bgCard}" stroke="${C.green}" stroke-width="${show>=2?2:1}" style="opacity: ${show>=2?1:0.12}" />
+                    <text x="${dX+dW/2}" y="${dY+16}" text-anchor="middle" fill="${C.green}" font-size="${mobile?9:11}" font-weight="700" font-family="'DM Sans',sans-serif" style="opacity: ${show>=2?1:0.12}">DEVICE</text>
+                    <rect x="${gX}" y="${gY}" width="${gW}" height="${gH}" rx="8" fill="${C.green}0c" stroke="${C.green}" stroke-width="${show>=2?2:1}" style="opacity: ${show>=2?1:0.12}" />
+                    <text x="${gX+6}" y="${gY+13}" fill="${C.green}" font-size="${mobile ? 8 : 10}" font-weight="700" font-family="'DM Sans',sans-serif">GLOBAL MEMORY</text>
+                    ${show >=2 ? `<text x="${gX+6}" y="${gY+gH-6}" fill="${C.textDim}" font-size="6" font-family="'DM Sans',sans-serif">FPGA: PL DDR via AXI</text>` : ''}
+                    <rect x="${cX}" y="${cY}" width="${cW}" height="${cH}" rx="8" fill="${C.cyan}0c" stroke="${C.cyan}" stroke-width="${show>=3?2:1}" stroke-dasharray="5 3" style="opacity: ${show>=3?1:0.12}" />
+                    <text x="${cX+6}" y="${cY+13}" fill="${C.cyan}" font-size="${mobile ? 8 : 10}" font-weight="700" font-family="'DM Sans',sans-serif">CONSTANT</text>
+                    <text x="${cX+6}" y="${cY+23}" fill="${C.textDim}" font-size="${mobile ? 6 : 8}" font-family="'DM Sans',sans-serif">Read-only</text>
+                    ${constantInner}
+                    <rect x="${cuX}" y="${cuY}" width="${cuW}" height="${cuH}" rx="8" fill="${C.bgCode}" stroke="${C.border}" stroke-width="${show>=4?2:1}" style="opacity: ${show>=4?1:0.12}" />
+                    <text x="${cuX+6}" y="${cuY+13}" fill="${C.textDim}" font-size="${mobile ? 8 : 10}" font-weight="700" font-family="'DM Sans',sans-serif">CU 0</text>
+                    <rect x="${lX}" y="${lY}" width="${lW}" height="${lH}" rx="8" fill="${C.amber}0c" stroke="${C.amber}" stroke-width="${show>=4?2:1}" style="opacity: ${show>=4?1:0.12}" />
+                    <text x="${lX+6}" y="${lY+13}" fill="${C.amber}" font-size="${mobile ? 8 : 10}" font-weight="700" font-family="'DM Sans',sans-serif">LOCAL MEM</text>
+                    <text x="${lX+6}" y="${lY+23}" fill="${C.textDim}" font-size="${mobile ? 6 : 8}" font-family="'DM Sans',sans-serif">Work-group shared</text>
+                    ${localInner}
+                    ${peBlocks}
+                    ${arrows}
+                </svg>
+                <div class="desc-box">${s.desc}</div>
+                <div class="btn-group">
+                    <button class="btn" onclick="prevStep()" ${step===0?'disabled':''}>← Prev</button>
+                    <span class="step-label">Step ${step+1} / ${MAX_STEPS[1]+1}</span>
+                    <button class="btn" onclick="nextStep()" ${step===MAX_STEPS[1]?'disabled':''}>Next →</button>
+                </div>
+            `;
+        }
+
+        function renderNDRangeTab() {
+            const step = state.steps[2];
+            const s = ND_STEPS[step];
+            const mobile = state.mobile;
+            const cols = mobile ? 8 : 16, rows = mobile ? 4 : 8;
+            const wgW = WG_OPTIONS[state.wgIdx][0], wgH = WG_OPTIONS[state.wgIdx][1];
+            const cellSize = mobile ? 40 : 32;
+
+            const getGI = (x, y) => Math.floor(y/wgH) * Math.ceil(cols/wgW) + Math.floor(x/wgW);
+
+            let cells = '';
+            for (let y = 0; y < rows; y++) {
+                for (let x = 0; x < cols; x++) {
+                    const gi = getGI(x, y);
+                    const isSel = state.selCell?.x === x && state.selCell?.y === y;
+                    const isHl = s.hlGroup >= 0 && gi === s.hlGroup;
+                    const ok = s.hlCell || s.showGroups;
+                    const bg = s.showGroups ? C.wg[gi % C.wg.length] : C.bgCard;
+                    const border = isSel ? C.blue : (isHl ? C.wgBorder[gi % C.wgBorder.length] : C.border);
+                    const borderW = isSel || isHl ? 2 : 1;
+                    cells += `<div class="ndrange-cell" onclick="clickCell(${x},${y})" style="background:${bg}; border:${borderW}px solid ${border}">${cellSize >= 30 ? `${x},${y}` : ''}</div>`;
+                }
+            }
+
+            let cellInfo = '';
+            if (state.selCell && s.showGroups) {
+                const x = state.selCell.x, y = state.selCell.y;
+                cellInfo = `
+                    <div class="cell-info">
+                        <span>global_id: <b style="color: ${C.blue}">(${x}, ${y})</b></span>
+                        <span>local_id: <b style="color: ${C.green}">(${x%wgW}, ${y%wgH})</b></span>
+                        <span>group_id: <b style="color: ${C.amber}">(${Math.floor(x/wgW)}, ${Math.floor(y/wgH)})</b></span>
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="controls">
+                    <span class="control-label">Work-group size:</span>
+                    <input type="range" min="0" max="${WG_OPTIONS.length-1}" value="${state.wgIdx}" onchange="setWgIdx(this.value)" />
+                    <span class="control-val">${wgW}×${wgH}</span>
+                </div>
+                <div style="overflow-x: auto; display: flex; justify-content: center;">
+                    <div class="ndrange-grid" style="grid-template-columns: repeat(${cols}, ${cellSize}px);">
+                        ${cells}
+                    </div>
+                </div>
+                ${cellInfo}
+                <div class="desc-box">${s.desc}</div>
+                <div class="btn-group">
+                    <button class="btn" onclick="prevStep()" ${step===0?'disabled':''}>← Prev</button>
+                    <span class="step-label">Step ${step+1} / ${MAX_STEPS[2]+1}</span>
+                    <button class="btn" onclick="nextStep()" ${step===MAX_STEPS[2]?'disabled':''}>Next →</button>
+                </div>
+            `;
+        }
+
+        function renderTimelineTab() {
+            const step = state.steps[3];
+            const s = TL_STEPS[step];
+            const mobile = state.mobile;
+            const cus = state.cus;
+            const fw = mobile ? 320 : 500, fh = 80;
+            const hBW = mobile ? 70 : 100, dBW = mobile ? 100 : 150;
+            const hBX = 10, dBX = fw - dBW - 10;
+            const barH = mobile ? 18 : 22, barGap = 3;
+            const lm = mobile ? 90 : 170, tw = mobile ? 320 : 500, bmw = tw - lm - 10;
+
+            let blocks = [];
+            if (s.phase === 1) {
+                blocks = [{x:hBX+hBW+16,l:"A[]",c:C.amber},{x:(hBX+hBW+dBX)/2+4,l:"B[]",c:C.amber}];
+            } else if (s.phase === 2) {
+                blocks = [{x:dBX+16,l:"⚡",c:C.green}];
+            } else if (s.phase === 3) {
+                blocks = [{x:(hBX+hBW+dBX)/2+4,l:"C[]",c:C.cyan}];
+            }
+
+            let blockEls = '';
+            blocks.forEach(b => {
+                // Position blocks above the bus arrow
+                const blockY = fh/2 - 26;
+                blockEls += `
+                    <rect x="${b.x}" y="${blockY}" width="22" height="16" rx="4" fill="${b.c}44" stroke="${b.c}" stroke-width="1.5">
+                        <animate attributeName="opacity" values="0.4;1;0.4" dur="1.5s" repeatCount="indefinite" />
+                    </rect>
+                    <text x="${b.x+11}" y="${blockY + 12}" text-anchor="middle" fill="${b.c}" font-size="7" font-weight="700" font-family="'JetBrains Mono',monospace">${b.l}</text>
+                `;
+            });
+
+            let kernelAnim = '';
+            if (s.phase === 2) {
+                kernelAnim = `
+                    <rect x="${dBX+4}" y="${fh-18}" width="${dBW-8}" height="10" rx="3" fill="${C.green}33" stroke="${C.green}" stroke-width="1">
+                        <animate attributeName="opacity" values="0.5;1;0.5" dur="1s" repeatCount="indefinite" />
+                    </rect>
+                    <text x="${dBX+dBW/2}" y="${fh-10}" text-anchor="middle" fill="${C.green}" font-size="6" font-weight="600" font-family="'DM Sans',sans-serif">Kernel running</text>
+                `;
+            }
+
+            let gantt = '';
+            let yo = 0;
+            for (let i = 0; i < 4; i++) {
+                const ph = TL_PHASES[i], act = s.phase >= i, cur = s.phase === i;
+                const y = 4 + i*(barH+barGap) + yo;
+                const label = mobile ? ph.label : ph.fullLabel;
+                if (i===2 && s.phase>=2) {
+                    const sh = barH*0.55, bw = act ? bmw/(cus<=2?1:Math.log2(cus)+1)*(cus<=2?0.8:1) : 0;
+                    let cuBars = '';
+                    for (let c = 0; c < cus; c++) {
+                        cuBars += `<rect x="${lm}" y="${y+c*(sh+2)}" width="${bw}" height="${sh}" rx="3" fill="${ph.color}${cur?'bb':'55'}" stroke="${cur?ph.color:'none'}" stroke-width="1" />`;
+                    }
+                    gantt += `
+                        <text x="${lm-6}" y="${y+sh/2+4}" text-anchor="end" fill="${cur?ph.color:C.textDim}" font-size="${mobile?7:10}" font-family="'JetBrains Mono',monospace" font-weight="${cur?700:400}">${label}</text>
+                        ${cuBars}
+                        ${cur ? `<text x="${lm+4}" y="${y+cus*(sh+2)+9}" fill="${C.textDim}" font-size="7" font-family="'DM Sans',sans-serif">${cus} CU${cus>1?"s":""} parallel</text>` : ''}
+                    `;
+                    yo += (cus-1)*(sh+2);
+                } else {
+                    const bw = act ? bmw*(i===0?0.3:0.5) : 0;
+                    gantt += `
+                        <text x="${lm-6}" y="${y+barH/2+4}" text-anchor="end" fill="${cur?ph.color:C.textDim}" font-size="${mobile?7:10}" font-family="'JetBrains Mono',monospace" font-weight="${cur?700:400}">${label}</text>
+                        <rect x="${lm}" y="${y}" width="${bw}" height="${barH}" rx="3" fill="${ph.color}${cur?'bb':'55'}" stroke="${cur?ph.color:'none'}" stroke-width="1" />
+                    `;
+                }
+            }
+
+            return `
+                <div class="controls">
+                    <span class="control-label">Compute Units:</span>
+                    <input type="range" min="1" max="8" value="${cus}" onchange="setCus(this.value)" style="accent-color: ${C.green}" />
+                    <span class="control-val" style="color: ${C.green}">${cus}</span>
+                </div>
+                <svg viewBox="0 0 ${fw} ${fh}" class="svg-container">
+                    <defs>
+                        <marker id="arrAmber" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="${C.amber}"/></marker>
+                        <marker id="arrCyan" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="${C.cyan}"/></marker>
+                    </defs>
+                    <rect x="${hBX}" y="8" width="${hBW}" height="${fh-16}" rx="8" fill="${C.bgCard}" stroke="${C.purple}" stroke-width="2" />
+                    <text x="${hBX+hBW/2}" y="26" text-anchor="middle" fill="${C.purple}" font-size="${mobile?9:10}" font-weight="700" font-family="'DM Sans',sans-serif">HOST</text>
+                    <text x="${hBX+hBW/2}" y="40" text-anchor="middle" fill="${C.textDim}" font-size="7" font-family="'JetBrains Mono',monospace">hostA,B,C</text>
+                    <rect x="${dBX}" y="8" width="${dBW}" height="${fh-16}" rx="8" fill="${C.bgCard}" stroke="${C.green}" stroke-width="2" />
+                    <text x="${dBX+dBW/2}" y="26" text-anchor="middle" fill="${C.green}" font-size="${mobile?9:10}" font-weight="700" font-family="'DM Sans',sans-serif">DEVICE</text>
+                    <text x="${dBX+dBW/2}" y="40" text-anchor="middle" fill="${C.textDim}" font-size="7" font-family="'JetBrains Mono',monospace">bufA,B,C</text>
+                    <line x1="${hBX+hBW}" y1="${fh/2}" x2="${dBX}" y2="${fh/2}" stroke="${C.border}" stroke-width="3" stroke-linecap="round" />
+                    <text x="${(hBX+hBW+dBX)/2}" y="${fh/2 + 16}" text-anchor="middle" fill="${C.textDim}" font-size="7" font-family="'DM Sans',sans-serif">PCIe / AXI Bus</text>
+                    ${s.phase===1 ? `<line x1="${hBX+hBW+4}" y1="${fh/2}" x2="${dBX-4}" y2="${fh/2}" stroke="${C.amber}" stroke-width="2" marker-end="url(#arrAmber)" />` : ''}
+                    ${s.phase===3 ? `<line x1="${dBX-4}" y1="${fh/2}" x2="${hBX+hBW+4}" y2="${fh/2}" stroke="${C.cyan}" stroke-width="2" marker-end="url(#arrCyan)" />` : ''}
+                    ${blockEls}
+                    ${kernelAnim}
+                </svg>
+                <div style="overflow-x: auto;">
+                    <svg viewBox="0 0 ${tw} ${barH*5+barGap*6+16+(s.phase>=2?(cus-1)*(barH*0.55+2):0)}" style="width:100%;max-width:${tw}px;display:block;margin:0 auto;">
+                        ${gantt}
+                    </svg>
+                </div>
+                <div class="desc-box">${s.desc}</div>
+                <div class="btn-group">
+                    <button class="btn" onclick="prevStep()" ${step===0?'disabled':''}>← Prev</button>
+                    <span class="step-label">Step ${step+1} / ${MAX_STEPS[3]+1}</span>
+                    <button class="btn" onclick="nextStep()" ${step===MAX_STEPS[3]?'disabled':''}>Next →</button>
+                </div>
+            `;
+        }
+
+        function renderComparisonTab() {
+            const step = state.steps[4];
+            const s = CMP_STEPS[step];
+            const mobile = state.mobile;
+
+            const renderCode = (lines, hl) => lines.map((l, i) => `
+                <div class="code-line ${hl.includes(i) ? 'hl' : ''}">
+                    <span class="line-num">${i+1}</span>
+                    <span class="line-text">${highlightC(l)}</span>
+                </div>
+            `).join('');
+
+            return `
+                <div class="grid-container">
+                    <div class="code-panel fullwidth">
+                        <div class="code-header">
+                            <div class="code-title">OpenCL Kernel</div>
+                        </div>
+                        <div class="code-body">${renderCode(CODE.kernel, s.oclHl)}</div>
+                    </div>
+                    <div class="code-panel fullwidth">
+                        <div class="code-header">
+                            <div class="code-title">HLS (FPGA)</div>
+                        </div>
+                        <div class="code-body">${renderCode(CODE.hls, s.hlsHl)}</div>
+                    </div>
+                </div>
+                <div class="desc-box">${s.desc}</div>
+                <div class="btn-group">
+                    <button class="btn" onclick="prevStep()" ${step===0?'disabled':''}>← Prev</button>
+                    <span class="step-label">Step ${step+1} / ${MAX_STEPS[4]+1}</span>
+                    <button class="btn" onclick="nextStep()" ${step===MAX_STEPS[4]?'disabled':''}>Next →</button>
+                </div>
+            `;
+        }
+
+        function prevStep() {
+            const tab = state.tab;
+            state.steps[tab] = Math.max(0, state.steps[tab] - 1);
+            render();
+        }
+
+        function nextStep() {
+            const tab = state.tab;
+            state.steps[tab] = Math.min(MAX_STEPS[tab], state.steps[tab] + 1);
+            render();
+        }
+
+        function setTab(i) {
+            state.tab = i;
+            state.steps[i] = 0;
+            render();
+        }
+
+        function setDevice(i) {
+            state.device = i;
+            render();
+        }
+
+        function setWgIdx(v) {
+            state.wgIdx = +v;
+            state.selCell = null;
+            render();
+        }
+
+        function clickCell(x, y) {
+            const s = ND_STEPS[state.steps[2]];
+            if (s.hlCell || s.showGroups) {
+                state.selCell = {x, y};
+                render();
+            }
+        }
+
+        function setCus(v) {
+            state.cus = +v;
+            render();
+        }
+
+        function attachEventListeners() {
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                b.onclick = () => setTab(+b.dataset.tab);
+            });
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key==="ArrowLeft") { e.preventDefault(); prevStep(); }
+            else if (e.key==="ArrowRight") { e.preventDefault(); nextStep(); }
+            else if (e.key==="Home") { e.preventDefault(); state.steps[state.tab] = 0; render(); }
+            else if (e.key==="End") { e.preventDefault(); state.steps[state.tab] = MAX_STEPS[state.tab]; render(); }
+            else if (e.key>="1" && e.key<="5") { setTab(+e.key-1); }
+        });
+
+        window.addEventListener('resize', () => {
+            state.mobile = window.innerWidth < 768;
+            render();
+        });
+
+        render();
+    </script>
+</body>
+</html>

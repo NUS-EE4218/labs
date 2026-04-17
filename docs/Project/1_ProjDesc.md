@@ -6,7 +6,7 @@ The goal of this project is to create a hardware accelerator for a [multilayer 
 
 We will be implementing the hardware accelerator for inference (prediction), not for training. Training the neural network (which involves optimizing the weights of the connections in the network to minimize prediction error) can be done separately on a PC / Laptop and the weights can be stored in a file. For the sample data given on this page, the training is already done and the weights are provided. Implementing the architecture mentioned below and using these weights is good enough to meet the basic requirements. Even if you are using a different neural network architecture or dataset, the training can still be done offline.
 
-For the rest of this manual, we will use the OpenCL terminology:
+For the rest of this manual, we will use the [OpenCL](opencl_demo.html) terminology:
  * Host: The software running on ARM Cortex A53 (PS).
  * Device: The accelerator / co-processor implementing the neural network in hardware, interfaced using DMA (recommended) or FIFO (fallback option) or AXI/AXI-Lite natively. This should be able to receive the weights and the data from the host, and return the predicted labels.
 
