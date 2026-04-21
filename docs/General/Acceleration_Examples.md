@@ -2,6 +2,8 @@
 
 A reference for the code examples used to illustrate hardware acceleration concepts and memory access patterns. Each example is designed to build intuition for performance principles relevant to both CPU/GPU and FPGA platforms.
 
+All examples are AI-generated. The repository is [here](https://github.com/NUS-EE4218/labs/tree/main/docs/General/Accel_Examples).
+
 ---
 
 ## 1. `col_row_maj_cache.c`
