@@ -1,191 +1,149 @@
-# AccelerationExamples - Performance Optimization Examples
+# Hardware Acceleration & Memory Access Examples
 
-This repository contains C/C++/Verilog/Vysper files demonstrating hardware acceleration techniques and performance implications of memory access patterns.
-
-All examples are AI-generated. The repository is [here](https://github.com/NUS-EE4218/labs/tree/main/docs/General/Accel_Examples).
+A reference for the code examples used to illustrate hardware acceleration concepts and memory access patterns. Each example is designed to build intuition for performance principles relevant to both CPU/GPU and FPGA platforms.
 
 ---
 
-## 1. aos_vs_soa.c
+## 1. `col_row_maj_cache.c`
 
-**Summary:**
-Compares Array of Structures (AoS) vs Structure of Arrays (SoA) memory layouts by timing a loop that sums only the X component of 64 million particles. SoA layout achieves significant speedup by avoiding cache waste on unused fields.
+**Summary:** Allocates a 2D matrix and traverses it in both row-major and column-major order, timing each access pattern.
 
-**Description:**
-This example demonstrates the classic AOS vs SoA tradeoff in memory layout optimization. When accessing a single component (X) from many structures, SoA layout allows the CPU to fetch only the needed data, while AOS wastes 75% of every cache line on unused y/z/w fields. The code initializes 64 million particles with 4 components each and times how long it takes to sum only the X component.
+**Technical Significance:** Demonstrates the fundamental impact of spatial locality on CPU cache performance. Row-major traversal accesses memory sequentially (matching how C stores 2D arrays), resulting in high cache line utilisation. Column-major traversal strides across rows, causing frequent cache misses and significantly higher latency. Directly analogous to DDR burst behaviour on FPGAs, where sequential AXI bursts are far more efficient than strided accesses.
 
 **How to Run:**
 ```bash
-# Compile
-gcc -o aos_vs_soa aos_vs_soa.c -lrt
-
-# Run
-./aos_vs_soa
-```
-
----
-
-## 2. coalesced_vs_non_coalesced.c
-
-**Summary:**
-Compares coalesced vs non-coalesced GPU memory access patterns for matrix multiplication using OpenCL. Demonstrates how coalesced memory access (sequential reads) dramatically outperforms non-coalesced (strided) access.
-
-**Description:**
-This example shows the importance of memory coalescing in GPU programming. The `matmul_coalesced` kernel accesses arrays in sequential order (A[row*N+k], B[k*N+col]), while `matmul_noncoalesced` accesses with stride (A[k*N+row], B[col*N+k]). Coalesced access allows GPUs to fetch multiple elements in a single memory transaction, yielding significant speedup. If no GPU is available, it falls back to CPU OpenMP implementation.
-
-**How to Run:**
-```bash
-# Install OpenCL development libraries first
-# Ubuntu/Debian: sudo apt-get install ocl-icd-opencl-dev
-# Then compile
-gcc -o coalesced_vs_non_coalesced coalesced_vs_non_coalesced.c -lOpenCL
-
-# Run with matrix size (default 1024)
-./coalesced_vs_non_coalesced 1024
-```
-
----
-
-## 3. col_row_maj_cache.c
-
-**Summary:**
-Compares row-major vs column-major traversal of a 2D array to demonstrate cache locality effects. Row-major order accesses consecutive memory locations, while column-major order strides through memory.
-
-**Description:**
-This simple example creates an N×N matrix and times two traversal patterns: row-major (i then j loops) and column-major (j then i loops). Row-major order benefits from CPU cache prefetching since consecutive memory addresses are accessed sequentially. Column-major traversal with stride N often results in cache misses due to non-sequential access patterns.
-
-**How to Run:**
-```bash
-# Compile
-gcc -o col_row_maj_cache col_row_maj_cache.c -lrt
-
-# Run with default N=3000
+gcc -O2 -o col_row_maj_cache col_row_maj_cache.c
 ./col_row_maj_cache
 ```
+*Dependencies: standard C library (`time.h`). No external libraries required.*
 
 ---
 
-## 4. gpu_demo.c
+## 2. `aos_vs_soa.c`
 
-**Summary:**
-Demonstrates GPU acceleration using OpenCL for both matrix multiplication and vector multiplication, comparing performance gains of GPU vs CPU implementations.
+**Summary:** Compares two memory layout strategies — Array of Structures (AoS) and Structure of Arrays (SoA) — when summing a single field (x) across 64 million elements.
 
-**Description:**
-This demo performs two operations using OpenCL: (1) Matrix multiplication (1024×1024) and (2) Vector multiplication (10,000,000 elements). Both operations are compared against CPU implementations. The key insight is that matrix multiplication benefits more from GPU acceleration because it's compute-bound (O(N³)), while elementwise operations remain memory-bound (O(N)).
+**Technical Significance:** When only one field of a multi-field struct is accessed, AoS wastes 75% of each cache line fetching unused fields (y, z, w). SoA packs the needed field contiguously, maximising cache line utilisation. This trade-off directly maps to BRAM layout decisions in HLS and FPGA data path design, where field-wise access patterns determine whether interleaved or separate memory banks are more efficient.
 
 **How to Run:**
 ```bash
-# Compile
-gcc -o gpu_demo gpu_demo.c -lOpenCL
+gcc -O2 -o aos_vs_soa aos_vs_soa.c
+./aos_vs_soa
+```
+*Dependencies: standard C library. No external libraries required.*
 
-# Run
+---
+
+## 3. `matrix_transpose_optimization.c`
+
+**Summary:** Benchmarks naive matrix multiplication (column-wise access of B) against a version that pre-transposes B to enable sequential row access in the inner loop.
+
+**Technical Significance:** The naive implementation accesses matrix B with a stride of N elements per step, defeating the cache on every inner-loop iteration. Pre-transposing B converts both operands to sequential row access, substantially improving cache hit rate. Demonstrates that a small amount of extra work (one transpose) can yield a large net gain — a principle that maps to BRAM bank partitioning and tiling strategies in HLS.
+
+**How to Run:**
+```bash
+gcc -O2 -o matrix_transpose matrix_transpose_optimization.c
+./matrix_transpose
+```
+*Dependencies: standard C library. No external libraries required.*
+
+---
+
+## 4. `gpu_demo.c`
+
+**Summary:** Uses OpenCL to run matrix multiplication (1024×1024) and element-wise vector multiplication (10M elements) on a GPU, comparing each against a CPU baseline.
+
+**Technical Significance:** Illustrates the distinction between compute-bound and memory-bound workloads. Matrix multiplication (O(N³) arithmetic intensity) achieves large GPU speedups because the GPU's parallel compute units are kept busy. Element-wise vector multiplication (O(N) arithmetic intensity) offers far less speedup — memory bandwidth, not compute throughput, is the bottleneck regardless of parallelism. Establishes the concept of arithmetic intensity as the key predictor of GPU (and FPGA accelerator) benefit.
+
+**How to Run:**
+```bash
+gcc -O2 -o gpu_demo gpu_demo.c -lOpenCL
 ./gpu_demo
 ```
+*Dependencies: OpenCL runtime and ICD loader (`libOpenCL`). Requires a GPU with an OpenCL 1.2+ driver. Install via `sudo apt install ocl-icd-opencl-dev` on Ubuntu.*
 
 ---
 
-## 5. matrix_transpose_optimization.c
+## 5. `coalesced_vs_non_coalesced.c`
 
-**Summary:**
-Shows how pre-transposing matrix B before multiplication improves cache locality. The naive implementation accesses B with stride N, while the optimized version accesses both matrices sequentially.
+**Summary:** Runs two OpenCL matrix multiplication kernels — one with coalesced global memory access and one with non-coalesced access — and reports kernel execution time for each.
 
-**Description:**
-This example demonstrates a classic optimization technique: pre-transposing matrix B so that both A and B_T can be accessed in sequential row order during multiplication. The naive `matmul_naive` function accesses B[k*N+j] which strides by N elements per k-loop iteration. After transposing B to B_T, the optimized `matmul_transposed` accesses B_T[j*N+k] which is sequential. This dramatically improves cache utilization.
+**Technical Significance:** In GPU (and FPGA HBM/DDR) memory systems, coalesced access merges multiple work-item memory requests into a single wide transaction. The non-coalesced kernel accesses A and B with transposed indices, forcing individual narrow transactions and dramatically reducing effective bandwidth. Falls back to OpenMP CPU execution if no GPU is detected. Reinforces AXI burst vs. random-access behaviour familiar from FPGA design.
 
 **How to Run:**
 ```bash
-# Compile
-gcc -o matrix_transpose_optimization matrix_transpose_optimization.c -lrt
+# With GPU
+gcc -O2 -fopenmp -o coalesced coalesced_vs_non_coalesced.c -lOpenCL
+./coalesced [matrix_size]   # default N=1024
 
-# Run with default SIZE=1024
-./matrix_transpose_optimization
+# CPU-only fallback (no GPU required)
+gcc -O2 -fopenmp -o coalesced coalesced_vs_non_coalesced.c
+./coalesced
 ```
+*Dependencies: OpenCL runtime (optional); OpenMP (included in GCC). Matrix size can be passed as a command-line argument.*
 
 ---
 
-## 6. vadd_comparison.cpp
+## 6. `vadd_comparison.cpp`
 
-**Summary:**
-Compares a simple vector addition kernel vs an optimized burst-mode kernel using HLS-style pragmas. The burst kernel improves throughput by processing data in chunks of 64 elements.
+**Summary:** Defines two HLS-annotated vector addition kernels — a simple single-element version and a burst-optimised version with local ping-pong buffers — and benchmarks both in software simulation.
 
-**Description:**
-This C++ example demonstrates HLS (High-Level Synthesis) style optimization techniques. The `vadd_simple` kernel processes elements one-by-one, while `vadd_burst` processes chunks of 64 elements using local buffers. The burst approach reduces memory access overhead by grouping operations together. The code uses HLS pragmas like `#pragma HLS PIPELINE`, `#pragma HLS ARRAY_PARTITION` for simulation purposes (these are typically used for FPGA HLS tools).
+**Technical Significance:** The burst kernel stages data through local BRAM buffers in chunks of 64 elements, mimicking the read–compute–write pattern used in real HLS designs to achieve pipelined AXI burst transfers. The `#pragma HLS` directives (`m_axi`, `PIPELINE`, `ARRAY_PARTITION`) are present and syntactically valid for Vitis HLS, while the file also compiles as standard C++ for desktop simulation. Bridges the gap between algorithmic understanding and synthesisable FPGA code.
 
 **How to Run:**
 ```bash
-# Compile with g++ (HLS pragmas are ignored for CPU execution)
-g++ -o vadd_comparison vadd_comparison.cpp -std=c++11
-
-# Run
+# Desktop simulation (CPU)
+g++ -O2 -o vadd_comparison vadd_comparison.cpp
 ./vadd_comparison
+
+# HLS synthesis (Vitis HLS)
+# Add to a Vitis HLS project and run C Simulation or Synthesis
 ```
+*Dependencies: Standard C++ library for desktop build. Vitis HLS (Xilinx/AMD) for synthesis and co-simulation.*
 
 ---
 
-## 7. report_adders.v
+## 7. `sum_halves.cpp`
 
-**Summary:**
-Verilog module for simple arithmetic operations: addition, bitwise AND with mask, and multiplication by 2 (left shift).
+**Summary:** An HLS kernel that reads a 2048-element integer array from BRAM and writes 1024 outputs, each the average of a corresponding pair of elements from the two halves of the input array.
 
-**Description:**
-This is a basic Verilog design showing simple arithmetic operations using 8-bit inputs and outputs. The module takes a 8-bit input `a` and produces three outputs: `y1` (addition with constants), `y2` (bitwise AND with mask 0xFF), and `y3` (multiplication by 2, equivalent to left shift).
+**Technical Significance:** A minimal but illustrative HLS design exercise. The `#pragma HLS PIPELINE` directive on the loop body targets an initiation interval of 1. The commented-out `ARRAY_PARTITION` pragma and the alternative three-way average invite students to explore how port conflicts on the BRAM interface limit pipeline throughput, and how array partitioning resolves them — a core HLS optimisation concept.
 
 **How to Run:**
-This Verilog file requires synthesis tools like Yosys for simulation/reporting:
 ```bash
-# Using Yosys
+# HLS synthesis and C simulation (Vitis HLS)
+# Add sum_halves.cpp to a Vitis HLS project, set top function to sum_halves, run C Sim
+
+# Standalone CPU build (no HLS runtime needed)
+g++ -O2 -o sum_halves sum_halves.cpp
+```
+*Dependencies: Vitis HLS for synthesis/co-sim. Compiles as plain C++ for functional verification.*
+
+---
+
+## 8. `report_adders.v` + `report_adders.ys`
+
+**Summary:** A small Verilog module implementing three expressions — a constant-folded addition, a bitmask operation, and a multiply-by-two — paired with a Yosys synthesis script that runs the `synth` pass and reports adder/ALU cell counts.
+
+**Technical Significance:** Demonstrates RTL-level synthesis analysis using the open-source Yosys toolchain. The three assignments exercise constant folding (`A + B` resolved at elaboration), bitwise masking (no adder generated), and shift-based multiplication (maps to a wire, not an adder). The `.ys` script shows how to filter the synthesis netlist with `stat -width t:$add t:$alu`, giving students a concrete method for auditing resource usage — directly applicable to understanding LUT/DSP budgets before mapping to an FPGA.
+
+**How to Run:**
+```bash
 yosys -s report_adders.ys
 ```
+*Dependencies: [Yosys](https://yosyshq.net/yosys/) — install via `sudo apt install yosys` on Ubuntu, or build from source. No FPGA toolchain required.*
 
 ---
 
-## 8. report_adders.ys
+## Quick Reference
 
-**Summary:**
-Yosys script to load the Verilog design, synthesize it, and report statistics on arithmetic operations.
-
-**Description:**
-This Yosys script performs: (1) Load the Verilog file, (2) Check hierarchy, (3) Synthesize the design, and (4) Report statistics on `$add` (ALU) and `$mul` operations. It's used for analyzing hardware resource usage after synthesis.
-
-**How to Run:**
-```bash
-# Run with Yosys
-yosys -s report_adders.ys
-```
-
----
-
-## 9. sum_halves/sum_halves.cpp
-
-**Summary:**
-Vitis HLS example for computing a sum of halves with BRAM interfaces. Demonstrates HLS pragmas for memory mapping and pipelining.
-
-**Description:**
-This is a Vitis HLS design example that shows how to define HLS interfaces for BRAM (Block RAM). The function `sum_halves` takes an array of 2048 integers and outputs 1024 averaged values. It uses `#pragma HLS INTERFACE bram` to map arrays to BRAM, and `#pragma HLS PIPELINE` for pipelining. The commented line shows computing the average of 3 elements, while the active line computes using 3 different array elements divided by 3.
-
-**How to Run:**
-This requires Vitis HLS toolchain for FPGA synthesis:
-```bash
-# Requires Vitis HLS installation
-# Launch Vitis HLS GUI and load sum_halves.cpp
-```
-
----
-
-## Quick Reference Table
-
-| File | Language | Purpose | Dependencies |
-|------|----------|---------|--------------|
-| aos_vs_soa.c | C | AOS vs SoA comparison | libc, librt |
-| coalesced_vs_non_coalesced.c | C | GPU memory coalescing | OpenCL |
-| col_row_maj_cache.c | C | Cache locality demo | libc, librt |
-| gpu_demo.c | C | GPU acceleration demo | OpenCL |
-| matrix_transpose_optimization.c | C | Cache optimization via transpose | libc, librt |
-| vadd_comparison.cpp | C++ | HLS burst optimization | libc++ |
-| report_adders.v | Verilog | Arithmetic logic design | Yosys |
-| report_adders.ys | Script | Yosys synthesis script | Yosys |
-| sum_halves/sum_halves.cpp | C (HLS) | Vitis HLS example | Vitis HLS |
-
----
-
-*Generated for AccelerationExamples repository*
+| File | Platform | Key Concept |
+|---|---|---|
+| `col_row_maj_cache.c` | CPU | Cache line utilisation, spatial locality |
+| `aos_vs_soa.c` | CPU | Memory layout, field access efficiency |
+| `matrix_transpose_optimization.c` | CPU | Cache-friendly access via pre-transpose |
+| `gpu_demo.c` | GPU (OpenCL) | Arithmetic intensity, compute- vs memory-bound |
+| `coalesced_vs_non_coalesced.c` | GPU (OpenCL) | Memory coalescing, transaction width |
+| `vadd_comparison.cpp` | CPU sim / HLS | AXI burst pattern, HLS pipeline pragmas |
+| `sum_halves.cpp` | HLS | BRAM port conflicts, array partitioning |
+| `report_adders.v` + `.ys` | Yosys (RTL) | Synthesis analysis, constant folding, cell reporting |
