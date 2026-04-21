@@ -2,7 +2,7 @@
 
 This repository contains C/C++/Verilog/Vysper files demonstrating hardware acceleration techniques and performance implications of memory access patterns.
 
-All examples are AI-generated.
+All examples are AI-generated. The repository is [here](https://github.com/NUS-EE4218/labs/tree/main/docs/General/Accel_Examples).
 
 ---
 
