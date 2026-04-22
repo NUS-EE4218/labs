@@ -110,6 +110,15 @@ gcc -O2 -fopenmp -o coalesced coalesced_vs_non_coalesced.c
 
 **Technical Significance:** The burst kernel stages data through local BRAM buffers in chunks of 64 elements, mimicking the read–compute–write pattern used in real HLS designs to achieve pipelined AXI burst transfers. The `#pragma HLS` directives (`m_axi`, `PIPELINE`, `ARRAY_PARTITION`) are present and syntactically valid for Vitis HLS, while the file also compiles as standard C++ for desktop simulation. Bridges the gap between algorithmic understanding and synthesisable FPGA code.
 
+Note: The burst optimized one will most likely run slower on CPU. Why?
+
+The same pattern everywhere:
+CPU  → cache-line prefetch
+GPU  → coalesced warp loads
+FPGA → AXI burst reads
+
+All three answer the same question: "pay the setup cost once, then stream."
+
 ![](./Accel_Examples/Figures/vadd_comparison_burst.svg)
 
 **How to Run:**
