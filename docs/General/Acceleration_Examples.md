@@ -1,6 +1,6 @@
 # Hardware Acceleration & Memory Access Examples
 
-A reference for the code examples used to illustrate hardware acceleration concepts and memory access patterns. Each example is designed to build intuition for performance principles relevant to both CPU/GPU and FPGA platforms.
+A reference for the code examples used to illustrate hardware acceleration concepts and memory access patterns. Each example is designed to build intuition for performance principles relevant to CPU, GPU, and FPGA platforms.
 
 All examples are AI-generated. The repository is [here](https://github.com/NUS-EE4218/labs/tree/main/docs/General/Accel_Examples).
 
@@ -10,7 +10,9 @@ All examples are AI-generated. The repository is [here](https://github.com/NUS-E
 
 **Summary:** Allocates a 2D matrix and traverses it in both row-major and column-major order, timing each access pattern.
 
-**Technical Significance:** Demonstrates the fundamental impact of spatial locality on CPU cache performance. Row-major traversal accesses memory sequentially (matching how C stores 2D arrays), resulting in high cache line utilisation. Column-major traversal strides across rows, causing frequent cache misses and significantly higher latency. Directly analogous to DDR burst behaviour on FPGAs, where sequential AXI bursts are far more efficient than strided accesses.
+**Technical Significance:** Demonstrates the fundamental impact of spatial locality on CPU cache performance. Row-major traversal accesses memory sequentially (matching how C stores 2D arrays), resulting in high cache line utilisation. Column-major traversal strides across rows, causing frequent cache misses (only one useful word per fetch) and significantly higher latency. Directly analogous to DDR burst behaviour on FPGAs, where sequential AXI bursts are far more efficient than strided accesses.
+
+![Column vs Row Major](./Accel_Examples/Figures/col_row_maj_cache.svg)
 
 **How to Run:**
 ```bash
@@ -27,6 +29,8 @@ gcc -O2 -o col_row_maj_cache col_row_maj_cache.c
 
 **Technical Significance:** When only one field of a multi-field struct is accessed, AoS wastes 75% of each cache line fetching unused fields (y, z, w). SoA packs the needed field contiguously, maximising cache line utilisation. This trade-off directly maps to BRAM layout decisions in HLS and FPGA data path design, where field-wise access patterns determine whether interleaved or separate memory banks are more efficient.
 
+![aos_vs_soa](./Accel_Examples/Figures/aos_vs_soa.svg)
+
 **How to Run:**
 ```bash
 gcc -O2 -o aos_vs_soa aos_vs_soa.c
@@ -42,6 +46,14 @@ gcc -O2 -o aos_vs_soa aos_vs_soa.c
 
 **Technical Significance:** The naive implementation accesses matrix B with a stride of N elements per step, defeating the cache on every inner-loop iteration. Pre-transposing B converts both operands to sequential row access, substantially improving cache hit rate. Demonstrates that a small amount of extra work (one transpose) can yield a large net gain — a principle that maps to BRAM bank partitioning and tiling strategies in HLS.
 
+Cost: one extra O(N²) pass to transpose B.
+Saved: O(N³) of cache misses in the inner loop.
+This may sound counter-intuitive.
+
+For FPGA, adding a reshape / tiling stage that costs area but unlocks a tight, pipelined inner dataflow.
+
+![matrix_transpose_optimization](./Accel_Examples/Figures/matrix_transpose_optimization.svg)
+
 **How to Run:**
 ```bash
 gcc -O2 -o matrix_transpose matrix_transpose_optimization.c
@@ -56,6 +68,12 @@ gcc -O2 -o matrix_transpose matrix_transpose_optimization.c
 **Summary:** Uses OpenCL to run matrix multiplication (1024×1024) and element-wise vector multiplication (10M elements) on a GPU, comparing each against a CPU baseline.
 
 **Technical Significance:** Illustrates the distinction between compute-bound and memory-bound workloads. Matrix multiplication (O(N³) arithmetic intensity) achieves large GPU speedups because the GPU's parallel compute units are kept busy. Element-wise vector multiplication (O(N) arithmetic intensity) offers far less speedup — memory bandwidth, not compute throughput, is the bottleneck regardless of parallelism. Establishes the concept of arithmetic intensity as the key predictor of GPU (and FPGA accelerator) benefit.
+
+Arithmetic Intensity is the FLOPs per byte moved.
+
+In compute-bound, each byte fetched is reused many times. Arithmetic intensity is high — the GPU's thousands of ALUs actually get fed.
+
+In memory-bound, each element is used a limited number of times (usually once) — one multiply per load. PCIe transfer + AXI/ DRAM bandwidth dominate; ALUs sit idle.
 
 **How to Run:**
 ```bash
@@ -91,6 +109,8 @@ gcc -O2 -fopenmp -o coalesced coalesced_vs_non_coalesced.c
 **Summary:** Defines two HLS-annotated vector addition kernels — a simple single-element version and a burst-optimised version with local ping-pong buffers — and benchmarks both in software simulation.
 
 **Technical Significance:** The burst kernel stages data through local BRAM buffers in chunks of 64 elements, mimicking the read–compute–write pattern used in real HLS designs to achieve pipelined AXI burst transfers. The `#pragma HLS` directives (`m_axi`, `PIPELINE`, `ARRAY_PARTITION`) are present and syntactically valid for Vitis HLS, while the file also compiles as standard C++ for desktop simulation. Bridges the gap between algorithmic understanding and synthesisable FPGA code.
+
+![](./Accel_Examples/Figures/vadd_comparison_burst.svg)
 
 **How to Run:**
 ```bash
