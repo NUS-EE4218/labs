@@ -126,10 +126,11 @@ module myip_v1_0
 	reg [31:0] next_sum;
 
 	// Counters to store the number inputs read & outputs written.
-	reg [$clog2(NUMBER_OF_INPUT_WORDS) - 1:0] read_counter;
-	reg [$clog2(NUMBER_OF_INPUT_WORDS) - 1:0] next_read_counter;
-	reg [$clog2(NUMBER_OF_OUTPUT_WORDS) - 1:0] write_counter;
-	reg [$clog2(NUMBER_OF_OUTPUT_WORDS) - 1:0] next_write_counter;
+	// Use $clog2(N+1) to guarantee at least 1-bit width even when N=1
+	reg [$clog2(NUMBER_OF_INPUT_WORDS + 1) - 1:0] read_counter;
+	reg [$clog2(NUMBER_OF_INPUT_WORDS + 1) - 1:0] next_read_counter;
+	reg [$clog2(NUMBER_OF_OUTPUT_WORDS + 1) - 1:0] write_counter;
+	reg [$clog2(NUMBER_OF_OUTPUT_WORDS + 1) - 1:0] next_write_counter;
 
 	// Combinational output signals
 	reg s_axis_tready_comb;
