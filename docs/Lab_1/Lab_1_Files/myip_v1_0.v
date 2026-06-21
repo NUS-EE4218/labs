@@ -50,14 +50,14 @@ module myip_v1_0
 	input					ACLK;    // Synchronous clock
 	input					ARESETN; // System reset, active low
 	// slave in interface
-	output	reg				S_AXIS_TREADY;  // Ready to accept data in
+	output					S_AXIS_TREADY;  // Ready to accept data in
 	input	[31 : 0]		S_AXIS_TDATA;   // Data in
 	input					S_AXIS_TLAST;   // Optional data in qualifier
 	input					S_AXIS_TVALID;  // Data in is valid
 	// master out interface
-	output	reg				M_AXIS_TVALID;  // Data out is valid
-	output	reg [31 : 0]	M_AXIS_TDATA;   // Data Out
-	output	reg				M_AXIS_TLAST;   // Optional data out qualifier
+	output					M_AXIS_TVALID;  // Data out is valid
+	output	[31 : 0]		M_AXIS_TDATA;   // Data Out
+	output					M_AXIS_TLAST;   // Optional data out qualifier
 	input					M_AXIS_TREADY;  // Connected slave device is ready to accept data out
 
 //----------------------------------------
@@ -119,103 +119,139 @@ module myip_v1_0
 	localparam Write_Outputs  = 4'b0001;
 
 	reg [3:0] state;
+	reg [3:0] next_state;
 
 	// Accumulator to hold sum of inputs read at any point in time
 	reg [31:0] sum;
+	reg [31:0] next_sum;
 
 	// Counters to store the number inputs read & outputs written.
-	// Could be done using the same counter if reads and writes are not overlapped (i.e., no dataflow optimization)
-	// Left as separate for ease of debugging
 	reg [$clog2(NUMBER_OF_INPUT_WORDS) - 1:0] read_counter;
+	reg [$clog2(NUMBER_OF_INPUT_WORDS) - 1:0] next_read_counter;
 	reg [$clog2(NUMBER_OF_OUTPUT_WORDS) - 1:0] write_counter;
+	reg [$clog2(NUMBER_OF_OUTPUT_WORDS) - 1:0] next_write_counter;
+
+	// Combinational output signals
+	reg s_axis_tready_comb;
+	reg m_axis_tvalid_comb;
+	reg [31:0] m_axis_tdata_comb;
+	reg m_axis_tlast_comb;
+
+	// Drive outputs from combinational logic
+	assign S_AXIS_TREADY = s_axis_tready_comb;
+	assign M_AXIS_TVALID = m_axis_tvalid_comb;
+	assign M_AXIS_TDATA  = m_axis_tdata_comb;
+	assign M_AXIS_TLAST  = m_axis_tlast_comb;
 
    // CAUTION:
    // The sequence in which data are read in and written out should be
    // consistent with the sequence they are written and read in the driver's hw_acc.c file
 
+	//=========================================================================
+	// Sequential always block: lean register updates only
+	//=========================================================================
 	always @(posedge ACLK) 
 	begin
-	// implemented as a single-always Moore machine
-	// a Mealy machine that asserts S_AXIS_TREADY and captures S_AXIS_TDATA etc can save a clock cycle
-
-		/****** Synchronous reset (active low) ******/
 		if (!ARESETN)
 		begin
 			// CAUTION: make sure your reset polarity is consistent with the system reset polarity
-			state        <= Idle;
-        end
+			state         <= Idle;
+			sum           <= 0;
+			read_counter  <= 0;
+			write_counter <= 0;
+		end
 		else
 		begin
-			case (state)
-
-				Idle:
-				begin
-					read_counter 	<= 0;
-					write_counter 	<= 0;
-					sum          	<= 0;
-					S_AXIS_TREADY 	<= 0;
-					M_AXIS_TVALID 	<= 0;
-					M_AXIS_TLAST  	<= 0;
-					if (S_AXIS_TVALID == 1)
-					begin
-						state       	<= Read_Inputs;
-						S_AXIS_TREADY 	<= 1; 
-						// start receiving data once you go into Read_Inputs
-					end
-				end
-
-				Read_Inputs:
-				begin
-					S_AXIS_TREADY 	<= 1;
-					if (S_AXIS_TVALID == 1) 
-					begin
-						// Coprocessor function (adding the numbers together) happens here (partly)
-						sum  	<=	sum + S_AXIS_TDATA;
-						// If we are expecting a variable number of words, we should make use of S_AXIS_TLAST.
-						// Since the number of words we are expecting is fixed, we simply count and receive 
-						// the expected number (NUMBER_OF_INPUT_WORDS) instead.
-						if (read_counter == NUMBER_OF_INPUT_WORDS-1)
-						begin
-							state      		<= Compute;
-							S_AXIS_TREADY 	<= 0;
-						end
-						else
-						begin
-							read_counter 	<= read_counter + 1;
-						end
-					end
-				end
-            
-				Compute:
-				begin
-					// Coprocessor function to be implemented (matrix multiply) should be here. Right now, nothing happens here.
-					state		<= Write_Outputs;
-					// Possible to save a cycle by asserting M_AXIS_TVALID and presenting M_AXIS_TDATA just before going into 
-					// Write_Outputs state. However, need to adjust write_counter limits accordingly
-					// Alternatively, M_AXIS_TVALID and M_AXIS_TDATA can be asserted combinationally to save a cycle.
-				end
-			
-				Write_Outputs:
-				begin
-					M_AXIS_TVALID	<= 1;
-					M_AXIS_TDATA	<= sum + write_counter;
-					// Coprocessor function (adding 1 to sum in each iteration = adding iteration count to sum) happens here (partly)
-					if (M_AXIS_TREADY == 1) 
-					begin
-						if (write_counter == NUMBER_OF_OUTPUT_WORDS-1)
-						begin
-							state	<= Idle;
-							M_AXIS_TLAST	<= 1;
-							// M_AXIS_TLAST, though optional in AXIS, is necessary in practice as AXI Stream FIFO and AXI DMA expects it.
-						end
-						else
-						begin
-							write_counter	<= write_counter + 1;
-						end
-					end
-				end
-			endcase
+			state         <= next_state;
+			sum           <= next_sum;
+			read_counter  <= next_read_counter;
+			write_counter <= next_write_counter;
 		end
+	end
+
+	//=========================================================================
+	// Combinational always block: next-state logic and output logic
+	//=========================================================================
+	always @(*)
+	begin
+		// Default assignments to avoid latches
+		next_state         = state;
+		next_sum           = sum;
+		next_read_counter  = read_counter;
+		next_write_counter = write_counter;
+
+		s_axis_tready_comb = 0;
+		m_axis_tvalid_comb = 0;
+		m_axis_tdata_comb  = 0;
+		m_axis_tlast_comb  = 0;
+
+		case (state)
+
+			Idle:
+			begin
+				next_read_counter  = 0;
+				next_write_counter = 0;
+				next_sum           = 0;
+				if (S_AXIS_TVALID == 1)
+				begin
+					next_state         = Read_Inputs;
+					s_axis_tready_comb = 1;
+					// Assert ready immediately so data can be captured on the next rising edge
+				end
+			end
+
+			Read_Inputs:
+			begin
+				s_axis_tready_comb = 1;
+				if (S_AXIS_TVALID == 1) 
+				begin
+					// Coprocessor function (adding the numbers together) happens here (partly)
+					next_sum = sum + S_AXIS_TDATA;
+					if (read_counter == NUMBER_OF_INPUT_WORDS-1)
+					begin
+						next_state         = Compute;
+						s_axis_tready_comb = 0;
+					end
+					else
+					begin
+						next_read_counter = read_counter + 1;
+					end
+				end
+			end
+        
+			Compute:
+			begin
+				// Coprocessor function to be implemented (matrix multiply) should be here.
+				// Right now, nothing happens here — transition directly to Write_Outputs.
+				// Assert M_AXIS_TVALID and present first data word to save a cycle (Mealy-style).
+				next_state         = Write_Outputs;
+				m_axis_tvalid_comb = 1;
+				m_axis_tdata_comb  = sum + write_counter;
+			end
+		
+			Write_Outputs:
+			begin
+				m_axis_tvalid_comb = 1;
+				m_axis_tdata_comb  = sum + write_counter;
+				if (write_counter == NUMBER_OF_OUTPUT_WORDS-1)
+				begin
+					m_axis_tlast_comb = 1;
+					// M_AXIS_TLAST, though optional in AXIS, is necessary in practice
+					// as AXI Stream FIFO and AXI DMA expects it.
+				end
+				if (M_AXIS_TREADY == 1) 
+				begin
+					if (write_counter == NUMBER_OF_OUTPUT_WORDS-1)
+					begin
+						next_state = Idle;
+					end
+					else
+					begin
+						next_write_counter = write_counter + 1;
+					end
+				end
+			end
+		endcase
 	end
 	   
 	// Connection to sub-modules / components for assignment 1
@@ -293,4 +329,3 @@ module myip_v1_0
 	);
 
 endmodule
-
