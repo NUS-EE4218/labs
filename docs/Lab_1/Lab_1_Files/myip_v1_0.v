@@ -197,7 +197,9 @@ module myip_v1_0
 				begin
 					next_state         = Read_Inputs;
 					s_axis_tready_comb = 1;
-					// Assert ready immediately so data can be captured on the next rising edge
+					// Capture the first word in the same handshake
+					next_sum           = S_AXIS_TDATA;
+					next_read_counter  = 1;
 				end
 			end
 
