@@ -1,0 +1,16 @@
+# 1. Load the design
+read_verilog report_adders.v
+hierarchy -check -top report_adders
+
+# 2. Convert behavioral logic to RTL cells
+# proc          # converts always blocks to RTL, with full optimizations and mapping
+synth -top report_adders -run coarse
+# synth_xilinx -top report_adders -family xc7
+
+# 3. Filter for specific components and report
+# This selects all cells of type '$add' and '$mulruns stat on only that selection
+stat -width t:$add t:$alu
+# stat -width t:$add t:$mul t:$alu
+# stat -width         # no filtering
+
+## run it with yosys -s report_adders.ys
