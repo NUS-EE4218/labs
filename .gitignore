@@ -1,0 +1,5 @@
+.aider*
+rv32i_pipeline/--extra-headers={'Ocp-Apim-Subscription-Key': 'b1aeaa058ede4964afdfe9129c9ca5b7'}
+*.vcd
+*.vvp
+*.out

@@ -126,6 +126,7 @@ module myip_v1_0
 	reg [31:0] next_sum;
 
 	// Counters to store the number inputs read & outputs written.
+	// Could be done using the same counter if reads and writes are not overlapped (i.e., no dataflow optimization). Left as separate for ease of debugging
 	// Use $clog2(N+1) to guarantee at least 1-bit width even when N=1
 	reg [$clog2(NUMBER_OF_INPUT_WORDS + 1) - 1:0] read_counter;
 	reg [$clog2(NUMBER_OF_INPUT_WORDS + 1) - 1:0] next_read_counter;
@@ -209,6 +210,9 @@ module myip_v1_0
 				if (S_AXIS_TVALID == 1) 
 				begin
 					// Coprocessor function (adding the numbers together) happens here (partly)
+						// If we are expecting a variable number of words, we should make use of S_AXIS_TLAST.
+						// Since the number of words we are expecting is fixed, we simply count and receive 
+						// the expected number (NUMBER_OF_INPUT_WORDS) instead.
 					next_sum = sum + S_AXIS_TDATA;
 					if (read_counter == NUMBER_OF_INPUT_WORDS-1)
 					begin
